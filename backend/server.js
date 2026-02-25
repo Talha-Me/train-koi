@@ -145,7 +145,7 @@ server.listen(PORT, () => {
 });
 
 // --- Self-Ping Logic (Render-এ সার্ভারকে ২৪ ঘণ্টা সচল রাখতে) ---
-const SERVER_URL = 'https://train-koi.onrender.com/'; // আপনার Render URL পাওয়ার পর এটি চেক করে নেবেন
+const SERVER_URL = 'https://train-koi.onrender.com'; // আপনার Render URL পাওয়ার পর এটি চেক করে নেবেন
 
 setInterval(async () => {
   try {

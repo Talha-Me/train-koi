@@ -1833,8 +1833,8 @@ import { stationCoords } from '../data/stationCoords';
 // --- src/data/railway.json ইমপোর্ট ---
 import railData from '../data/railway.json';
 
-const SOCKET_URL = "https://train-koi.onrender.com/"; 
-const API_URL = "https://train-koi.onrender.com/"; 
+const SOCKET_URL = "https://train-koi.onrender.com"; 
+const API_URL = "https://train-koi.onrender.com"; 
 const socket = io(SOCKET_URL, { transports: ['websocket'] });
 
 // --- Helpers ---
