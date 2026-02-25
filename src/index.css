@@ -1,0 +1,9 @@
+* {
+  font-family: 'Hind Siliguri', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  background-color: #f0f2f5;
+}
