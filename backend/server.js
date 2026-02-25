@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const axios = require('axios'); // axios যুক্ত করা হয়েছে
 const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message'); // নতুন মডেল ইমপোর্ট
@@ -79,6 +80,13 @@ app.post('/api/contact', async (req, res) => {
 
 app.get('/', (req, res) => res.send("Train Tracking Server is Running..."));
 
+/**
+ * ৩. Self-Ping রুট (সার্ভারকে জাগিয়ে রাখার জন্য)
+ */
+app.get('/ping', (req, res) => {
+  res.send('pong');
+});
+
 // --- Socket.io Logic ---
 
 io.on("connection", (socket) => {
@@ -135,3 +143,15 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`-----------------------------------------`);
 });
+
+// --- Self-Ping Logic (Render-এ সার্ভারকে ২৪ ঘণ্টা সচল রাখতে) ---
+const SERVER_URL = 'https://train-koi.onrender.com/ping'; // আপনার Render URL পাওয়ার পর এটি চেক করে নেবেন
+
+setInterval(async () => {
+  try {
+    await axios.get(SERVER_URL);
+    console.log('Self-ping successful: Server is awake!');
+  } catch (error) {
+    console.error('Self-ping failed:', error.message);
+  }
+}, 12 * 60 * 1000); // প্রতি ১৪ মিনিটে একবার সার্ভারকে কল করবে
