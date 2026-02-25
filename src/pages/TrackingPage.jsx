@@ -1834,7 +1834,7 @@ import { stationCoords } from '../data/stationCoords';
 import railData from '../data/railway.json';
 
 const SOCKET_URL = "https://train-koi.onrender.com"; 
-const API_URL = "https://train-koi.onrender.com"; 
+const API_URL = "https://train-koi.onrender.com/api"; // এখানে /api যোগ করা হয়েছে 
 const socket = io(SOCKET_URL, { transports: ['websocket'] });
 
 // --- Helpers ---
