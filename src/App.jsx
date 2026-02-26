@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react'; // ১. এখানে ইমপোর্ট করা হয়েছে
 import HomePage from './pages/HomePage';
 import TrackingPage from './pages/TrackingPage';
 import TravelLaws from './pages/TravelLaws';
@@ -8,7 +9,7 @@ import BlogList from './pages/BlogList';
 import BlogDetail from './pages/BlogDetail';
 import BookList from './pages/BookList'; 
 import BookReader from './pages/BookReader'; 
-import Footer from "./pages/components/Footer";// ফুটার ইমপোর্ট
+import Footer from "./pages/components/Footer";
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
@@ -37,8 +38,11 @@ function App() {
           </Routes>
         </div>
         
-        {/* ফুটারটি এখানে যোগ করা হয়েছে যাতে সব পেজের নিচে এটি থাকে */}
+        {/* আপনার আগের ফুটার */}
         <Footer /> 
+
+        {/* ২. অ্যানালিটিক্স কম্পোনেন্ট এখানে বসানো হয়েছে */}
+        <Analytics /> 
       </div>
     </Router>
   );
