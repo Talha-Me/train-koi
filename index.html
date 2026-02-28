@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -26,5 +26,40 @@
     
     <script type="module" src="/src/main.jsx"></script>
   </body>
-</html>
+</html> -->
 
+<!doctype html>
+<html lang="bn">
+  <head>
+    <script type="module">
+      import { injectIntoGlobalHook } from "/@react-refresh";
+      injectIntoGlobalHook(window);
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    </script>
+
+    <meta charset="UTF-8" />
+    
+    <link rel="icon" type="image/svg+xml" href="/homeimg.svg" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>Train Live Location | Train Tracking - TrainKoi</title>
+    <meta name="description" content="বাংলাদেশের সকল ট্রেনের লাইভ লোকেশন এবং সময়সূচী দেখুন TrainKoi-তে।" />
+    <meta name="google-site-verification" content="EEpQTZ_Ho-8kxBcYAdNFgbk0abuUjRnfoxYQwXpCLyY" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      body { margin: 0; padding: 0; background-color: #f0f2f5; font-family: 'Hind Siliguri', sans-serif; }
+      #root { width: 100%; min-height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
