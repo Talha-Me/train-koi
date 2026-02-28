@@ -742,6 +742,7 @@ const HomePage = () => {
                     <div style={{ fontWeight: '700', fontSize: '15px' }}>{st.name}</div>
                     <div style={{ fontSize: '11px', color: '#888' }}>প্রবেশ: {st.arrival} | ত্যাগ: {st.departure}</div>
                   </div>
+                  
                 </div>
               ))}
             </div>
