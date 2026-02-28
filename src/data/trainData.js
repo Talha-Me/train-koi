@@ -2120,4 +2120,53 @@ export const trains = [
       { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "07:20 am", departure: "END", km: 532 }
     ]
   },
+  // --- BURIMARI EXPRESS (809 & 810) ---
+  {
+    id: 810,
+    name: "বুড়িমারী এক্সপ্রেস (Burimari Express)",
+    from: "Burimari",
+    to: "Dhaka",
+    offDay: "মঙ্গলবার",
+    stations: [
+      { name: "বুড়িমারী (Burimari)", arrival: "START", departure: "06:00 pm", km: 0 },
+      { name: "পাটগ্রাম (Patgram)", arrival: "06:15 pm", departure: "06:20 pm", km: 15 },
+      { name: "বড়খাতা (Barkhata)", arrival: "06:47 pm", departure: "06:50 pm", km: 38 },
+      { name: "হাতিবান্ধা (Hatibandha)", arrival: "07:02 pm", departure: "07:05 pm", km: 48 },
+      { name: "তুষভান্ডার (Tushbhandar)", arrival: "07:33 pm", departure: "07:35 pm", km: 72 },
+      { name: "কাউনিয়া (Kaunia)", arrival: "09:33 pm", departure: "09:36 pm", km: 110 },
+      { name: "গাইবান্ধা (Gaibandha)", arrival: "10:42 pm", departure: "10:47 pm", km: 165 },
+      { name: "বোনারপাড়া (Bonarpara)", arrival: "11:09 pm", departure: "11:12 pm", km: 185 },
+      { name: "মহিমাগঞ্জ (Mahimaganj)", arrival: "11:22 pm", departure: "11:24 pm", km: 195 },
+      { name: "বগুড়া (Bogura)", arrival: "12:03 am", departure: "12:08 am", km: 235 },
+      { name: "সান্তাহার (Santahar)", arrival: "01:00 am", departure: "01:05 am", km: 272 },
+      { name: "নাটোর (Natore)", arrival: "02:03 am", departure: "02:13 am", km: 320 },
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "06:30 am", departure: "END", km: 512 }
+    ]
+  },
+  {
+    id: 809,
+    name: "বুড়িমারী এক্সপ্রেস (Burimari Express)",
+    from: "Dhaka",
+    to: "Burimari",
+    offDay: "বুধবার",
+    stations: [
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "START", departure: "08:30 am", km: 0 },
+      { name: "ঢাকা বিমানবন্দর (Dhaka Airport)", arrival: "08:53 am", departure: "08:58 am", km: 21 },
+      { name: "ঈশ্বরদী বাইপাস (Ishurdi Bypass)", arrival: "12:30 pm", departure: "12:32 pm", km: 195 },
+      { name: "নাটোর (Natore)", arrival: "01:02 pm", departure: "01:05 pm", km: 228 },
+      { name: "সান্তাহার (Santahar)", arrival: "02:15 pm", departure: "02:20 pm", km: 276 },
+      { name: "বগুড়া (Bogura)", arrival: "03:00 pm", departure: "03:05 pm", km: 313 },
+      { name: "মহিমাগঞ্জ (Mahimaganj)", arrival: "03:46 pm", departure: "03:48 pm", km: 353 },
+      { name: "বোনারপাড়া (Bonarpara)", arrival: "03:58 pm", departure: "04:03 pm", km: 363 },
+      { name: "গাইবান্ধা (Gaibandha)", arrival: "04:28 pm", departure: "04:33 pm", km: 383 },
+      { name: "কাউনিয়া (Kaunia)", arrival: "05:43 pm", departure: "05:46 pm", km: 438 },
+      { name: "লালমনিরহাট (Lalmonirhat)", arrival: "06:10 pm", departure: "07:00 pm", km: 454 },
+      { name: "কাঁকিনা (Kankina)", arrival: "07:25 pm", departure: "07:27 pm", km: 475 },
+      { name: "তুষভান্ডার (Tushbhandar)", arrival: "07:45 pm", departure: "07:47 pm", km: 492 },
+      { name: "হাতিবান্ধা (Hatibandha)", arrival: "08:21 pm", departure: "08:37 pm", km: 516 },
+      { name: "বড়খাতা (Barkhata)", arrival: "08:48 pm", departure: "08:51 pm", km: 526 },
+      { name: "পাটগ্রাম (Patgram)", arrival: "09:23 pm", departure: "09:28 pm", km: 549 },
+      { name: "বুড়িমারী (Burimari)", arrival: "09:45 pm", departure: "END", km: 564 }
+    ]
+  },
 ]
