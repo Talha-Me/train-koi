@@ -52,7 +52,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Analytics } from '@vercel/analytics/react'; // ১. এখানে ইমপোর্ট করা হয়েছে
+import { Analytics } from '@vercel/analytics/react'; 
 import HomePage from './pages/HomePage';
 import TrackingPage from './pages/TrackingPage';
 import TravelLaws from './pages/TravelLaws';
@@ -66,8 +66,13 @@ import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
 import Settings from './pages/Settings';
-import { HelpCircle, BookOpen, Ticket, MessageSquare, ShieldAlert, Info, Mail, Clock } from 'lucide-react';
 
+// নিচের ৩টি লাইন আমি নতুন যোগ করেছি। নিশ্চিত করুন আপনার ফাইলগুলো pages ফোল্ডারে আছে।
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Disclaimer from './pages/Disclaimer';
+
+import { HelpCircle, BookOpen, Ticket, MessageSquare, ShieldAlert, Info, Mail, Clock } from 'lucide-react';
 
 function App() {
   return (
@@ -80,7 +85,7 @@ function App() {
             {/* Tracking Routes */}
             <Route path="/track/:trainId" element={<TrackingPage />} />
             
-            {/* Schedule Routes (Dynamic SEO এর জন্য :trainSlug যোগ করা হয়েছে) */}
+            {/* Schedule Routes */}
             <Route path="/schedule" element={<TrainSchedule />} />
             <Route path="/schedule/:trainSlug" element={<TrainSchedule />} />
             
@@ -93,13 +98,15 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/settings" element={<Settings />} />
+
+            {/* আইনি পেজগুলোর রাউট */}
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/disclaimer" element={<Disclaimer />} />
           </Routes>
         </div>
         
-        {/* আপনার আগের ফুটার */}
         <Footer /> 
-
-        {/* ২. অ্যানালিটিক্স কম্পোনেন্ট এখানে বসানো হয়েছে */}
         <Analytics /> 
       </div>
     </Router>
