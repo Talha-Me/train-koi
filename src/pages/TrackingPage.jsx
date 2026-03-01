@@ -1834,7 +1834,7 @@ import { stationCoords } from '../data/stationCoords';
 import railData from '../data/railway.json';
 
 const SOCKET_URL = "https://train-koi.onrender.com"; 
-const API_URL = "https://train-koi.onrender.com/api"; // এখানে /api যোগ করা হয়েছে 
+const API_URL = "https://train-koi.onrender.com/api"; // এখানে /api যোগ করা হয়েছে 
 const socket = io(SOCKET_URL, { transports: ['websocket'] });
 
 // --- Helpers ---
@@ -1965,28 +1965,41 @@ useEffect(() => {
       watchId = navigator.geolocation.watchPosition((pos) => {
         const { latitude, longitude, speed } = pos.coords;
         const currentSpeed = Math.round((speed || 0) * 3.6);
+        
+        // ১. নতুন লজিক: গতি ৫ কিমি/ঘণ্টার বেশি হতে হবে
+        const isMoving = currentSpeed >= 5;
+
+        // ২. নতুন টাইম লজিক: রাত ১২টা পার হলেও যেন ট্র্যাকিং কাজ করে
         const now = new Date();
         const currentMin = now.getHours() * 60 + now.getMinutes();
-
-        let isNearTrack = false;
-        train.stations.forEach(st => {
-          const coords = stationCoords[st.name.trim()];
-          if (coords && calculateDistance(latitude, longitude, coords[0], coords[1]) <= 3) {
-            isNearTrack = true;
-          }
-        });
-
         const startMin = scheduleData[0].absMin;
         const endMin = scheduleData[scheduleData.length - 1].absMin;
-        
-        let isWithinTime = (endMin < startMin) 
-          ? (currentMin >= (startMin - 30) || currentMin <= (endMin + 180)) 
-          : (currentMin >= (startMin - 30) && currentMin <= (endMin + 180));
+        const isCrossDay = endMin < startMin;
 
-        if (isNearTrack && isWithinTime) {
-          socket.emit("send_location", { trainId: parseInt(trainId), lat: latitude, lng: longitude, speed: currentSpeed });
+        let isWithinTime = false;
+        if (isCrossDay) {
+          // রাত ১২টার পর এবং যাত্রা শুরুর ১০ ঘণ্টা পর্যন্ত বাফার রাখা হয়েছে
+          isWithinTime = (currentMin >= (startMin - 60) || currentMin <= (endMin + 600));
+        } else {
+          isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + 600));
         }
-      }, null, { enableHighAccuracy: true });
+
+        if (isMoving && isWithinTime) {
+          const locationData = { trainId: parseInt(trainId), lat: latitude, lng: longitude, speed: currentSpeed };
+          
+          // সকেটে পাঠানো
+          socket.emit("send_location", locationData);
+
+          // ব্যাকএন্ড API-তে পার্মানেন্ট সেভ করা
+          fetch(`${API_URL}/train-location/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(locationData)
+          }).catch(err => console.error("Update Error:", err));
+        }
+      }, (err) => {
+        console.error("GPS Error:", err);
+      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
     }
     return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
   }, [isSharing, isTraveler, trainId, train, scheduleData]);
@@ -2002,7 +2015,6 @@ useEffect(() => {
       const endMin = scheduleData[scheduleData.length - 1].absMin;
       const isCrossDay = endMin < startMin;
 
-      // --- Bangladesh Railway Off-Day Logic ---
       const daysInBangla = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
       const todayName = daysInBangla[nowObj.getDay()];
       
@@ -2015,12 +2027,11 @@ useEffect(() => {
 
       let inSchedule = false;
       if (isCrossDay) {
-        // আজকের ট্রিপ (১২টার আগে শুরু) অথবা গতকালের ট্রিপ (যা এখন মাঝপথে)
-        inSchedule = (currentMinWithSec >= (startMin - 30) && canStartToday) || 
-                     (currentMinWithSec <= (endMin + 180) && startedYesterday);
+        // ৬০০ মিনিট (সকাল ১০টা) বাফার রাখা হয়েছে গতকালের ট্রিপ শেষ করার জন্য
+        inSchedule = (currentMinWithSec >= (startMin - 60) && canStartToday) || 
+                     (currentMinWithSec <= (endMin + 600) && startedYesterday);
       } else {
-        // নরমাল ডে ট্রিপ (অফ ডে হলে আজ চলবে না)
-        inSchedule = (currentMinWithSec >= (startMin - 30) && currentMinWithSec <= (endMin + 180) && canStartToday);
+        inSchedule = (currentMinWithSec >= (startMin - 60) && currentMinWithSec <= (endMin + 600) && canStartToday);
       }
 
       if (inSchedule) {
@@ -2032,11 +2043,13 @@ useEffect(() => {
           let normalizedCurrent = currentMinWithSec;
           let currSt = stMin;
           let nextSt = nextStMin;
+          
           if (isCrossDay) {
               if (currentMinWithSec < 600) normalizedCurrent += 1440;
               if (stMin < 600) currSt += 1440;
               if (nextStMin < 600) nextSt += 1440;
           }
+          
           if (normalizedCurrent >= currSt && normalizedCurrent < nextSt) {
             currentIndex = scheduleData[i].idx;
             const c1 = stationCoords[train.stations[i].name.trim()];
@@ -2140,11 +2153,7 @@ useEffect(() => {
     const dNext = calculateDistance(activeState.lat, activeState.lng, nextCoords?.[0], nextCoords?.[1]);
     const dDest = calculateDistance(activeState.lat, activeState.lng, destCoords?.[0], destCoords?.[1]);
     
-    const nowObj = new Date(currentTime);
-    const nowMin = nowObj.getHours() * 60 + nowObj.getMinutes() + (nowObj.getSeconds() / 60);
-    
     const calcSpeed = activeState.speed > 5 ? activeState.speed : 25;
-    const timeToReachNext = (dNext / calcSpeed) * 60;
     
     const nextArrivalMin = parseToMinutes(nextSt.arrival === 'START' ? nextSt.departure : nextSt.arrival);
 
