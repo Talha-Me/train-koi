@@ -2170,3 +2170,5 @@ export const trains = [
     ]
   },
 ]
+
+module.exports = { trains };

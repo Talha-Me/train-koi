@@ -3,10 +3,10 @@
 // const { Server } = require('socket.io');
 // const dotenv = require('dotenv');
 // const cors = require('cors');
-// const axios = require('axios'); // axios যুক্ত করা হয়েছে
+// const axios = require('axios');
 // const connectDB = require('./config/db');
 // const Train = require('./models/Train');
-// const Message = require('./models/Message'); // নতুন মডেল ইমপোর্ট
+// const Message = require('./models/Message');
 
 // // কনফিগারেশন
 // dotenv.config();
@@ -30,13 +30,15 @@
 
 // /**
 //  * ১. নির্দিষ্ট ট্রেনের লোকেশন ডাটা পাওয়া (Initial Load)
+//  * রুট আপডেট করা হয়েছে যাতে স্ল্যাশের কারণে ভুল না হয়
 //  */
 // app.get('/api/train-location/:trainId', async (req, res) => {
 //   try {
 //     const { trainId } = req.params;
+//     // ট্রেনের আইডি নম্বর হিসেবে খোঁজা হচ্ছে
 //     const trainData = await Train.findOne({ trainId: parseInt(trainId) });
     
-//     if (!trainData || !trainData.lastLocation.lat) {
+//     if (!trainData || !trainData.lastLocation || !trainData.lastLocation.lat) {
 //       return res.status(404).json({ message: "No live data found for this train" });
 //     }
     
@@ -57,7 +59,7 @@
 // });
 
 // /**
-//  * ২. কন্টাক্ট ফরম থেকে মেসেজ সেভ করা (নতুন রুট)
+//  * ২. কন্টাক্ট ফরম থেকে মেসেজ সেভ করা
 //  */
 // app.post('/api/contact', async (req, res) => {
 //   try {
@@ -78,6 +80,7 @@
 //   }
 // });
 
+// // রুট পাথ চেক করার জন্য
 // app.get('/', (req, res) => res.send("Train Tracking Server is Running..."));
 
 // /**
@@ -145,17 +148,19 @@
 // });
 
 // // --- Self-Ping Logic (Render-এ সার্ভারকে ২৪ ঘণ্টা সচল রাখতে) ---
-// const SERVER_URL = 'https://train-koi.onrender.com'; // আপনার Render URL পাওয়ার পর এটি চেক করে নেবেন
+// // এখানে URL চেক করে স্লাশ হ্যান্ডেল করা হয়েছে
+// const RAW_SERVER_URL = 'https://train-koi.onrender.com';
+// const SERVER_URL = RAW_SERVER_URL.replace(/\/$/, ""); 
 
 // setInterval(async () => {
 //   try {
-//     await axios.get(SERVER_URL);
+//     // সরাসরি মেইন ইউআরএল বা /ping রুটে রিকোয়েস্ট পাঠানো হচ্ছে
+//     await axios.get(`${SERVER_URL}/ping`);
 //     console.log('Self-ping successful: Server is awake!');
 //   } catch (error) {
 //     console.error('Self-ping failed:', error.message);
 //   }
-// }, 12 * 60 * 1000); // প্রতি ১৪ মিনিটে একবার সার্ভারকে কল করবে
-
+// }, 12 * 60 * 1000); // প্রতি ১২ মিনিটে একবার কল করবে
 
 const express = require('express');
 const http = require('http');
@@ -166,6 +171,9 @@ const axios = require('axios');
 const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
+
+// শিডিউল ডাটা ইমপোর্ট (ডিলে ক্যালকুলেশনের জন্য প্রয়োজন)
+const { trains } = require('./data/trainData'); 
 
 // কনফিগারেশন
 dotenv.config();
@@ -185,16 +193,26 @@ const io = new Server(server, {
   }
 });
 
+// --- Helpers (ডিলে ক্যালকুলেশনের জন্য) ---
+const parseToMinutes = (timeStr) => {
+  if (!timeStr || ["START", "END", "---"].includes(timeStr)) return null;
+  const match = timeStr.toLowerCase().match(/(\d+):(\d+)\s*(am|pm)/);
+  if (!match) return null;
+  let [ , hrs, mins, mod] = match;
+  let h = parseInt(hrs);
+  if (mod === 'pm' && h < 12) h += 12;
+  if (mod === 'am' && h === 12) h = 0;
+  return h * 60 + parseInt(mins);
+};
+
 // --- API Routes ---
 
 /**
  * ১. নির্দিষ্ট ট্রেনের লোকেশন ডাটা পাওয়া (Initial Load)
- * রুট আপডেট করা হয়েছে যাতে স্ল্যাশের কারণে ভুল না হয়
  */
 app.get('/api/train-location/:trainId', async (req, res) => {
   try {
     const { trainId } = req.params;
-    // ট্রেনের আইডি নম্বর হিসেবে খোঁজা হচ্ছে
     const trainData = await Train.findOne({ trainId: parseInt(trainId) });
     
     if (!trainData || !trainData.lastLocation || !trainData.lastLocation.lat) {
@@ -239,7 +257,6 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// রুট পাথ চেক করার জন্য
 app.get('/', (req, res) => res.send("Train Tracking Server is Running..."));
 
 /**
@@ -256,14 +273,37 @@ io.on("connection", (socket) => {
 
   socket.on("send_location", async (data) => {
     try {
-      const { trainId, lat, lng, speed, delay, index, progress } = data;
+      const { trainId, lat, lng, speed, index, progress } = data;
+      
+      // --- অটোমেটিক ডিলে ক্যালকুলেশন লজিক শুরু ---
+      let calculatedDelay = data.delay || 0;
+      
+      const trainStaticInfo = trains.find(t => t.id === parseInt(trainId));
+      if (trainStaticInfo) {
+          const now = new Date();
+          const currentTotalMin = now.getHours() * 60 + now.getMinutes();
+          
+          // বর্তমানের সবচেয়ে কাছের স্টেশন বা ইনডেক্স অনুযায়ী শিডিউল বের করা
+          const currentStation = trainStaticInfo.stations[index || 0];
+          if (currentStation) {
+              const schedTimeStr = currentStation.arrival === "START" ? currentStation.departure : currentStation.arrival;
+              const scheduledMin = parseToMinutes(schedTimeStr);
+              
+              if (scheduledMin !== null) {
+                  // যদি বর্তমান সময় শিডিউল টাইম থেকে বেশি হয়, তবেই ডিলে হবে
+                  const diff = currentTotalMin - scheduledMin;
+                  calculatedDelay = diff > 0 ? diff : 0;
+              }
+          }
+      }
+      // --- অটোমেটিক ডিলে ক্যালকুলেশন লজিক শেষ ---
 
       const updatedTrain = await Train.findOneAndUpdate(
         { trainId: parseInt(trainId) }, 
         { 
           $set: { 
             speed: speed || 0,
-            delay: delay || 0,
+            delay: calculatedDelay, // স্বয়ংক্রিয়ভাবে ক্যালকুলেটেড ডিলে সেভ হবে
             currentStationIndex: index || 0,
             progress: progress || 0,
             "lastLocation.lat": lat, 
@@ -287,7 +327,7 @@ io.on("connection", (socket) => {
 
       io.emit("receive_location", liveUpdate); 
       
-      console.log(`Live Update: Train ${trainId} - Speed: ${speed} - Delay: ${delay}`);
+      console.log(`Live Update: Train ${trainId} - Speed: ${speed} - Calculated Delay: ${calculatedDelay}`);
     } catch (err) {
       console.error("Socket Update Error:", err.message);
     }
@@ -306,17 +346,15 @@ server.listen(PORT, () => {
   console.log(`-----------------------------------------`);
 });
 
-// --- Self-Ping Logic (Render-এ সার্ভারকে ২৪ ঘণ্টা সচল রাখতে) ---
-// এখানে URL চেক করে স্লাশ হ্যান্ডেল করা হয়েছে
+// --- Self-Ping Logic ---
 const RAW_SERVER_URL = 'https://train-koi.onrender.com';
 const SERVER_URL = RAW_SERVER_URL.replace(/\/$/, ""); 
 
 setInterval(async () => {
   try {
-    // সরাসরি মেইন ইউআরএল বা /ping রুটে রিকোয়েস্ট পাঠানো হচ্ছে
     await axios.get(`${SERVER_URL}/ping`);
     console.log('Self-ping successful: Server is awake!');
   } catch (error) {
     console.error('Self-ping failed:', error.message);
   }
-}, 12 * 60 * 1000); // প্রতি ১২ মিনিটে একবার কল করবে
+}, 12 * 60 * 1000);

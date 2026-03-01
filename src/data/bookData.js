@@ -808,3 +808,5 @@ export const books = [
 চন্দরা কহিল, “মরণ!—”`
 }
 ];
+
+module.exports = { trains };
