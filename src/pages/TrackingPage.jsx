@@ -1902,6 +1902,27 @@ const TrackingPage = () => {
 
   const train = useMemo(() => trains.find(t => t.id === parseInt(trainId)), [trainId]);
 
+  // --- Train title change korar code ---
+useEffect(() => {
+  const originalTitle = "Train Live Location | Train Tracking - TrainKoi";
+  let currentTitle = "Live Train Tracking & Location | TrainKoi";
+  
+  if (train) {
+    currentTitle = `${train.name} Live Location & Tracking | TrainKoi`;
+  }
+  
+  document.title = currentTitle;
+
+  const timer = setTimeout(() => {
+    document.title = currentTitle;
+  }, 150);
+
+  return () => {
+    clearTimeout(timer);
+    document.title = originalTitle;
+  };
+}, [train, trainId]);
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);

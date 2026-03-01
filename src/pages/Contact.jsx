@@ -7,8 +7,15 @@ import {
 
 const Contact = () => {
   const navigate = useNavigate();
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+const handleSmartBack = () => {
+  // যদি ব্রাউজারে আগের কোনো পেজ থাকে, তবে ১ ধাপ পেছনে যাবে
+  // আর যদি সরাসরি লিঙ্কে ঢুকে থাকে, তবে হোম পেজে নিয়ে যাবে
+  if (window.history.length > 1 && document.referrer.includes(window.location.host)) {
+    navigate(-1);
+  } else {
+    navigate('/');
+  }
+};
 
   // ডাটাবেসে পাঠানোর জন্য স্টেট
   const [formData, setFormData] = useState({
@@ -58,7 +65,7 @@ const Contact = () => {
       
       {/* Header */}
       <div style={{ backgroundColor: '#006a4e', padding: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '15px', position: 'sticky', top: 0, zIndex: 100 }}>
-        <ChevronLeft onClick={() => navigate(-1)} style={{ cursor: 'pointer' }} size={28} />
+        <ChevronLeft onClick={handleSmartBack} style={{ cursor: 'pointer' }} size={28} />
         <h2 style={{ margin: 0, fontSize: '20px' }}>যোগাযোগ ও সাপোর্ট</h2>
       </div>
 
@@ -66,7 +73,7 @@ const Contact = () => {
         
         {/* Intro Section */}
         <div style={{ textAlign: 'center', marginBottom: '35px' }}>
-          <h1 style={{ color: '#006a4e', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: '800' }}>আমরা আপনার কথা শুনতে আগ্রহী</h1>
+          <h1 style={{ color: '#1a1d1c', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: '800' }}>আমরা আপনার কথা শুনতে আগ্রহী</h1>
           <p style={{ color: '#666', fontSize: '15px' }}>যেকোনো জিজ্ঞাসা বা অভিযোগ আমাদের জানান</p>
         </div>
 
