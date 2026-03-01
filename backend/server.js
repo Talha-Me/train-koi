@@ -172,8 +172,8 @@ const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
 
-// শিডিউল ডাটা ইমপোর্ট (ডিলে ক্যালকুলেশনের জন্য প্রয়োজন)
-const { trains } = require('./data/trainData'); 
+// শিডিউল ডাটা ইমপোর্ট - পাথ আপডেট করা হয়েছে আপনার ডিরেক্টরি অনুযায়ী
+const { trains } = require('../src/data/trainData'); 
 
 // কনফিগারেশন
 dotenv.config();
@@ -283,14 +283,14 @@ io.on("connection", (socket) => {
           const now = new Date();
           const currentTotalMin = now.getHours() * 60 + now.getMinutes();
           
-          // বর্তমানের সবচেয়ে কাছের স্টেশন বা ইনডেক্স অনুযায়ী শিডিউল বের করা
+          // বর্তমানের সবচেয়ে কাছের স্টেশন বা ইনডেক্স অনুযায়ী শিডিউল বের করা
           const currentStation = trainStaticInfo.stations[index || 0];
           if (currentStation) {
               const schedTimeStr = currentStation.arrival === "START" ? currentStation.departure : currentStation.arrival;
               const scheduledMin = parseToMinutes(schedTimeStr);
               
               if (scheduledMin !== null) {
-                  // যদি বর্তমান সময় শিডিউল টাইম থেকে বেশি হয়, তবেই ডিলে হবে
+                  // যদি বর্তমান সময় শিডিউল টাইম থেকে বেশি হয়, তবেই ডিলে হবে
                   const diff = currentTotalMin - scheduledMin;
                   calculatedDelay = diff > 0 ? diff : 0;
               }
@@ -303,7 +303,7 @@ io.on("connection", (socket) => {
         { 
           $set: { 
             speed: speed || 0,
-            delay: calculatedDelay, // স্বয়ংক্রিয়ভাবে ক্যালকুলেটেড ডিলে সেভ হবে
+            delay: calculatedDelay, // স্বয়ংক্রিয়ভাবে ক্যালকুলেটেড ডিলে সেভ হবে
             currentStationIndex: index || 0,
             progress: progress || 0,
             "lastLocation.lat": lat, 

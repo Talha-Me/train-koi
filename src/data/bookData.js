@@ -809,4 +809,3 @@ export const books = [
 }
 ];
 
-module.exports = { trains };

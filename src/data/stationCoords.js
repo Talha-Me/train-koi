@@ -307,4 +307,7 @@ export const stationCoords = {
 "শায়েস্তাগঞ্জ (Shaistaganj)": [24.2618, 91.4552],
 "শ্রীমঙ্গল (Sreemangal)": [24.3072, 91.7335],
 
+};
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { yourDataName };
 }

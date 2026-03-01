@@ -2171,4 +2171,7 @@ export const trains = [
   },
 ]
 
-module.exports = { trains };
+// trainData.js এর একদম নিচে দিন (আগের সব exports মুছে)
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = { trains };
+}
