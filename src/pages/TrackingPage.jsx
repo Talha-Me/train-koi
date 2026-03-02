@@ -1,4 +1,3 @@
-
 // import React, { useState, useMemo, useEffect } from 'react';
 // import { useParams, Link } from 'react-router-dom';
 // import { MapContainer, TileLayer, Marker, Tooltip, useMap, GeoJSON } from 'react-leaflet';
@@ -156,7 +155,7 @@
 
 //         let isWithinTime = false;
 //         if (isCrossDay) {
-//           // রাত ১২টার পর এবং যাত্রা শুরুর ১০ ঘণ্টা পর্যন্ত বাফার রাখা হয়েছে
+//           // রাত ১২টার পর এবং যাত্রা শুরুর ১০ ঘণ্টা পর্যন্ত বাফার রাখা হয়েছে
 //           isWithinTime = (currentMin >= (startMin - 60) || currentMin <= (endMin + 600));
 //         } else {
 //           isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + 600));
@@ -205,7 +204,7 @@
 
 //       let inSchedule = false;
 //       if (isCrossDay) {
-//         // ৬০০ মিনিট (সকাল ১০টা) বাফার রাখা হয়েছে গতকালের ট্রিপ শেষ করার জন্য
+//         // ৬০০ মিনিট (সকাল ১০টা) বাফার রাখা হয়েছে গতকালের ট্রিপ শেষ করার জন্য
 //         inSchedule = (currentMinWithSec >= (startMin - 60) && canStartToday) || 
 //                      (currentMinWithSec <= (endMin + 600) && startedYesterday);
 //       } else {
@@ -590,6 +589,7 @@
 
 // export default TrackingPage;
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Tooltip, useMap, GeoJSON } from 'react-leaflet';
@@ -672,25 +672,25 @@ const TrackingPage = () => {
   const train = useMemo(() => trains.find(t => t.id === parseInt(trainId)), [trainId]);
 
   // --- Train title change korar code ---
-useEffect(() => {
-  const originalTitle = "Train Live Location | Train Tracking - TrainKoi";
-  let currentTitle = "Live Train Tracking & Location | TrainKoi";
-  
-  if (train) {
-    currentTitle = `${train.name} Live Location & Tracking | TrainKoi`;
-  }
-  
-  document.title = currentTitle;
-
-  const timer = setTimeout(() => {
+  useEffect(() => {
+    const originalTitle = "Train Live Location | Train Tracking - TrainKoi";
+    let currentTitle = "Live Train Tracking & Location | TrainKoi";
+    
+    if (train) {
+      currentTitle = `${train.name} Live Location & Tracking | TrainKoi`;
+    }
+    
     document.title = currentTitle;
-  }, 150);
 
-  return () => {
-    clearTimeout(timer);
-    document.title = originalTitle;
-  };
-}, [train, trainId]);
+    const timer = setTimeout(() => {
+      document.title = currentTitle;
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      document.title = originalTitle;
+    };
+  }, [train, trainId]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
@@ -728,51 +728,6 @@ useEffect(() => {
     })).filter(s => s.absMin !== null);
   }, [train]);
 
-  useEffect(() => {
-    let watchId;
-    if (isSharing && isTraveler && train && scheduleData.length > 0) {
-      watchId = navigator.geolocation.watchPosition((pos) => {
-        const { latitude, longitude, speed } = pos.coords;
-        const currentSpeed = Math.round((speed || 0) * 3.6);
-        
-        // ১. নতুন লজিক: গতি ৫ কিমি/ঘণ্টার বেশি হতে হবে
-        const isMoving = currentSpeed >= 5;
-
-        // ২. নতুন টাইম লজিক: রাত ১২টা পার হলেও যেন ট্র্যাকিং কাজ করে
-        const now = new Date();
-        const currentMin = now.getHours() * 60 + now.getMinutes();
-        const startMin = scheduleData[0].absMin;
-        const endMin = scheduleData[scheduleData.length - 1].absMin;
-        const isCrossDay = endMin < startMin;
-
-        let isWithinTime = false;
-        if (isCrossDay) {
-          // রাত ১২টার পর এবং যাত্রা শুরুর ১০ ঘণ্টা পর্যন্ত বাফার রাখা হয়েছে
-          isWithinTime = (currentMin >= (startMin - 60) || currentMin <= (endMin + 600));
-        } else {
-          isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + 600));
-        }
-
-        if (isMoving && isWithinTime) {
-          const locationData = { trainId: parseInt(trainId), lat: latitude, lng: longitude, speed: currentSpeed };
-          
-          // সকেটে পাঠানো
-          socket.emit("send_location", locationData);
-
-          // ব্যাকএন্ড API-তে পার্মানেন্ট সেভ করা
-          fetch(`${API_URL}/train-location/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(locationData)
-          }).catch(err => console.error("Update Error:", err));
-        }
-      }, (err) => {
-        console.error("GPS Error:", err);
-      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
-    }
-    return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
-  }, [isSharing, isTraveler, trainId, train, scheduleData]);
-
   const activeState = useMemo(() => {
     if (!train || scheduleData.length === 0) return { lat: 23.81, lng: 90.41, speed: 0, mode: 'OFFLINE', isRunning: false };
     
@@ -796,7 +751,6 @@ useEffect(() => {
 
       let inSchedule = false;
       if (isCrossDay) {
-        // ৬০০ মিনিট (সকাল ১০টা) বাফার রাখা হয়েছে গতকালের ট্রিপ শেষ করার জন্য
         inSchedule = (currentMinWithSec >= (startMin - 60) && canStartToday) || 
                      (currentMinWithSec <= (endMin + 600) && startedYesterday);
       } else {
@@ -862,14 +816,20 @@ useEffect(() => {
         currentSpeed = baseSpeed;
       } else if (diffInMin <= 120) {
         mode = 'PREDICTED';
+        
+        // --- নতুন লজিক শুরু: যদি ট্রেন প্রিডিক্টেড মোডে থাকে এবং স্পিড খুব কম থাকে ---
+        if (currentSpeed < 10) {
+            currentSpeed = 25; // অন্তত ২৫ কিমি গতিতে ম্যাপে মুভ করবে
+        }
+        // --- নতুন লজিক শেষ ---
+
         if (diffInMin > 60) {
           const reductionProgress = (diffInMin - 60) / 60; 
-          currentSpeed = Math.max(15, baseSpeed - (baseSpeed - 15) * reductionProgress);
+          currentSpeed = Math.max(15, currentSpeed - (currentSpeed - 15) * reductionProgress);
         }
       } else {
         return getScheduledState();
-      }
-
+      } 
       const delay = liveData.delay || 0;
       const distanceMoved = (currentSpeed / 3600) * Math.max(0, diffInSec); 
 
@@ -911,6 +871,53 @@ useEffect(() => {
     return getScheduledState();
   }, [train, liveData, currentTime, scheduleData]);
 
+  useEffect(() => {
+    let watchId;
+    if (isSharing && isTraveler && train && scheduleData.length > 0) {
+      watchId = navigator.geolocation.watchPosition((pos) => {
+        const { latitude, longitude, speed } = pos.coords;
+        const currentSpeed = Math.round((speed || 0) * 3.6);
+        
+        const isMoving = currentSpeed >= 5;
+
+        const now = new Date();
+        const currentMin = now.getHours() * 60 + now.getMinutes();
+        const startMin = scheduleData[0].absMin;
+        const endMin = scheduleData[scheduleData.length - 1].absMin;
+        const isCrossDay = endMin < startMin;
+
+        let isWithinTime = false;
+        if (isCrossDay) {
+          isWithinTime = (currentMin >= (startMin - 60) || currentMin <= (endMin + 600));
+        } else {
+          isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + 600));
+        }
+
+        if (isMoving && isWithinTime) {
+          const locationData = { 
+            trainId: parseInt(trainId), 
+            lat: latitude, 
+            lng: longitude, 
+            speed: currentSpeed,
+            index: activeState.index,
+            progress: 0 
+          };
+          
+          socket.emit("send_location", locationData);
+
+          fetch(`${API_URL}/train-location/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(locationData)
+          }).catch(err => console.error("Update Error:", err));
+        }
+      }, (err) => {
+        console.error("GPS Error:", err);
+      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    }
+    return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
+  }, [isSharing, isTraveler, trainId, train, scheduleData, activeState.index]);
+
   const stats = useMemo(() => {
     if (!activeState || !activeState.isRunning) return null;
     const nextSt = train.stations[activeState.index + 1] || train.stations[activeState.index];
@@ -949,79 +956,79 @@ useEffect(() => {
       `}</style>
 
       <div style={{ 
-  background: '#006a4e', 
-  color: 'white', 
-  padding: '16px', 
-  display: 'flex', 
-  flexDirection: 'column', 
-  position: 'sticky', 
-  top: 0, 
-  zIndex: 1000,
-  boxShadow: '0 2px 10px rgba(0,0,0,0.2)' 
-}}>
-  <div style={{ display: 'flex', alignItems: 'center' }}>
-    <Link to="/" style={{ color: 'white', display: 'flex', alignItems: 'center' }}>
-      <ChevronLeft size={24} />
-    </Link>
-    
-    <div style={{ flex: 1, marginLeft: '12px' }}>
-      <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>{train.name}</h4>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-        <span style={{ 
-          fontSize: '10px', 
-          background: !activeState.isRunning ? '#555' : (activeState.mode === 'LIVE' ? '#ef4444' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#3b82f6')), 
-          padding: '2px 8px', 
-          borderRadius: '4px', 
-          fontWeight: 'bold',
-          textTransform: 'uppercase'
+        background: '#006a4e', 
+        color: 'white', 
+        padding: '16px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        position: 'sticky', 
+        top: 0, 
+        zIndex: 1000,
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)' 
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Link to="/" style={{ color: 'white', display: 'flex', alignItems: 'center' }}>
+            <ChevronLeft size={24} />
+          </Link>
+          
+          <div style={{ flex: 1, marginLeft: '12px' }}>
+            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>{train.name}</h4>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+              <span style={{ 
+                fontSize: '10px', 
+                background: !activeState.isRunning ? '#555' : (activeState.mode === 'LIVE' ? '#ef4444' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#3b82f6')), 
+                padding: '2px 8px', 
+                borderRadius: '4px', 
+                fontWeight: 'bold',
+                textTransform: 'uppercase'
+              }}>
+                {!activeState.isRunning ? 'OFFLINE' : activeState.mode}
+              </span>
+              {activeState.isRunning && (
+                <span style={{ fontSize: '11px', opacity: 0.9 }}>
+                  • {activeState.lastSeen === 0 || !activeState.lastSeen ? 'Just now' : `${activeState.lastSeen}m ago`}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div style={{ 
+          marginTop: '12px', 
+          fontSize: '12px', 
+          padding: '10px', 
+          borderRadius: '8px', 
+          background: 'rgba(255, 255, 255, 0.12)', 
+          lineHeight: '1.5',
+          borderLeft: `4px solid ${!activeState.isRunning ? '#94a3b8' : (activeState.mode === 'LIVE' ? '#ef4444' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#3b82f6'))}`,
+          backdropFilter: 'blur(5px)'
         }}>
-          {!activeState.isRunning ? 'OFFLINE' : activeState.mode}
-        </span>
-        {activeState.isRunning && (
-          <span style={{ fontSize: '11px', opacity: 0.9 }}>
-            • {activeState.lastSeen === 0 || !activeState.lastSeen ? 'Just now' : `${activeState.lastSeen}m ago`}
-          </span>
-        )}
-      </div>
-    </div>
-  </div>
-  <div style={{ 
-    marginTop: '12px', 
-    fontSize: '12px', 
-    padding: '10px', 
-    borderRadius: '8px', 
-    background: 'rgba(255, 255, 255, 0.12)', 
-    lineHeight: '1.5',
-    borderLeft: `4px solid ${!activeState.isRunning ? '#94a3b8' : (activeState.mode === 'LIVE' ? '#ef4444' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#3b82f6'))}`,
-    backdropFilter: 'blur(5px)'
-  }}>
-    {!activeState.isRunning ? (
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <span>🛑</span>
-        <span>এই ট্রেনটি বর্তমানে এই রুটে চলছে না। আজ ট্রেনের সাপ্তাহিক ছুটি হতে পারে অথবা এটি এখনো যাত্রা শুরু করেনি।</span>
-      </div>
-    ) : (
-      <>
-        {activeState.mode === 'LIVE' && (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <span>🛰️</span>
-            <span>এই ট্রেনটির <b>লাইভ লোকেশন</b> শেয়ার করা হয়েছে।</span>
-          </div>
-        )}
-        {activeState.mode === 'PREDICTED' && (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <span>⚠️</span>
-            <span>এই ট্রেনটির লাইভ লোকেশন অনেকক্ষণ আগে শেয়ার করা হয়েছিল, তাই <b>প্রেডিকশন</b> করে লোকেশন দেখানো হচ্ছে।</span>
-          </div>
-        )}
-        {activeState.mode === 'SCHEDULED' && (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <span>📅</span>
-            <span>এই ট্রেনটির লাইভ লোকেশন কেউ শেয়ার করেনি, তাই <b>শিডিউল</b> অনুযায়ী সম্ভাব্য অবস্থান দেখানো হচ্ছে।</span>
-          </div>
-        )}
-      </>
-    )}
+          {!activeState.isRunning ? (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span>🛑</span>
+              <span>এই ট্রেনটি বর্তমানে এই রুটে চলছে না। আজ ট্রেনের সাপ্তাহিক ছুটি হতে পারে অথবা এটি এখনো যাত্রা শুরু করেনি।</span>
+            </div>
+          ) : (
+            <>
+              {activeState.mode === 'LIVE' && (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span>🛰️</span>
+                  <span>এই ট্রেনটির <b>লাইভ লোকেশন</b> শেয়ার করা হয়েছে।</span>
+                </div>
+              )}
+              {activeState.mode === 'PREDICTED' && (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span>⚠️</span>
+                  <span>এই ট্রেনটির লাইভ লোকেশন অনেকক্ষণ আগে শেয়ার করা হয়েছিল, তাই <b>প্রেডিকশন</b> করে লোকেশন দেখানো হচ্ছে।</span>
+                </div>
+              )}
+              {activeState.mode === 'SCHEDULED' && (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span>📅</span>
+                  <span>এই ট্রেনটির লাইভ লোকেশন কেউ শেয়ার করেনি, তাই <b>শিডিউল</b> অনুযায়ী সম্ভাব্য অবস্থান দেখানো হচ্ছে।</span>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -1132,7 +1139,7 @@ useEffect(() => {
                     background: isCurrent ? (activeState.speed < 5 ? '#ef4444' : '#3b82f6') : (isPassed ? '#006a4e' : '#e2e8f0'), 
                     border: isCurrent ? '4px solid #bfdbfe' : 'none',
                     zIndex: 2
-                  }}></div>
+                   }}></div>
                   {i < train.stations.length - 1 && <div style={{ width: 2, flex: 1, background: isPassed ? '#006a4e' : '#f1f5f9', minHeight: '60px' }}></div>}
                 </div>
                 <div style={{ flex: 1, paddingBottom: '25px' }}>
@@ -1179,4 +1186,4 @@ useEffect(() => {
   );
 };
 
-export default TrackingPage;
+export default TrackingPage; 
