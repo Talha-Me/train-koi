@@ -2,28 +2,29 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Mail, Phone, Send, MessageSquare, 
-  Facebook, Twitter, Youtube, HelpCircle, ExternalLink, ShieldAlert 
+  Facebook, Twitter, Youtube, HelpCircle, ShieldAlert 
 } from 'lucide-react';
 
 const Contact = () => {
   const navigate = useNavigate();
-const handleSmartBack = () => {
-  // যদি ব্রাউজারে আগের কোনো পেজ থাকে, তবে ১ ধাপ পেছনে যাবে
-  // আর যদি সরাসরি লিঙ্কে ঢুকে থাকে, তবে হোম পেজে নিয়ে যাবে
-  if (window.history.length > 1 && document.referrer.includes(window.location.host)) {
-    navigate(-1);
-  } else {
-    navigate('/');
-  }
-};
-
-  // ডাটাবেসে পাঠানোর জন্য স্টেট
+  
+  // ১. প্রয়োজনীয় স্টেটগুলো এখানে ডিক্লেয়ার করা হলো
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: 'সাধারণ জিজ্ঞাসা',
     message: ''
   });
+
+  const handleSmartBack = () => {
+    if (window.history.length > 1 && document.referrer.includes(window.location.host)) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,12 +35,9 @@ const handleSmartBack = () => {
     setLoading(true);
 
     try {
-      // আপনার ব্যাকএন্ড API কল করা হচ্ছে
-      const response = await fetch('http://localhost:5000/api/contact', {
+      const response = await fetch('http://localhost:5001/api/contact', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -50,11 +48,11 @@ const handleSmartBack = () => {
         setFormData({ name: '', email: '', subject: 'সাধারণ জিজ্ঞাসা', message: '' });
         setTimeout(() => setSubmitted(false), 3000);
       } else {
-        alert("দুঃখিত, মেসেজ পাঠানো যায়নি। আবার চেষ্টা করুন।");
+        alert("দুঃখিত, মেসেজ পাঠানো যায়নি।");
       }
     } catch (error) {
       console.error("Submission failed", error);
-      alert("সার্ভারের সাথে সংযোগ বিচ্ছিন্ন! ইন্টারনেট বা ব্যাকএন্ড চেক করুন।");
+      alert("সার্ভারের সাথে সংযোগ বিচ্ছিন্ন!");
     } finally {
       setLoading(false);
     }
@@ -62,7 +60,6 @@ const handleSmartBack = () => {
 
   return (
     <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif" }}>
-      
       {/* Header */}
       <div style={{ backgroundColor: '#006a4e', padding: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '15px', position: 'sticky', top: 0, zIndex: 100 }}>
         <ChevronLeft onClick={handleSmartBack} style={{ cursor: 'pointer' }} size={28} />
@@ -70,24 +67,16 @@ const handleSmartBack = () => {
       </div>
 
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '25px 15px' }}>
-        
-        {/* Intro Section */}
         <div style={{ textAlign: 'center', marginBottom: '35px' }}>
           <h1 style={{ color: '#1a1d1c', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: '800' }}>আমরা আপনার কথা শুনতে আগ্রহী</h1>
           <p style={{ color: '#666', fontSize: '15px' }}>যেকোনো জিজ্ঞাসা বা অভিযোগ আমাদের জানান</p>
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-          gap: '25px' 
-        }}>
-          
-          {/* বাম কলাম: কন্টাক্ট মেথড */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
+          {/* Contact Methods */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
               <h3 style={{ margin: '0 0 20px', fontSize: '18px', color: '#006a4e' }}>সরাসরি যোগাযোগ</h3>
-              
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <ContactItem icon={<Mail color="#006a4e" size={20} />} label="ইমেইল" value="support@trainkoi.com" />
                 <ContactItem icon={<ShieldAlert color="#e67e22" size={20} />} label="অভিযোগ কেন্দ্র" value="support@trainkoi.com" />
@@ -106,65 +95,30 @@ const handleSmartBack = () => {
             </div>
           </div>
 
-          {/* ডান কলাম: রেসপন্সিভ ফরম */}
-          <div style={{ 
-            backgroundColor: 'white', 
-            padding: 'clamp(20px, 5vw, 30px)', 
-            borderRadius: '25px', 
-            boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-            boxSizing: 'border-box'
-          }}>
+          {/* Contact Form */}
+          <div style={{ backgroundColor: 'white', padding: 'clamp(20px, 5vw, 30px)', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', boxSizing: 'border-box' }}>
             <h3 style={{ margin: '0 0 20px', color: '#006a4e' }}>মেসেজ বা অভিযোগ ফরম</h3>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div style={{ width: '100%' }}>
+              <div>
                 <label style={labelStyle}>আপনার নাম</label>
-                <input 
-                  type="text" 
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="উদা: আবু তালহা আকাশ" 
-                  required 
-                  style={inputStyle} 
-                />
+                <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="উদা: আবু তালহা আকাশ" required style={inputStyle} />
               </div>
-              <div style={{ width: '100%' }}>
+              <div>
                 <label style={labelStyle}>ইমেইল এড্রেস</label>
-                <input 
-                  type="email" 
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="example@mail.com" 
-                  required 
-                  style={inputStyle} 
-                />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="example@mail.com" required style={inputStyle} />
               </div>
-              <div style={{ width: '100%' }}>
+              <div>
                 <label style={labelStyle}>বিষয় (Subject)</label>
-                <select 
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  style={inputStyle}
-                >
+                <select name="subject" value={formData.subject} onChange={handleChange} style={inputStyle}>
                   <option>সাধারণ জিজ্ঞাসা</option>
                   <option>ট্রেন ট্র্যাকিং সমস্যা</option>
                   <option>ভুল তথ্য রিপোর্ট</option>
                   <option>বিজনেস পার্টনারশিপ</option>
                 </select>
               </div>
-              <div style={{ width: '100%' }}>
+              <div>
                 <label style={labelStyle}>আপনার বার্তা</label>
-                <textarea 
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="বিস্তারিত এখানে লিখুন..." 
-                  rows="4" 
-                  required 
-                  style={{ ...inputStyle, resize: 'none' }}
-                ></textarea>
+                <textarea name="message" value={formData.message} onChange={handleChange} placeholder="বিস্তারিত এখানে লিখুন..." rows="4" required style={{ ...inputStyle, resize: 'none' }}></textarea>
               </div>
               
               <button 
@@ -173,14 +127,12 @@ const handleSmartBack = () => {
                 style={{ 
                   backgroundColor: submitted ? '#2ecc71' : '#006a4e', 
                   color: 'white', border: 'none', padding: '15px', 
-                  borderRadius: '12px', fontWeight: 'bold', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  gap: '10px', cursor: loading ? 'not-allowed' : 'pointer', transition: '0.3s',
-                  opacity: loading ? 0.7 : 1
+                  borderRadius: '12px', fontWeight: 'bold', cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
                 }}
               >
                 <Send size={18} /> 
-                {loading ? 'প্রসেসিং হচ্ছে...' : (submitted ? 'সাফল্যের সাথে পাঠানো হয়েছে!' : 'মেসেজ পাঠান')}
+                {loading ? 'প্রসেসিং...' : (submitted ? 'পাঠানো হয়েছে!' : 'মেসেজ পাঠান')}
               </button>
             </form>
           </div>
@@ -196,12 +148,12 @@ const handleSmartBack = () => {
             <FAQItem q="টিকিট রিফান্ড করার নিয়ম কি?" a="টিকিট রিফান্ডের জন্য রেলওয়ের অফিসিয়াল কাউন্টার বা ওয়েবসাইটে যোগাযোগ করুন।" />
           </div>
         </div>
-
       </div>
     </div>
   );
 };
 
+// Helper Components
 const ContactItem = ({ icon, label, value }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
     <div style={{ backgroundColor: '#e8f5e9', padding: '10px', borderRadius: '12px' }}>{icon}</div>
