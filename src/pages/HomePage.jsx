@@ -1,3 +1,4 @@
+
 // import React, { useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { trains } from '../data/trainData'; 
@@ -5,7 +6,7 @@
 //   Search, MapPin, Settings, Bell, Navigation, ArrowRightLeft, X, 
 //   Train, BookOpen, User, Info, MessageSquare, ShieldAlert, 
 //   Ticket, Mail, LayoutGrid, Map, Clock, ChevronRight, Activity,
-//   HelpCircle // <--- এটি যোগ করা হয়েছে
+//   HelpCircle // <--- এটি যোগ করা হয়েছে
 // } from 'lucide-react';
 
 // const HomePage = () => {
@@ -13,7 +14,13 @@
 //   const [searchTerm, setSearchTerm] = useState('');
 //   const [fromCity, setFromCity] = useState('');
 //   const [toCity, setToCity] = useState('');
-//   const [selectedTrainGroup, setSelectedTrainGroup] = useState(null); 
+  
+//   // ব্যাক করলে ডাটা মনে রাখার লজিক
+//   const [selectedTrainGroup, setSelectedTrainGroup] = useState(() => {
+//     const saved = sessionStorage.getItem('lastSelectedTrain');
+//     return saved ? JSON.parse(saved) : null;
+//   }); 
+  
 //   const [activeDirectionIndex, setActiveDirectionIndex] = useState(0); 
 //   const [showSuggestions, setShowSuggestions] = useState(true);
 //   const [activeInput, setActiveInput] = useState(null); 
@@ -121,7 +128,7 @@
 //   fontWeight: 900, 
 //   fontSize: '28px', 
 //   letterSpacing: '-0.5px', // টেক্সটটি আরও টাইট এবং আধুনিক দেখাবে
-//   background: 'linear-gradient(to right, #ffffff, #e0e0e0)', // হালকা গ্রেডিয়েন্ট
+//   background: 'linear-gradient(to right, #ffffff, #e0e0e0)', // হালকা গ্রেডিয়েন্ট
 //   WebkitBackgroundClip: 'text',
 //   WebkitTextFillColor: 'transparent',
 //   display: 'flex',
@@ -242,7 +249,11 @@
 //           {displayTrains.map((group, idx) => (
 //             <div 
 //               key={idx} 
-//               onClick={() => {setSelectedTrainGroup(group); setActiveDirectionIndex(0);}} 
+//               onClick={() => {
+//                 setSelectedTrainGroup(group); 
+//                 setActiveDirectionIndex(0);
+//                 sessionStorage.setItem('lastSelectedTrain', JSON.stringify(group));
+//               }} 
 //               style={{ 
 //                 backgroundColor: 'white', 
 //                 borderRadius: '25px', 
@@ -275,6 +286,7 @@
 //                     e.stopPropagation();
 //                     setSelectedTrainGroup(group); 
 //                     setActiveDirectionIndex(0);
+//                     sessionStorage.setItem('lastSelectedTrain', JSON.stringify(group));
 //                   }}
 //                   style={{ 
 //                     backgroundColor: '#006a4e', 
@@ -309,10 +321,10 @@
 //           <h3 style={{ margin: 0, color: '#006a4e' }}>{selectedTrainGroup[activeDirectionIndex].name}</h3>
 //           <span style={{ fontSize: 12, color: '#999' }}>কোড: {selectedTrainGroup[activeDirectionIndex].id}</span>
 //         </div>
-//         <X onClick={() => setSelectedTrainGroup(null)} style={{ cursor: 'pointer', backgroundColor: '#f0f0f0', borderRadius: '50%', padding: 5 }} />
+//         <X onClick={() => {setSelectedTrainGroup(null); sessionStorage.removeItem('lastSelectedTrain');}} style={{ cursor: 'pointer', backgroundColor: '#f0f0f0', borderRadius: '50%', padding: 5 }} />
 //       </div>
 
-//       {/* লাল রঙের সতর্কবার্তা - এখানে যোগ করা হয়েছে */}
+//       {/* লাল রঙের সতর্কবার্তা - এখানে যোগ করা হয়েছে */}
 //       <div style={{ 
 //         backgroundColor: '#fff5f5', 
 //         color: '#e53935', 
@@ -324,7 +336,7 @@
 //         textAlign: 'center',
 //         border: '1px solid #ffebee'
 //       }}>
-//          ট্রেনের লাইভ লোকেশন জানতে দয়া করে সঠিক রুটটি সিলেক্ট করুন
+//           ট্রেনের লাইভ লোকেশন জানতে দয়া করে সঠিক রুটটি সিলেক্ট করুন
 //       </div>
 
 //       {selectedTrainGroup.length > 1 && (
@@ -358,6 +370,7 @@
 //                     <div style={{ fontWeight: '700', fontSize: '15px' }}>{st.name}</div>
 //                     <div style={{ fontSize: '11px', color: '#888' }}>প্রবেশ: {st.arrival} | ত্যাগ: {st.departure}</div>
 //                   </div>
+                  
 //                 </div>
 //               ))}
 //             </div>
@@ -370,7 +383,6 @@
 
 // export default HomePage;
 
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trains } from '../data/trainData'; 
@@ -378,7 +390,8 @@ import {
   Search, MapPin, Settings, Bell, Navigation, ArrowRightLeft, X, 
   Train, BookOpen, User, Info, MessageSquare, ShieldAlert, 
   Ticket, Mail, LayoutGrid, Map, Clock, ChevronRight, Activity,
-  HelpCircle // <--- এটি যোগ করা হয়েছে
+  HelpCircle, // <--- এটি যোগ করা হয়েছে
+  TrainFront, CreditCard, Gavel // মেট্রো সেকশনের জন্য নতুন আইকন
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -458,91 +471,91 @@ const HomePage = () => {
   return (
     <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '100px' }}>
       
-     <div style={{ 
-    background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
-    padding: '30px 20px 70px', 
-    color: 'white', 
-    borderBottomLeftRadius: '40px', 
-    borderBottomRightRadius: '40px',
-    boxShadow: '0 10px 25px rgba(0, 77, 57, 0.2)' // নিচের দিকে হালকা শ্যাডো
-  }}>
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'space-between', 
-      alignItems: 'center',
-      maxWidth: '1200px', // পিসি ভিউতে কন্টেন্ট মাঝখানে রাখার জন্য
-      margin: '0 auto' 
-    }}>
-      
-      {/* Settings Icon Button */}
-      <div 
-        onClick={() => navigate('/settings')} 
-        style={{ 
-          cursor: 'pointer', 
-          background: 'rgba(255, 255, 255, 0.15)', // হালকা সাদাটে ব্যাকগ্রাউন্ড
-          padding: '10px', 
-          borderRadius: '15px', 
+      <div style={{ 
+        background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
+        padding: '30px 20px 70px', 
+        color: 'white', 
+        borderBottomLeftRadius: '40px', 
+        borderBottomRightRadius: '40px',
+        boxShadow: '0 10px 25px rgba(0, 77, 57, 0.2)' // নিচের দিকে হালকা শ্যাডো
+      }}>
+        <div style={{ 
           display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          transition: 'all 0.3s ease',
-          backdropFilter: 'blur(5px)' // গ্লাস ইফেক্ট
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
-        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
-      >
-        <Settings size={22} style={{ opacity: 1 }} />
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          maxWidth: '1200px', // পিসি ভিউতে কন্টেন্ট মাঝখানে রাখার জন্য
+          margin: '0 auto' 
+        }}>
+          
+          {/* Settings Icon Button */}
+          <div 
+            onClick={() => navigate('/settings')} 
+            style={{ 
+              cursor: 'pointer', 
+              background: 'rgba(255, 255, 255, 0.15)', // হালকা সাদাটে ব্যাকগ্রাউন্ড
+              padding: '10px', 
+              borderRadius: '15px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+              backdropFilter: 'blur(5px)' // গ্লাস ইফেক্ট
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
+          >
+            <Settings size={22} style={{ opacity: 1 }} />
+          </div>
+
+          {/* Logo / Title */}
+          <h2 style={{ 
+            margin: 0, 
+            fontWeight: 900, 
+            fontSize: '28px', 
+            letterSpacing: '-0.5px', // টেক্সটটি আরও টাইট এবং আধুনিক দেখাবে
+            background: 'linear-gradient(to right, #ffffff, #e0e0e0)', // হালকা গ্রেডিয়েন্ট
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '2px'
+          }}>
+            ট্রেনকই
+          </h2>
+
+          {/* Notification Icon Button */}
+          <div 
+            style={{ 
+              cursor: 'pointer', 
+              background: 'rgba(255, 255, 255, 0.15)', 
+              padding: '10px', 
+              borderRadius: '15px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+              backdropFilter: 'blur(5px)',
+              position: 'relative' // নোটিফিকেশন ডটের জন্য
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
+          >
+            <Bell size={22} style={{ opacity: 1 }} />
+            {/* ছোট্ট একটা নোটিফিকেশন ডট (লাল) */}
+            <span style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#ff4b2b',
+              borderRadius: '50%',
+              border: '2px solid #006a4e'
+            }}></span>
+          </div>
+
+        </div>
       </div>
-
-      {/* Logo / Title */}
-<h2 style={{ 
-  margin: 0, 
-  fontWeight: 900, 
-  fontSize: '28px', 
-  letterSpacing: '-0.5px', // টেক্সটটি আরও টাইট এবং আধুনিক দেখাবে
-  background: 'linear-gradient(to right, #ffffff, #e0e0e0)', // হালকা গ্রেডিয়েন্ট
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2px'
-}}>
-  ট্রেনকই
-</h2>
-
-      {/* Notification Icon Button */}
-      <div 
-        style={{ 
-          cursor: 'pointer', 
-          background: 'rgba(255, 255, 255, 0.15)', 
-          padding: '10px', 
-          borderRadius: '15px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          transition: 'all 0.3s ease',
-          backdropFilter: 'blur(5px)',
-          position: 'relative' // নোটিফিকেশন ডটের জন্য
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)'}
-        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
-      >
-        <Bell size={22} style={{ opacity: 1 }} />
-        {/* ছোট্ট একটা নোটিফিকেশন ডট (লাল) */}
-        <span style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          width: '8px',
-          height: '8px',
-          backgroundColor: '#ff4b2b',
-          borderRadius: '50%',
-          border: '2px solid #006a4e'
-        }}></span>
-      </div>
-
-    </div>
-  </div>
 
       {/* Search Container */}
       <div style={{ margin: '-50px 20px 0', backgroundColor: 'white', borderRadius: '30px', padding: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', position: 'relative', zIndex: 100 }}>
@@ -683,42 +696,94 @@ const HomePage = () => {
         </div>
       </div>
 
-{/* Stoppage Modal */}
-{selectedTrainGroup && (
-  <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', zIndex: 1000 }}>
-    <div style={{ backgroundColor: 'white', width: '100%', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '25px 20px', maxHeight: '85vh', overflowY: 'auto' }}>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-        <div>
-          <h3 style={{ margin: 0, color: '#006a4e' }}>{selectedTrainGroup[activeDirectionIndex].name}</h3>
-          <span style={{ fontSize: 12, color: '#999' }}>কোড: {selectedTrainGroup[activeDirectionIndex].id}</span>
-        </div>
-        <X onClick={() => {setSelectedTrainGroup(null); sessionStorage.removeItem('lastSelectedTrain');}} style={{ cursor: 'pointer', backgroundColor: '#f0f0f0', borderRadius: '50%', padding: 5 }} />
-      </div>
+      {/* --- Bangladesh Metro Rail Section (NEW) --- */}
+      <div style={{ padding: '0 20px 20px' }}>
+        <div 
+          onClick={() => navigate('/metro-rail')}
+          style={{ 
+            background: 'linear-gradient(135deg, #008352 0%, #005a38 100%)', 
+            borderRadius: '30px', 
+            padding: '25px', 
+            color: 'white', 
+            boxShadow: '0 15px 30px rgba(0,131,82,0.2)',
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: 'pointer'
+          }}
+        >
+          {/* Background Decorative Icon */}
+          <TrainFront size={120} style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.1, transform: 'rotate(-15deg)' }} />
 
-      {/* লাল রঙের সতর্কবার্তা - এখানে যোগ করা হয়েছে */}
-      <div style={{ 
-        backgroundColor: '#fff5f5', 
-        color: '#e53935', 
-        fontSize: '12px', 
-        fontWeight: 'bold', 
-        padding: '10px', 
-        borderRadius: '12px', 
-        marginBottom: '15px', 
-        textAlign: 'center',
-        border: '1px solid #ffebee'
-      }}>
-          ট্রেনের লাইভ লোকেশন জানতে দয়া করে সঠিক রুটটি সিলেক্ট করুন
-      </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: '8px', borderRadius: '12px' }}>
+                <TrainFront size={24} />
+              </div>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.9 }}>Dhaka Metro Rail</span>
+            </div>
+            
+            <h2 style={{ margin: '0 0 5px 0', fontSize: '24px', fontWeight: '900' }}>বাংলাদেশ মেট্রো রেল</h2>
+            <p style={{ margin: '0 0 20px 0', fontSize: '13px', opacity: 0.8, lineHeight: '1.5', maxWidth: '80%' }}>
+              সময়সূচী, ভাড়া, টিকিট ও যাতায়াতের সকল তথ্য এখন এক জায়গায়।
+            </p>
 
-      {selectedTrainGroup.length > 1 && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 20, backgroundColor: '#f5f5f5', padding: 5, borderRadius: 15 }}>
-          {selectedTrainGroup.map((t, i) => (
-            <button key={i} onClick={() => setActiveDirectionIndex(i)} style={{ flex: 1, padding: '10px 5px', border: 'none', borderRadius: 10, fontSize: 11, fontWeight: 'bold', backgroundColor: activeDirectionIndex === i ? 'white' : 'transparent', color: activeDirectionIndex === i ? '#006a4e' : '#777' }}>
-              {t.from.split('(')[0]} ➔ {t.to.split('(')[0]}
-            </button>
-          ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+              {[
+                { icon: <Clock size={14} />, text: 'সময়সূচী' },
+                { icon: <CreditCard size={14} />, text: 'টিকিট কার্ড' },
+                { icon: <Map size={14} />, text: 'রুট ম্যাপ' },
+                { icon: <Gavel size={14} />, text: 'আইন-কানুন' }
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(255,255,255,0.15)', padding: '8px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>
+                  {item.icon} {item.text}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '14px', fontWeight: 'bold' }}>
+              বিস্তারিত দেখুন <ChevronRight size={18} />
+            </div>
+          </div>
         </div>
+      </div>
+      {/* --- End Metro Rail Section --- */}
+
+      {/* Stoppage Modal */}
+      {selectedTrainGroup && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', zIndex: 1000 }}>
+          <div style={{ backgroundColor: 'white', width: '100%', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: '25px 20px', maxHeight: '85vh', overflowY: 'auto' }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+              <div>
+                <h3 style={{ margin: 0, color: '#006a4e' }}>{selectedTrainGroup[activeDirectionIndex].name}</h3>
+                <span style={{ fontSize: 12, color: '#999' }}>কোড: {selectedTrainGroup[activeDirectionIndex].id}</span>
+              </div>
+              <X onClick={() => {setSelectedTrainGroup(null); sessionStorage.removeItem('lastSelectedTrain');}} style={{ cursor: 'pointer', backgroundColor: '#f0f0f0', borderRadius: '50%', padding: 5 }} />
+            </div>
+
+            {/* লাল রঙের সতর্কবার্তা - এখানে যোগ করা হয়েছে */}
+            <div style={{ 
+              backgroundColor: '#fff5f5', 
+              color: '#e53935', 
+              fontSize: '12px', 
+              fontWeight: 'bold', 
+              padding: '10px', 
+              borderRadius: '12px', 
+              marginBottom: '15px', 
+              textAlign: 'center',
+              border: '1px solid #ffebee'
+            }}>
+                ট্রেনের লাইভ লোকেশন জানতে দয়া করে সঠিক রুটটি সিলেক্ট করুন
+            </div>
+
+            {selectedTrainGroup.length > 1 && (
+              <div style={{ display: 'flex', gap: 10, marginBottom: 20, backgroundColor: '#f5f5f5', padding: 5, borderRadius: 15 }}>
+                {selectedTrainGroup.map((t, i) => (
+                  <button key={i} onClick={() => setActiveDirectionIndex(i)} style={{ flex: 1, padding: '10px 5px', border: 'none', borderRadius: 10, fontSize: 11, fontWeight: 'bold', backgroundColor: activeDirectionIndex === i ? 'white' : 'transparent', color: activeDirectionIndex === i ? '#006a4e' : '#777' }}>
+                    {t.from.split('(')[0]} ➔ {t.to.split('(')[0]}
+                  </button>
+                ))}
+              </div>
             )}
 
             <div style={{ marginBottom: 20, padding: '15px', backgroundColor: '#e8f5e9', borderRadius: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -742,7 +807,6 @@ const HomePage = () => {
                     <div style={{ fontWeight: '700', fontSize: '15px' }}>{st.name}</div>
                     <div style={{ fontSize: '11px', color: '#888' }}>প্রবেশ: {st.arrival} | ত্যাগ: {st.departure}</div>
                   </div>
-                  
                 </div>
               ))}
             </div>
