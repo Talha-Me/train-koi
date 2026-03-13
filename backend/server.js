@@ -198,6 +198,7 @@ const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const axios = require('axios');
+const moment = require('moment-timezone'); // সময় ঠিক করার জন্য ইমপোর্ট
 const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
@@ -239,9 +240,6 @@ const parseToMinutes = (timeStr) => {
 
 // --- API ROUTES ---
 
-/**
- * ১. নির্দিষ্ট ট্রেনের লোকেশন ডাটা পাওয়া (Initial Load এর জন্য)
- */
 app.get('/api/train-location/:trainId', async (req, res) => {
   try {
     const { trainId } = req.params;
@@ -267,9 +265,6 @@ app.get('/api/train-location/:trainId', async (req, res) => {
   }
 });
 
-/**
- * ২. কন্টাক্ট ফরম থেকে মেসেজ সেভ করা
- */
 app.post('/api/contact', async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
@@ -283,10 +278,6 @@ app.post('/api/contact', async (req, res) => {
 });
 
 app.get('/', (req, res) => res.send("Train Tracking Server is Running..."));
-
-/**
- * ৩. Self-Ping রুট (Render এ সার্ভারকে স্লিপ মোড থেকে জাগিয়ে রাখার জন্য)
- */
 app.get('/ping', (req, res) => res.send('pong'));
 
 // --- SOCKET.IO LOGIC ---
@@ -302,35 +293,30 @@ io.on("connection", (socket) => {
       const trainStaticInfo = trains.find(t => t.id === parseInt(trainId));
       
       if (trainStaticInfo) {
-          // [TIMEZONE FIX]: Render এর UTC টাইমকে বাংলাদেশ টাইমে রূপান্তর
-          const now = new Date();
-          const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
-          const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
+          // [TIMEZONE FIX]: moment-timezone ব্যবহার করে সঠিক বাংলাদেশ টাইম বের করা
+          const nowInDhaka = moment().tz("Asia/Dhaka");
+          const currentTotalMin = (nowInDhaka.hours() * 60) + nowInDhaka.minutes();
           
-          // ইনডেক্স অনুযায়ী স্টেশনের শিডিউল বের করা
+          // ইনডেক্স অনুযায়ী স্টেশনের শিডিউল বের করা
           const currentStation = trainStaticInfo.stations[index || 0];
           if (currentStation) {
-              const schedTimeStr = currentStation.arrival === "START" || !currentStation.arrival 
+              const schedTimeStr = (currentStation.arrival === "START" || !currentStation.arrival) 
                                    ? currentStation.departure 
                                    : currentStation.arrival;
               
               const scheduledMin = parseToMinutes(schedTimeStr);
               
               if (scheduledMin !== null) {
-                  // বর্তমান সময় এবং শিডিউল সময়ের পার্থক্য
                   let diff = currentTotalMin - scheduledMin;
 
-                  // [DAY CROSS FIX]: রাত ১২টার পরের সময়ের গাণিতিক জট সামলানো
+                  // [DAY CROSS FIX]: রাত ১২টার পরের সময়ের জন্য
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
 
-                  // [DYNAMIC RECOVERY]: স্পিড বাড়লে দেরি কমানোর লজিক
-                  if (diff > 0) {
-                      if (speed > 50) {
-                          // প্রতি ৫ কিমি অতিরিক্ত স্পিডের জন্য ২ মিনিট করে রিকভারি
-                          const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
-                          diff = diff - recoveryFactor;
-                      }
+                  // [DYNAMIC RECOVERY]: স্পিড লজিক
+                  if (diff > 0 && speed > 50) {
+                      const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
+                      diff = Math.max(0, diff - recoveryFactor);
                   }
 
                   calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
@@ -338,11 +324,10 @@ io.on("connection", (socket) => {
           }
       }
 
-      // ডাটাবেস আপডেট করার পে-লোড
       const updatePayload = {
         "lastLocation.lat": lat, 
         "lastLocation.lng": lng,
-        "lastLocation.updatedAt": new Date(), // DB তে UTC সেভ হবে (স্ট্যান্ডার্ড)
+        "lastLocation.updatedAt": new Date(), 
         delay: calculatedDelayMinutes, 
         currentStationIndex: index || 0,
         progress: progress || 0,
@@ -355,7 +340,6 @@ io.on("connection", (socket) => {
         { upsert: true, new: true } 
       );
 
-      // ফ্রন্টএন্ডে লাইভ ডাটা পাঠানো
       const liveUpdate = {
         trainId: updatedTrain.trainId,
         lat: updatedTrain.lastLocation.lat,
@@ -368,7 +352,7 @@ io.on("connection", (socket) => {
       };
 
       io.emit("receive_location", liveUpdate); 
-      console.log(`[OK] Train: ${trainId} | Speed: ${speed} | Delay: ${calculatedDelayMinutes}m`);
+      console.log(`[OK] Train: ${trainId} | Index: ${index} | Delay: ${calculatedDelayMinutes}m`);
 
     } catch (err) {
       console.error("Socket Update Error:", err.message);
@@ -378,14 +362,12 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("Client disconnected"));
 });
 
-// --- সার্ভার স্টার্ট ---
 const PORT = process.env.PORT || 5001; 
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
 // --- Self-Ping Logic (Render Fix) ---
-// প্রতি ১২ মিনিটে নিজেকে পিং করবে যাতে সার্ভার স্লিপ মোডে না যায়
 setInterval(async () => {
   try { 
     await axios.get('https://train-koi.onrender.com/ping'); 
