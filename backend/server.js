@@ -207,7 +207,7 @@ const Message = require('./models/Message');
 let trains = [];
 try {
   const dataImport = require('../src/data/trainData');
-  // আপনার ফাইলে export const trains থাকায় ডাটাটি .trains এর ভেতরে থাকে
+  // আপনার ফাইলে export const trains থাকায় ডাটাটি .trains এর ভেতরে থাকে
   trains = dataImport.trains || dataImport.default || dataImport;
   console.log("✅ Train Data Loaded. Total Trains:", Array.isArray(trains) ? trains.length : "Error: Not an array");
 } catch (err) {
@@ -230,15 +230,16 @@ const io = new Server(server, {
   }
 });
 
-// --- HELPERS ---
+// --- HELPERS (FIXED REGEX & NORMALIZATION) ---
 
 const parseToMinutes = (timeStr) => {
   if (!timeStr) return null;
-  const normalizedTime = timeStr.toString().toLowerCase().trim();
+  // স্পেসগুলো সরিয়ে ছোট হাতের অক্ষর বানিয়ে ফেলা হচ্ছে যাতে Regex মিস না হয়
+  const normalizedTime = timeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
   if (normalizedTime === "start" || normalizedTime === "end" || normalizedTime === "---") return null;
 
-  // AM/PM ফরম্যাট হ্যান্ডেল করার জন্য Regex
-  const match = normalizedTime.match(/(\d+):(\d+)\s*(am|pm)/);
+  // Regex-এ মাঝখানের ঐচ্ছিক স্পেস বা সরাসরি am/pm হ্যান্ডেল করা হয়েছে
+  const match = normalizedTime.match(/(\d+):(\d+)(am|pm)/);
   if (!match) return null;
 
   let [ , hrs, mins, mod] = match;
@@ -290,7 +291,7 @@ io.on("connection", (socket) => {
     try {
       const { trainId, lat, lng, speed, index, progress } = data;
       
-      // টাইপ নিশ্চিত করার জন্য Number ব্যবহার করা হয়েছে
+      // টাইপ নিশ্চিত করার জন্য Number ব্যবহার করা হয়েছে
       const targetTrainId = Number(trainId);
       const targetIndex = Number(index) || 0;
       
@@ -318,12 +319,13 @@ io.on("connection", (socket) => {
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
 
-                  // স্পিড রিকভারি লজিক
+                  // স্পিড রিকভারি লজিক (৫ কোয়ালিটি রিকভারি)
                   if (diff > 0 && speed > 50) {
                       const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
                       diff = Math.max(0, diff - recoveryFactor);
                   }
 
+                  // ফাইনাল ডিলে ক্যালকুলেশন
                   calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
               }
           }
@@ -357,7 +359,7 @@ io.on("connection", (socket) => {
       };
 
       io.emit("receive_location", liveUpdate); 
-      console.log(`[OK] Train: ${targetTrainId} | Delay: ${calculatedDelayMinutes}m | Index: ${targetIndex}`);
+      console.log(`[LIVE] Train: ${targetTrainId} | Delay: ${calculatedDelayMinutes}m | Index: ${targetIndex}`);
 
     } catch (err) {
       console.error("Socket Update Error:", err.message);
