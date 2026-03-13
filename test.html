@@ -1,136 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Train Data Simulator</title>
-
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainKoi - Live Data Injector</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 
-<body style="font-family: Arial, sans-serif; padding: 30px; line-height: 1.6;">
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5;">
 
-<h2>🚆 Train Tracking Test Tool</h2>
+    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <h2 style="color: #006a4e; text-align: center;">🚆 TrainKoi Data Injector</h2>
+        <hr>
 
-<div style="margin-bottom:20px;">
-<strong>Server Status:</strong>
-<span id="status" style="color:orange;">Connecting...</span>
-</div>
+        <div style="margin: 20px 0; padding: 10px; border-radius: 8px; background: #e8f5e9; text-align: center;">
+            <strong>Server Status:</strong> 
+            <span id="status" style="color:orange; font-weight: bold;">Connecting...</span>
+        </div>
 
-<button id="sendBtn"
-style="padding:12px 24px;
-font-size:16px;
-cursor:pointer;
-background:#007bff;
-color:white;
-border:none;
-border-radius:5px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            <div>
+                <label>Train ID:</label>
+                <input type="number" id="trainId" value="794" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label>Station Index:</label>
+                <input type="number" id="index" value="1" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label>Speed (KM/H):</label>
+                <input type="number" id="speed" value="45" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label>Progress (%):</label>
+                <input type="number" id="progress" value="20" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="grid-column: span 2;">
+                <label style="color: #d32f2f; font-weight: bold;">Manual Delay (Minutes):</label>
+                <input type="number" id="manualDelay" placeholder="৪৫ মিনিট লেট দেখাতে চাইলে এখানে ৪৫ লিখুন" style="width: 100%; padding: 8px; margin-top: 5px; border: 2px solid #006a4e; border-radius: 4px;">
+                <small style="color: #666;">*ফাঁকা রাখলে অটো ক্যালকুলেট হবে</small>
+            </div>
+        </div>
 
-Send Live Data (Train 793)
+        <button id="sendBtn" style="width: 100%; padding: 15px; font-size: 16px; cursor: pointer; background: #006a4e; color: white; border: none; border-radius: 8px; font-weight: bold;">
+            🚀 Send Live Update
+        </button>
 
-</button>
+        <div style="margin-top: 25px;">
+            <strong>Console Logs:</strong>
+            <div id="log" style="background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 250px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap;"></div>
+        </div>
+    </div>
 
-<div style="margin-top:30px;">
+    <script>
+        const SERVER_URL = "https://train-koi.onrender.com"; 
+        const socket = io(SERVER_URL, { transports: ['websocket'] });
 
-<strong>Console Logs:</strong>
+        const statusEl = document.getElementById("status");
+        const logEl = document.getElementById("log");
+        const btn = document.getElementById("sendBtn");
 
-<div id="log"
-style="
-background:#f4f4f4;
-padding:15px;
-border:1px solid #ddd;
-height:300px;
-overflow-y:auto;
-font-family:monospace;
-white-space:pre-wrap;
-margin-top:10px;
-">
-</div>
+        socket.on("connect", () => {
+            statusEl.innerText = "Connected ✅";
+            statusEl.style.color = "green";
+            addLog("System: Connected to Render Server");
+        });
 
-</div>
+        socket.on("connect_error", (err) => {
+            statusEl.innerText = "Connection Failed ❌";
+            statusEl.style.color = "red";
+            addLog("Error: " + err.message);
+        });
 
-<script>
+        btn.addEventListener("click", () => {
+            const manualDelayInput = document.getElementById('manualDelay').value;
+            
+            const data = {
+                trainId: parseInt(document.getElementById('trainId').value),
+                lat: 25.8940, // পঞ্চগড়/ঠাকুরগাঁও এরিয়া
+                lng: 88.4320,
+                speed: parseInt(document.getElementById('speed').value),
+                index: parseInt(document.getElementById('index').value),
+                progress: parseInt(document.getElementById('progress').value),
+                // ম্যানুয়াল ডিলে থাকলে সেটি পাঠাবে, না থাকলে null
+                manualDelay: manualDelayInput !== "" ? parseInt(manualDelayInput) : null
+            };
 
-// ======================
-// SERVER CONNECTION
-// ======================
+            socket.emit("send_location", data);
+            addLog("Sent >> " + JSON.stringify(data));
+        });
 
-const socket = io("http://localhost:5001");
+        socket.on("receive_location", (data) => {
+            addLog("Received << Delay: " + data.delay + "m | Speed: " + data.speed + "km/h");
+        });
 
-const statusEl = document.getElementById("status");
-const logEl = document.getElementById("log");
-const btn = document.getElementById("sendBtn");
-
-// ======================
-// CONNECTION CHECK
-// ======================
-
-socket.on("connect", () => {
-
-statusEl.innerText = "Connected ✅";
-statusEl.style.color = "green";
-
-addLog("System: Connected to Render Server");
-
-});
-
-socket.on("connect_error", (err) => {
-
-statusEl.innerText = "Connection Failed ❌";
-statusEl.style.color = "red";
-
-addLog("Connection Error: " + err.message);
-
-});
-
-// ======================
-// SEND TEST DATA
-// ======================
-
-btn.addEventListener("click", () => {
-
-const testData = {
-trainId: 758,
-  "trainId": 758,
-  "lat": 25.6542, // চিরিরবন্দর ও দিনাজপুরের মাঝখানের পজিশন
-  "lng": 88.7900,
-  "speed": 70,    // খুব কম স্পিড দিলে ডিলে বাড়বে
-  "index": 5,     // দিনাজপুর (শিডিউল ০৯:৩৬ AM)
-  "progress": 50
-  
-};
-
-socket.emit("send_location", testData);
-
-addLog("Sent to Server:\n" + JSON.stringify(testData, null, 2));
-
-});
-
-// ======================
-// RECEIVE DATA
-// ======================
-
-socket.on("receive_location", (data) => {
-
-addLog("Received from Server:\n" + JSON.stringify(data, null, 2));
-
-});
-
-// ======================
-// LOG FUNCTION
-// ======================
-
-function addLog(message) {
-
-const time = new Date().toLocaleTimeString();
-
-logEl.innerText += `[${time}] ${message}\n------------------------\n`;
-
-logEl.scrollTop = logEl.scrollHeight;
-
-}
-
-</script>
-
+        function addLog(message) {
+            const time = new Date().toLocaleTimeString();
+            logEl.innerText += `[${time}] ${message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+    </script>
 </body>
 </html>

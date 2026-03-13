@@ -231,7 +231,6 @@ const io = new Server(server, {
 const parseToMinutes = (timeStr) => {
   if (!timeStr || ["START", "END", "---"].includes(timeStr)) return null;
   
-  // স্পেস বা অতিরিক্ত ক্যারেক্টার ক্লিন করা
   const cleanTime = timeStr.trim().toLowerCase();
   const match = cleanTime.match(/(\d+):(\d+)\s*(am|pm)/);
   
@@ -281,24 +280,30 @@ io.on("connection", (socket) => {
 
   socket.on("send_location", async (data) => {
     try {
-      const { trainId, lat, lng, speed, index, progress } = data;
+      // ১. ইনপুট ডাটা রিসিভ করা (manualDelay সহ)
+      const { trainId, lat, lng, speed, index, progress, manualDelay } = data;
       let calculatedDelayMinutes = 0; 
       
       const trainStaticInfo = trains.find(t => t.id === parseInt(trainId));
       
-      // বর্তমান বাংলাদেশ সময় বের করা (সার্ভার যেখানেই থাকুক)
+      // ২. বর্তমান বাংলাদেশ সময় (Asia/Dhaka) বের করা
       const now = new Date();
       const bdtString = now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" });
       const bdtDate = new Date(bdtString);
       const currentTotalMin = (bdtDate.getHours() * 60) + bdtDate.getMinutes();
+
+      // ৩. ডিলে ক্যালকুলেশন লজিক
       
-      if (trainStaticInfo) {
+      // ক) যদি ম্যানুয়াল ডিলে পাঠানো হয় (manualDelay null বা undefined না হলে)
+      if (manualDelay !== null && manualDelay !== undefined && manualDelay !== "") {
+          calculatedDelayMinutes = parseInt(manualDelay);
+      } 
+      // খ) যদি ম্যানুয়াল ডিলে না থাকে, তবে অটো ক্যালকুলেট করবে
+      else if (trainStaticInfo) {
           const currentIndex = parseInt(index) || 0;
           const currentStation = trainStaticInfo.stations[currentIndex];
 
           if (currentStation) {
-              // ট্রেনের বর্তমান স্টেশনের নির্ধারিত সময় বের করা
-              // যদি arrival "START" থাকে তবে departure ধরবে, নাহলে arrival ধরবে
               const schedTimeStr = (currentStation.arrival === "START" || !currentStation.arrival) 
                                    ? currentStation.departure 
                                    : currentStation.arrival;
@@ -306,17 +311,14 @@ io.on("connection", (socket) => {
               const scheduledMin = parseToMinutes(schedTimeStr);
               
               if (scheduledMin !== null) {
-                  // গাণিতিক পার্থক্য (Current Time - Scheduled Time)
                   let diff = currentTotalMin - scheduledMin;
 
-                  // দিনের পরিবর্তন (Midnight adjustment)
-                  // উদাহরণ: শিডিউল ১১:৩০ পিএম, বর্তমান সময় ১২:১০ এএম
+                  // Midnight adjustment (দিনের পরিবর্তন হ্যান্ডেল করা)
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
 
-                  // স্পিড রিকভারি লজিক: ট্রেন যদি লেট থাকে এবং স্পিড ৫০ এর বেশি হয়
+                  // স্পিড রিকভারি লজিক: ট্রেন লেট থাকলে এবং স্পিড ৫০+ হলে
                   if (diff > 0 && speed > 50) {
-                      // প্রতি ৫ কিমি অতিরিক্ত স্পিডের জন্য ২ মিনিট করে ডিলে কমানো (কাল্পনিক রিকভারি)
                       const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
                       diff = Math.max(0, diff - recoveryFactor);
                   }
@@ -326,7 +328,7 @@ io.on("connection", (socket) => {
           }
       }
 
-      // MongoDB আপডেট পে-লোড
+      // ৪. ডাটাবেজ আপডেট পে-লোড তৈরি
       const updatePayload = {
         "lastLocation.lat": parseFloat(lat), 
         "lastLocation.lng": parseFloat(lng),
@@ -337,14 +339,14 @@ io.on("connection", (socket) => {
         speed: parseFloat(speed) || 0
       };
 
-      // ডাটাবেজে আপডেট করা
+      // ৫. MongoDB তে ডাটা সেভ/আপডেট করা
       const updatedTrain = await Train.findOneAndUpdate(
         { trainId: parseInt(trainId) }, 
         { $set: updatePayload },
         { upsert: true, new: true } 
       );
 
-      // ফ্রন্টএন্ডে ডাটা ব্রডকাস্ট করা
+      // ৬. সকেট ইমিট: সব কানেক্টেড ক্লায়েন্টকে আপডেট পাঠানো
       io.emit("receive_location", {
         trainId: updatedTrain.trainId,
         lat: updatedTrain.lastLocation.lat,
@@ -356,7 +358,7 @@ io.on("connection", (socket) => {
         updatedAt: updatedTrain.lastLocation.updatedAt
       }); 
 
-      console.log(`[OK] Train: ${trainId} | BDT: ${bdtDate.getHours()}:${bdtDate.getMinutes()} | Delay: ${calculatedDelayMinutes}m`);
+      console.log(`[OK] Train: ${trainId} | Delay: ${calculatedDelayMinutes}m | Speed: ${speed}`);
 
     } catch (err) {
       console.error("Socket Error:", err.message);
@@ -366,16 +368,15 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("Disconnected:", socket.id));
 });
 
-// পোর্ট সেটআপ
+// সার্ভার পোর্ট
 const PORT = process.env.PORT || 5001; 
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-// রেন্ডার সার্ভারকে জাগিয়ে রাখার জন্য সেলফ-পিং (প্রতি ১০ মিনিট পর পর)
+// রেন্ডার সার্ভারকে স্লিপ মোড থেকে বাঁচাতে সেলফ-পিং
 setInterval(async () => {
   try { 
-    // এখানে আপনার নিজের রেন্ডার ইউআরএলটি নিশ্চিত করুন
     await axios.get('https://train-koi.onrender.com/ping'); 
   } catch (e) {
-    console.log("Keep-alive ping failed");
+    // পিং ফেইল করলে সাইলেন্টলি ইগনোর করবে
   }
 }, 10 * 60 * 1000);
