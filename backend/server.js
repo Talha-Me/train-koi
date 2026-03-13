@@ -203,8 +203,16 @@ const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
 
-// শিডিউল ডাটা ইমপোর্ট
-const { trains } = require('../src/data/trainData'); 
+// --- ডাটা ইমপোর্ট লজিক (ESM সাপোর্ট করার জন্য সংশোধিত) ---
+let trains = [];
+try {
+  const dataImport = require('../src/data/trainData');
+  // আপনার ফাইলে export const trains থাকায় ডাটাটি .trains এর ভেতরে থাকে
+  trains = dataImport.trains || dataImport.default || dataImport;
+  console.log("✅ Train Data Loaded. Total Trains:", Array.isArray(trains) ? trains.length : "Error: Not an array");
+} catch (err) {
+  console.error("❌ Error Loading trainData.js:", err.message);
+}
 
 dotenv.config();
 connectDB();
@@ -226,11 +234,10 @@ const io = new Server(server, {
 
 const parseToMinutes = (timeStr) => {
   if (!timeStr) return null;
-  // START, END, বা --- থাকলে সেটি সরাসরি ধরা যাবে না, তাই সেগুলোকে হ্যান্ডেল করা হয়েছে
   const normalizedTime = timeStr.toString().toLowerCase().trim();
   if (normalizedTime === "start" || normalizedTime === "end" || normalizedTime === "---") return null;
 
-  // Regex updated to be more flexible with spaces
+  // AM/PM ফরম্যাট হ্যান্ডেল করার জন্য Regex
   const match = normalizedTime.match(/(\d+):(\d+)\s*(am|pm)/);
   if (!match) return null;
 
@@ -252,16 +259,7 @@ app.get('/api/train-location/:trainId', async (req, res) => {
       return res.status(404).json({ message: "No live data found for this train" });
     }
     
-    res.json({
-      trainId: trainData.trainId,
-      lat: trainData.lastLocation.lat,
-      lng: trainData.lastLocation.lng,
-      speed: trainData.speed,
-      delay: trainData.delay,
-      index: trainData.currentStationIndex,
-      progress: trainData.progress,
-      updatedAt: trainData.lastLocation.updatedAt
-    });
+    res.json(trainData);
   } catch (error) {
     console.error("API Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -291,15 +289,15 @@ io.on("connection", (socket) => {
   socket.on("send_location", async (data) => {
     try {
       const { trainId, lat, lng, speed, index, progress } = data;
-      const targetTrainId = parseInt(trainId);
-      const targetIndex = parseInt(index) || 0;
+      
+      // টাইপ নিশ্চিত করার জন্য Number ব্যবহার করা হয়েছে
+      const targetTrainId = Number(trainId);
+      const targetIndex = Number(index) || 0;
       
       let calculatedDelayMinutes = 0; 
       
-      // DEBUG: চেক করা ডাটা আদৌ আসছে কি না
-      console.log(`[DEBUG] Received Data for Train: ${targetTrainId}, Index: ${targetIndex}`);
-
-      const trainStaticInfo = trains.find(t => t.id === targetTrainId);
+      // ট্রেনের স্ট্যাটিক ডাটা খুঁজে বের করা
+      const trainStaticInfo = trains.find(t => Number(t.id) === targetTrainId);
       
       if (trainStaticInfo) {
           const nowInDhaka = moment().tz("Asia/Dhaka");
@@ -307,7 +305,6 @@ io.on("connection", (socket) => {
           
           const currentStation = trainStaticInfo.stations[targetIndex];
           if (currentStation) {
-              // শিডিউল টাইম সিলেকশন লজিক
               const schedTimeStr = (currentStation.arrival === "START" || !currentStation.arrival || currentStation.arrival === "---") 
                                    ? currentStation.departure 
                                    : currentStation.arrival;
@@ -317,6 +314,7 @@ io.on("connection", (socket) => {
               if (scheduledMin !== null) {
                   let diff = currentTotalMin - scheduledMin;
 
+                  // দিন পরিবর্তনের লজিক (Day Cross Fix)
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
 
@@ -327,15 +325,8 @@ io.on("connection", (socket) => {
                   }
 
                   calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
-                  console.log(`[DEBUG] Time: ${nowInDhaka.format('HH:mm')}, Sched: ${schedTimeStr}, Delay: ${calculatedDelayMinutes}`);
-              } else {
-                  console.log(`[DEBUG] parseToMinutes failed for: ${schedTimeStr}`);
               }
-          } else {
-              console.log(`[DEBUG] Station not found at index: ${targetIndex}`);
           }
-      } else {
-          console.log(`[DEBUG] Train ID ${targetTrainId} not found in trainData.js`);
       }
 
       const updatePayload = {
@@ -366,7 +357,7 @@ io.on("connection", (socket) => {
       };
 
       io.emit("receive_location", liveUpdate); 
-      console.log(`[OK] Train: ${targetTrainId} | Delay: ${calculatedDelayMinutes}m`);
+      console.log(`[OK] Train: ${targetTrainId} | Delay: ${calculatedDelayMinutes}m | Index: ${targetIndex}`);
 
     } catch (err) {
       console.error("Socket Update Error:", err.message);
@@ -381,11 +372,12 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
+// Self-ping to keep Render awake
 setInterval(async () => {
   try { 
     await axios.get('https://train-koi.onrender.com/ping'); 
     console.log('Self-ping: Awake');
   } catch (e) {
-    console.error('Ping failed');
+    // console.error('Ping failed');
   }
 }, 12 * 60 * 1000);
