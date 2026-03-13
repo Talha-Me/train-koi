@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Train Data Simulator</title>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+</head>
+
+<body style="font-family: Arial, sans-serif; padding: 30px; line-height: 1.6;">
+
+<h2>🚆 Train Tracking Test Tool</h2>
+
+<div style="margin-bottom:20px;">
+<strong>Server Status:</strong>
+<span id="status" style="color:orange;">Connecting...</span>
+</div>
+
+<button id="sendBtn"
+style="padding:12px 24px;
+font-size:16px;
+cursor:pointer;
+background:#007bff;
+color:white;
+border:none;
+border-radius:5px;">
+
+Send Live Data (Train 793)
+
+</button>
+
+<div style="margin-top:30px;">
+
+<strong>Console Logs:</strong>
+
+<div id="log"
+style="
+background:#f4f4f4;
+padding:15px;
+border:1px solid #ddd;
+height:300px;
+overflow-y:auto;
+font-family:monospace;
+white-space:pre-wrap;
+margin-top:10px;
+">
+</div>
+
+</div>
+
+<script>
+
+// ======================
+// SERVER CONNECTION
+// ======================
+
+const socket = io("http://localhost:5001");
+
+const statusEl = document.getElementById("status");
+const logEl = document.getElementById("log");
+const btn = document.getElementById("sendBtn");
+
+// ======================
+// CONNECTION CHECK
+// ======================
+
+socket.on("connect", () => {
+
+statusEl.innerText = "Connected ✅";
+statusEl.style.color = "green";
+
+addLog("System: Connected to Render Server");
+
+});
+
+socket.on("connect_error", (err) => {
+
+statusEl.innerText = "Connection Failed ❌";
+statusEl.style.color = "red";
+
+addLog("Connection Error: " + err.message);
+
+});
+
+// ======================
+// SEND TEST DATA
+// ======================
+
+btn.addEventListener("click", () => {
+
+const testData = {
+trainId: 758,
+  "trainId": 758,
+  "lat": 25.6542, // চিরিরবন্দর ও দিনাজপুরের মাঝখানের পজিশন
+  "lng": 88.7900,
+  "speed": 70,    // খুব কম স্পিড দিলে ডিলে বাড়বে
+  "index": 5,     // দিনাজপুর (শিডিউল ০৯:৩৬ AM)
+  "progress": 50
+  
+};
+
+socket.emit("send_location", testData);
+
+addLog("Sent to Server:\n" + JSON.stringify(testData, null, 2));
+
+});
+
+// ======================
+// RECEIVE DATA
+// ======================
+
+socket.on("receive_location", (data) => {
+
+addLog("Received from Server:\n" + JSON.stringify(data, null, 2));
+
+});
+
+// ======================
+// LOG FUNCTION
+// ======================
+
+function addLog(message) {
+
+const time = new Date().toLocaleTimeString();
+
+logEl.innerText += `[${time}] ${message}\n------------------------\n`;
+
+logEl.scrollTop = logEl.scrollHeight;
+
+}
+
+</script>
+
+</body>
+</html>

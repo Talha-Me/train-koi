@@ -2171,7 +2171,11 @@ export const trains = [
   },
 ]
 
-// trainData.js এর একদম নিচে দিন (আগের সব exports মুছে)
+// ২. ডাটা চেক করার লগ (এটি ডাটা তৈরির পরেই আসবে)
+console.log("Trains Loaded:", trains ? trains.length : "No Data");
+
+// ৩. একদম শেষে CommonJS এক্সপোর্ট
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = { trains };
+    
 }
