@@ -203,12 +203,13 @@ const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
 
-// --- ডাটা ইমপোর্ট লজিক ---
+// --- ডাটা ইমপোর্ট লজিক (সব থেকে গুরুত্বপূর্ণ অংশ) ---
 let trains = [];
 try {
   const dataImport = require('../src/data/trainData');
+  // export const trains ব্যবহার করলে সেটি .trains এ থাকে, অন্যথায় সরাসরি আসে
   trains = dataImport.trains || dataImport.default || dataImport;
-  console.log("✅ Train Data Loaded. Total Trains:", Array.isArray(trains) ? trains.length : "Error: Not an array");
+  console.log("✅ Train Data Loaded. Total Trains:", Array.isArray(trains) ? trains.length : 0);
 } catch (err) {
   console.error("❌ Error Loading trainData.js:", err.message);
 }
@@ -229,11 +230,11 @@ const io = new Server(server, {
   }
 });
 
-// --- HELPERS (FIXED & IMPROVED) ---
+// --- HELPERS (Bulletproof Parsing) ---
 
 const parseToMinutes = (timeStr) => {
   if (!timeStr) return null;
-  // সব স্পেস মুছে ছোট হাতের অক্ষরে কনভার্ট করা হচ্ছে যাতে কোনো ফরম্যাটেই ভুল না হয়
+  // সময়ের মাঝখানের সব স্পেস মুছে ছোট হাতের অক্ষরে কনভার্ট করা হচ্ছে
   const t = timeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
   if (t === "start" || t === "end" || t === "---") return null;
 
@@ -295,7 +296,7 @@ io.on("connection", (socket) => {
               if (scheduledMin !== null) {
                   let diff = currentTotalMin - scheduledMin;
 
-                  // Day cross fix (রাত ১২টার হিসাব)
+                  // দিন পরিবর্তনের লজিক (Day Cross Fix)
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
 
@@ -307,8 +308,8 @@ io.on("connection", (socket) => {
 
                   calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
                   
-                  // DEBUG LOG FOR YOU
-                  console.log(`[CALC] ID: ${targetTrainId} | Sched: ${schedTimeStr} (${scheduledMin}m) | Now: ${currentTotalMin}m | Delay: ${calculatedDelayMinutes}m`);
+                  // রেন্ডার লগে ডিবাগিং ডাটা দেখাবে
+                  console.log(`[CALC] ID: ${targetTrainId} | Index: ${targetIndex} | Sched: ${schedTimeStr} | Delay: ${calculatedDelayMinutes}m`);
               }
           }
       }
@@ -339,8 +340,6 @@ io.on("connection", (socket) => {
         progress: updatedTrain.progress,
         updatedAt: updatedTrain.lastLocation.updatedAt
       }); 
-
-      console.log(`[OK] Train: ${targetTrainId} | Delay: ${calculatedDelayMinutes}m`);
 
     } catch (err) {
       console.error("Socket Update Error:", err.message);
