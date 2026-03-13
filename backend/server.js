@@ -203,11 +203,10 @@ const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
 
-// --- ডাটা ইমপোর্ট লজিক (ESM সাপোর্ট করার জন্য সংশোধিত) ---
+// --- ডাটা ইমপোর্ট লজিক ---
 let trains = [];
 try {
   const dataImport = require('../src/data/trainData');
-  // আপনার ফাইলে export const trains থাকায় ডাটাটি .trains এর ভেতরে থাকে
   trains = dataImport.trains || dataImport.default || dataImport;
   console.log("✅ Train Data Loaded. Total Trains:", Array.isArray(trains) ? trains.length : "Error: Not an array");
 } catch (err) {
@@ -230,16 +229,16 @@ const io = new Server(server, {
   }
 });
 
-// --- HELPERS (FIXED REGEX & NORMALIZATION) ---
+// --- HELPERS (FIXED & IMPROVED) ---
 
 const parseToMinutes = (timeStr) => {
   if (!timeStr) return null;
-  // স্পেসগুলো সরিয়ে ছোট হাতের অক্ষর বানিয়ে ফেলা হচ্ছে যাতে Regex মিস না হয়
-  const normalizedTime = timeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
-  if (normalizedTime === "start" || normalizedTime === "end" || normalizedTime === "---") return null;
+  // সব স্পেস মুছে ছোট হাতের অক্ষরে কনভার্ট করা হচ্ছে যাতে কোনো ফরম্যাটেই ভুল না হয়
+  const t = timeStr.toString().toLowerCase().replace(/\s+/g, '').trim();
+  if (t === "start" || t === "end" || t === "---") return null;
 
-  // Regex-এ মাঝখানের ঐচ্ছিক স্পেস বা সরাসরি am/pm হ্যান্ডেল করা হয়েছে
-  const match = normalizedTime.match(/(\d+):(\d+)(am|pm)/);
+  // এটি 08:30am, 08:30 am বা 8:30am সব ফরম্যাট ধরবে
+  const match = t.match(/(\d+):(\d+)(am|pm)/);
   if (!match) return null;
 
   let [ , hrs, mins, mod] = match;
@@ -255,27 +254,10 @@ app.get('/api/train-location/:trainId', async (req, res) => {
   try {
     const { trainId } = req.params;
     const trainData = await Train.findOne({ trainId: parseInt(trainId) });
-    
-    if (!trainData || !trainData.lastLocation || !trainData.lastLocation.lat) {
-      return res.status(404).json({ message: "No live data found for this train" });
-    }
-    
+    if (!trainData) return res.status(404).json({ message: "No live data found" });
     res.json(trainData);
   } catch (error) {
-    console.error("API Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-app.post('/api/contact', async (req, res) => {
-  try {
-    const { name, email, subject, message } = req.body;
-    const newMessage = new Message({ name, email, subject, message });
-    await newMessage.save();
-    res.status(201).json({ success: true, message: "Message saved successfully!" });
-  } catch (error) {
-    console.error("Contact API Error:", error);
-    res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 });
 
@@ -290,14 +272,12 @@ io.on("connection", (socket) => {
   socket.on("send_location", async (data) => {
     try {
       const { trainId, lat, lng, speed, index, progress } = data;
-      
-      // টাইপ নিশ্চিত করার জন্য Number ব্যবহার করা হয়েছে
       const targetTrainId = Number(trainId);
       const targetIndex = Number(index) || 0;
       
       let calculatedDelayMinutes = 0; 
-      
-      // ট্রেনের স্ট্যাটিক ডাটা খুঁজে বের করা
+
+      // ট্রেনের ডাটা খুঁজে বের করা (Loose comparison for safety)
       const trainStaticInfo = trains.find(t => Number(t.id) === targetTrainId);
       
       if (trainStaticInfo) {
@@ -315,18 +295,20 @@ io.on("connection", (socket) => {
               if (scheduledMin !== null) {
                   let diff = currentTotalMin - scheduledMin;
 
-                  // দিন পরিবর্তনের লজিক (Day Cross Fix)
+                  // Day cross fix (রাত ১২টার হিসাব)
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
 
-                  // স্পিড রিকভারি লজিক (৫ কোয়ালিটি রিকভারি)
+                  // স্পিড রিকভারি লজিক
                   if (diff > 0 && speed > 50) {
                       const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
                       diff = Math.max(0, diff - recoveryFactor);
                   }
 
-                  // ফাইনাল ডিলে ক্যালকুলেশন
                   calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
+                  
+                  // DEBUG LOG FOR YOU
+                  console.log(`[CALC] ID: ${targetTrainId} | Sched: ${schedTimeStr} (${scheduledMin}m) | Now: ${currentTotalMin}m | Delay: ${calculatedDelayMinutes}m`);
               }
           }
       }
@@ -347,7 +329,7 @@ io.on("connection", (socket) => {
         { upsert: true, new: true } 
       );
 
-      const liveUpdate = {
+      io.emit("receive_location", {
         trainId: updatedTrain.trainId,
         lat: updatedTrain.lastLocation.lat,
         lng: updatedTrain.lastLocation.lng,
@@ -356,10 +338,9 @@ io.on("connection", (socket) => {
         index: updatedTrain.currentStationIndex,
         progress: updatedTrain.progress,
         updatedAt: updatedTrain.lastLocation.updatedAt
-      };
+      }); 
 
-      io.emit("receive_location", liveUpdate); 
-      console.log(`[LIVE] Train: ${targetTrainId} | Delay: ${calculatedDelayMinutes}m | Index: ${targetIndex}`);
+      console.log(`[OK] Train: ${targetTrainId} | Delay: ${calculatedDelayMinutes}m`);
 
     } catch (err) {
       console.error("Socket Update Error:", err.message);
@@ -370,16 +351,8 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 5001; 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-// Self-ping to keep Render awake
 setInterval(async () => {
-  try { 
-    await axios.get('https://train-koi.onrender.com/ping'); 
-    console.log('Self-ping: Awake');
-  } catch (e) {
-    // console.error('Ping failed');
-  }
+  try { await axios.get('https://train-koi.onrender.com/ping'); } catch (e) {}
 }, 12 * 60 * 1000);
