@@ -227,21 +227,29 @@ const io = new Server(server, {
 
 /**
  * সময়কে (hh:mm am/pm) মিনিটে রূপান্তর করার ফাংশন
+ * এটি আপনার trainData.js এর ফরম্যাট (যেমন: "12:50 pm") নিখুঁতভাবে রিড করবে
  */
 const parseToMinutes = (timeStr) => {
   if (!timeStr || ["START", "END", "---"].includes(timeStr)) return null;
-  const cleanTime = timeStr.trim().toLowerCase();
-  const match = cleanTime.match(/(\d+):(\d+)\s*(am|pm)/);
-  if (!match) return null;
   
-  let [ , hrs, mins, mod] = match;
-  let h = parseInt(hrs);
-  let m = parseInt(mins);
-  
-  if (mod === 'pm' && h < 12) h += 12;
-  if (mod === 'am' && h === 12) h = 0;
-  
-  return h * 60 + m;
+  try {
+    const cleanTime = timeStr.trim().toLowerCase();
+    // Regex টি এমনভাবে সেট করা যাতে am/pm এর আগে স্পেস থাকলেও কাজ করে
+    const match = cleanTime.match(/(\d+):(\d+)\s*(am|pm)/);
+    
+    if (!match) return null;
+    
+    let hrs = parseInt(match[1]);
+    let mins = parseInt(match[2]);
+    let mod = match[3];
+    
+    if (mod === 'pm' && hrs < 12) hrs += 12;
+    if (mod === 'am' && hrs === 12) hrs = 0;
+    
+    return hrs * 60 + mins;
+  } catch (e) {
+    return null;
+  }
 };
 
 // --- API Routes ---
@@ -278,20 +286,17 @@ io.on("connection", (socket) => {
 
   socket.on("send_location", async (data) => {
     try {
-      const { trainId, lat, lng, speed, index, progress } = data;
+      const { trainId, lat, lng, speed, index, progress, manualDelay } = data;
       let calculatedDelayMinutes = 0; 
       
       const trainStaticInfo = trains.find(t => t.id === parseInt(trainId));
       
+      // ১. টাইমজোন ফিক্স (সার্ভার যেখানেই থাকুক BDT বের করবে)
+      const now = new Date();
+      const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+      const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
+
       if (trainStaticInfo) {
-          // ১. টাইমজোন ফিক্স (Force BDT - Manual Offset)
-          // রেন্ডার সার্ভার লিনাক্সে কাজ করার সময় এটিই সবচেয়ে নিরাপদ উপায়
-          const now = new Date();
-          const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-          const bdtTime = new Date(utcTime + (3600000 * 6)); // UTC+6 (Bangladesh)
-          
-          const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
-          
           const currentIndex = parseInt(index) || 0;
           const currentStation = trainStaticInfo.stations[currentIndex];
 
@@ -321,7 +326,12 @@ io.on("connection", (socket) => {
           }
       }
 
-      // ৫. ডাটাবেজ আপডেট পে-লোড
+      // ৫. ম্যানুয়াল ডিলে থাকলে সেটি অগ্রাধিকার পাবে (Override)
+      if (manualDelay !== null && manualDelay !== undefined && manualDelay !== "") {
+          calculatedDelayMinutes = parseInt(manualDelay);
+      }
+
+      // ৬. ডাটাবেজ আপডেট পে-লোড
       const updatePayload = {
         "lastLocation.lat": parseFloat(lat), 
         "lastLocation.lng": parseFloat(lng),
@@ -332,14 +342,14 @@ io.on("connection", (socket) => {
         speed: parseFloat(speed) || 0
       };
 
-      // ৬. ডাটাবেজে সেভ করা (findOneAndUpdate ব্যবহার করে ডাটা রিপ্লেস হবে না, জাস্ট আপডেট হবে)
+      // ৭. ডাটাবেজে সেভ করা
       const updatedTrain = await Train.findOneAndUpdate(
         { trainId: parseInt(trainId) }, 
         { $set: updatePayload },
         { upsert: true, new: true } 
       );
 
-      // ৭. সব ক্লায়েন্টকে আপডেট পাঠানো
+      // ৮. সব ক্লায়েন্টকে আপডেট ব্রডকাস্ট করা
       io.emit("receive_location", {
         trainId: updatedTrain.trainId,
         lat: updatedTrain.lastLocation.lat,
@@ -351,7 +361,7 @@ io.on("connection", (socket) => {
         updatedAt: updatedTrain.lastLocation.updatedAt
       }); 
 
-      console.log(`[OK] Train: ${trainId} | BDT Time: ${Math.floor(currentTotalMin/60)}:${currentTotalMin%60} | Delay: ${calculatedDelayMinutes}m`);
+      console.log(`[OK] Train: ${trainId} | BDT: ${bdtTime.getHours()}:${bdtTime.getMinutes()} | Delay: ${calculatedDelayMinutes}m`);
 
     } catch (err) {
       console.error("Socket Error:", err.message);
@@ -361,15 +371,12 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => console.log("Disconnected:", socket.id));
 });
 
-// পোর্ট সেটআপ
 const PORT = process.env.PORT || 5001; 
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-// রেন্ডার সার্ভার জাগিয়ে রাখতে সেলফ-পিং
+// Self-Ping to keep Render alive
 setInterval(async () => {
   try { 
     await axios.get('https://train-koi.onrender.com/ping'); 
-  } catch (e) {
-    // Ping failed
-  }
+  } catch (e) {}
 }, 10 * 60 * 1000);
