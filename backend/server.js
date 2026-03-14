@@ -198,13 +198,21 @@ const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path'); // পাথ হ্যান্ডলিংয়ের জন্য
 const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
 
-// ডাটা ইমপোর্ট ফিক্স
-const trainDataModule = require('../src/data/trainData'); 
-const trains = trainDataModule.trains || trainDataModule;
+// ডাটা ইমপোর্ট - একদম সলিড পাথ ফিক্স
+const trainDataPath = path.join(__dirname, '../src/data/trainData.js');
+let trains = [];
+try {
+    const importedData = require(trainDataPath);
+    trains = importedData.trains || importedData;
+    console.log("✅ Train Data Loaded Successfully. Total Trains:", trains.length);
+} catch (error) {
+    console.error("❌ Critical Error: Could not load trainData.js from", trainDataPath);
+}
 
 dotenv.config();
 connectDB();
@@ -218,7 +226,7 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
-// --- Helper: Strict Time Parser ---
+// --- Helper: Time Parser ---
 const parseToMinutes = (timeStr) => {
   if (!timeStr || typeof timeStr !== 'string' || ["START", "END", "---"].includes(timeStr)) return null;
   const match = timeStr.toLowerCase().match(/(\d+):(\d+)\s*(am|pm)/);
@@ -237,15 +245,17 @@ io.on("connection", (socket) => {
       const { trainId, lat, lng, speed, index, progress, manualDelay } = data;
       let calculatedDelay = 0; 
 
-      // ১. বর্তমান বিডি টাইম (Strict Force)
+      // ১. বিডি টাইম (Force BDT)
       const now = new Date();
       const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
       const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
 
-      // ২. ট্রেন ডাটা চেক
+      // ২. ট্রেন ডাটা ফিল্টার
       const trainStaticInfo = trains.find(t => t.id === parseInt(trainId));
       
-      if (trainStaticInfo) {
+      if (!trainStaticInfo) {
+          console.log(`⚠️ Warning: Train ID ${trainId} not found in database!`);
+      } else {
           const currentIndex = parseInt(index) || 0;
           const currentStation = trainStaticInfo.stations[currentIndex];
 
@@ -254,12 +264,11 @@ io.on("connection", (socket) => {
                                ? currentStation.departure : currentStation.arrival;
               
               const scheduledMin = parseToMinutes(schedStr);
-              
               if (scheduledMin !== null) {
                   let diff = currentTotalMin - scheduledMin;
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
-
+                  
                   // স্পিড রিকভারি
                   if (diff > 0 && speed > 50) {
                       const recovery = Math.floor((speed - 50) / 5) * 2;
@@ -270,12 +279,12 @@ io.on("connection", (socket) => {
           }
       }
 
-      // ৩. ফাইনাল ভ্যালু ডিটারমাইন (Manual vs Calculated)
-      let finalDelayValue = (manualDelay !== null && manualDelay !== undefined && manualDelay !== "") 
-                            ? parseInt(manualDelay) 
-                            : calculatedDelay;
+      // ৩. ফাইনাল ভ্যালু (No undefined allowed)
+      const finalDelayValue = (manualDelay !== null && manualDelay !== undefined && manualDelay !== "") 
+                              ? parseInt(manualDelay) 
+                              : (calculatedDelay || 0);
 
-      // ৪. ডাটাবেজ আপডেট (Payload Validation)
+      // ৪. ডাটাবেজ আপডেট
       const updatePayload = {
         "lastLocation.lat": parseFloat(lat) || 0, 
         "lastLocation.lng": parseFloat(lng) || 0,
@@ -286,13 +295,13 @@ io.on("connection", (socket) => {
         speed: parseFloat(speed) || 0
       };
 
-      const updatedTrain = await Train.findOneAndUpdate(
+      await Train.findOneAndUpdate(
         { trainId: parseInt(trainId) }, 
         { $set: updatePayload },
         { upsert: true, new: true } 
-      ).lean(); // lean() ব্যবহার করলে ডাটা পড়া সহজ হয়
+      );
 
-      // ৫. এমিত (Emit) করার সময় সরাসরি ভেরিয়েবল ব্যবহার করুন
+      // ৫. এমিত (Emit) সরাসরি ভেরিয়েবল থেকে
       io.emit("receive_location", {
         trainId: parseInt(trainId),
         lat: updatePayload["lastLocation.lat"],
@@ -303,18 +312,15 @@ io.on("connection", (socket) => {
         progress: updatePayload.progress
       }); 
 
-      console.log(`Live Update: Train ${trainId} - Speed: ${speed} - Delay: ${finalDelayValue}`);
+      console.log(`[LIVE UPDATE] Train: ${trainId} | Speed: ${speed} | Delay: ${finalDelayValue}m`);
 
     } catch (err) {
-      console.error("Socket Error:", err.message);
+      console.error("❌ Socket Error:", err.message);
     }
   });
 });
 
 const PORT = process.env.PORT || 5001; 
-server.listen(PORT, () => console.log(`🚀 Server running on ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 app.get('/ping', (req, res) => res.send('pong'));
-setInterval(async () => {
-  try { await axios.get('https://train-koi.onrender.com/ping'); console.log("Self-ping successful"); } catch (e) {}
-}, 10 * 60 * 1000);
