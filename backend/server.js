@@ -254,7 +254,6 @@ const formatDelay = (min) => {
 // ১. API Routes
 // ==========================================
 
-// রুট রাউট
 app.get('/', (req, res) => {
   res.send('TrainKoi Backend Server is Running...');
 });
@@ -275,7 +274,7 @@ app.get('/api/train-location/:trainId', async (req, res) => {
       lng: trainData.lastLocation?.lng,
       speed: trainData.speed || 0,
       delay: trainData.delay || 0,
-      delayText: formatDelay(trainData.delay || 0), // API তেও টেক্সট ফরম্যাট পাঠানো হলো
+      delayText: formatDelay(trainData.delay || 0),
       updatedAt: trainData.lastLocation?.updatedAt,
       index: trainData.currentStationIndex || 0
     });
@@ -295,37 +294,44 @@ io.on("connection", (socket) => {
   socket.on("send_location", async (data) => {
     try {
       const { trainId, lat, lng, speed, index, manualDelay } = data;
-      let calcDelay = 0;
+      let calculatedDelayMinutes = 0;
       const tidString = String(trainId);
 
+      // টাইমজোন ফিক্স (BD Time)
       const now = new Date();
-      const bdt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
-      const currentMin = (bdt.getHours() * 60) + bdt.getMinutes();
+      const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+      const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
 
       if (trainsDataMap[tidString]) {
         const station = trainsDataMap[tidString].stations[parseInt(index) || 0];
         if (station) {
           const schedTimeStr = (station.arrival === "START") ? station.departure : station.arrival;
-          const schedMin = parseToMinutes(schedTimeStr);
-          if (schedMin !== null) {
-            let diff = currentMin - schedMin;
+          const scheduledMin = parseToMinutes(schedTimeStr);
+          
+          if (scheduledMin !== null) {
+            let diff = currentTotalMin - scheduledMin;
+
+            // দিনের পরিবর্তন (Midnight) হ্যান্ডেল করা
             if (diff < -720) diff += 1440;
             if (diff > 720) diff -= 1440;
-            
-            calcDelay = diff > 0 ? Math.round(diff) : 0;
 
-            // --- গতিভিত্তিক ডিলে অ্যাডজাস্টমেন্ট (Smart ETA) ---
-            // যদি ট্রেনের গতি ৫০ কিমি/ঘণ্টার বেশি হয়, তবে প্রতি মিনিটে আমরা সামান্য ডিলে কভার করার লজিক দিচ্ছি
-            if (speed > 50 && calcDelay > 0) {
-              const recoveryFactor = Math.floor(speed / 60); // স্পিড যত বেশি, রিকভারি তত বাড়বে
-              calcDelay = Math.max(0, calcDelay - recoveryFactor);
+            // --- স্পিড বাড়লে দেরি কমানোর লজিক (Recovery Logic) ---
+            if (diff > 0) {
+              if (speed > 50) {
+                // স্পিড ৫০ এর বেশি হলে প্রতি ৫ কিমি গতির জন্য ২ মিনিট রিকভারি ফ্যাক্টর
+                const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
+                diff = diff - recoveryFactor;
+              }
             }
+
+            calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
           }
         }
       }
 
+      // ম্যানুয়াল ডিলে থাকলে সেটাই প্রায়োরিটি পাবে, নাহলে ক্যালকুলেটেড ডিলে
       const finalDelay = (manualDelay !== undefined && manualDelay !== null && manualDelay !== "") 
-                         ? parseInt(manualDelay) : calcDelay;
+                         ? parseInt(manualDelay) : calculatedDelayMinutes;
 
       const updateObj = {
         "lastLocation.lat": parseFloat(lat) || 0,
@@ -366,7 +372,7 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => console.log(`🚀 Server on port ${PORT}`));
 
-// ১২ মিনিট পর পর সেলফ-পিং
+// ১২ মিনিট পর পর সেলফ-পিং (Server জিন্দা রাখার জন্য)
 const SELF_URL = 'https://train-koi.onrender.com/ping';
 
 setInterval(async () => {
