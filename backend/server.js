@@ -242,16 +242,24 @@ const parseToMinutes = (timeStr) => {
   return h * 60 + m;
 };
 
+// মিনিটকে "1h 10m" ফরম্যাটে রূপান্তর করার ফাংশন
+const formatDelay = (min) => {
+  if (min <= 0) return "On Time";
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+};
+
 // ==========================================
-// ১. API Routes (যা আপনার কোডে ছিল না)
+// ১. API Routes
 // ==========================================
 
-// রুট রাউট (যাতে Cannot GET / না দেখায়)
+// রুট রাউট
 app.get('/', (req, res) => {
   res.send('TrainKoi Backend Server is Running...');
 });
 
-// ট্রেনের বর্তমান লোকেশন পাওয়ার API
+// ট্রেনের বর্তমান লোকেশন পাওয়ার API
 app.get('/api/train-location/:trainId', async (req, res) => {
   try {
     const trainId = parseInt(req.params.trainId);
@@ -261,13 +269,13 @@ app.get('/api/train-location/:trainId', async (req, res) => {
       return res.status(404).json({ message: "Train not found in database" });
     }
     
-    // ফ্রন্টেন্ডের ফরম্যাট অনুযায়ী ডাটা পাঠানো
     res.json({
       trainId: trainData.trainId,
       lat: trainData.lastLocation?.lat,
       lng: trainData.lastLocation?.lng,
       speed: trainData.speed || 0,
       delay: trainData.delay || 0,
+      delayText: formatDelay(trainData.delay || 0), // API তেও টেক্সট ফরম্যাট পাঠানো হলো
       updatedAt: trainData.lastLocation?.updatedAt,
       index: trainData.currentStationIndex || 0
     });
@@ -303,7 +311,15 @@ io.on("connection", (socket) => {
             let diff = currentMin - schedMin;
             if (diff < -720) diff += 1440;
             if (diff > 720) diff -= 1440;
+            
             calcDelay = diff > 0 ? Math.round(diff) : 0;
+
+            // --- গতিভিত্তিক ডিলে অ্যাডজাস্টমেন্ট (Smart ETA) ---
+            // যদি ট্রেনের গতি ৫০ কিমি/ঘণ্টার বেশি হয়, তবে প্রতি মিনিটে আমরা সামান্য ডিলে কভার করার লজিক দিচ্ছি
+            if (speed > 50 && calcDelay > 0) {
+              const recoveryFactor = Math.floor(speed / 60); // স্পিড যত বেশি, রিকভারি তত বাড়বে
+              calcDelay = Math.max(0, calcDelay - recoveryFactor);
+            }
           }
         }
       }
@@ -332,6 +348,7 @@ io.on("connection", (socket) => {
         lng: updateObj["lastLocation.lng"],
         speed: updateObj.speed,
         delay: finalDelay,
+        delayText: formatDelay(finalDelay), // ফ্রন্টেন্ডের জন্য "1h 10m" ফরম্যাট
         updatedAt: updateObj["lastLocation.updatedAt"],
         index: updateObj.currentStationIndex
       });
@@ -349,8 +366,7 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => console.log(`🚀 Server on port ${PORT}`));
 
-// Self-ping to keep server alive
-// ১২ মিনিট পর পর সেলফ-পিং (১২ মিনিট = ৭২০,০০০ মিলিসেকেন্ড)
+// ১২ মিনিট পর পর সেলফ-পিং
 const SELF_URL = 'https://train-koi.onrender.com/ping';
 
 setInterval(async () => {
@@ -360,4 +376,4 @@ setInterval(async () => {
   } catch (err) {
     console.error(`[Self-Ping] Error: ${err.message}`);
   }
-}, 720000); // ১২ * ৬০ * ১০০০
+}, 720000);

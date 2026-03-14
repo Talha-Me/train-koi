@@ -1096,7 +1096,13 @@ useEffect(() => {
           <div style={{ background: 'white', borderRadius: '24px', padding: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', borderBottom: '1px solid #f1f5f9', paddingBottom: '15px' }}>
               <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontSize: '20px', fontWeight: '900', color: activeState.speed < 5 ? '#ef4444' : '#006a4e' }}>{activeState.speed}</div><div style={{ fontSize: '10px', color: '#888' }}>গতি (KM/H)</div></div>
-              <div style={{ textAlign: 'center', flex: 1, borderLeft: '1px solid #eee' }}><div style={{ fontSize: '20px', fontWeight: '900', color: '#ef4444' }}>{activeState.delay}</div><div style={{ fontSize: '10px', color: '#888' }}>ট্রেনটি দেরিতে চলছে (MIN)</div></div>
+              <div style={{ textAlign: 'center', flex: 1, borderLeft: '1px solid #eee' }}>
+  <div style={{ fontSize: '18px', fontWeight: '900', color: '#ef4444' }}>
+    {/* ব্যাকএন্ড থেকে আসা delayText দেখাবে, না থাকলে আগের মতো মিনিট দেখাবে */}
+    {liveData?.delayText || (activeState.delay + " MIN")}
+  </div>
+  <div style={{ fontSize: '10px', color: '#888' }}>ট্রেনটি দেরিতে চলছে</div>
+</div>
               <div style={{ textAlign: 'center', flex: 1, borderLeft: '1px solid #eee' }}><div style={{ fontSize: '20px', fontWeight: '900', color: '#3b82f6' }}>{stats?.distNext}</div><div style={{ fontSize: '10px', color: '#888' }}>পরবর্তী স্টেশনে যেতে বাকি (KM)</div></div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
