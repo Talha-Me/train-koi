@@ -3,118 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrainKoi - Live Data Injector</title>
+    <title>TrainKoi - Master Admin Injector</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        :root { --primary: #006a4e; --secondary: #f4f4f9; --dark: #1e293b; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--secondary); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--dark); font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; margin-top: 10px; }
+        button:hover { background: #004d39; transform: translateY(-2px); }
+        #status { font-weight: bold; padding: 8px; border-radius: 5px; display: inline-block; margin-bottom: 20px; font-size: 13px; }
+        .log-container { background: #1e1e2e; color: #a5f3fc; padding: 15px; border-radius: 8px; height: 400px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; }
+        .train-badge { background: #e8f5e9; color: var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        .helper-text { font-size: 11px; color: #666; margin-top: 4px; }
+    </style>
 </head>
+<body>
 
-<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5;">
+<div class="container">
+    <div class="card">
+        <h2>🚆 Master Admin Injector</h2>
+        <div id="status" style="background: #fff3e0; color: #e65100;">Connecting to Server...</div>
 
-    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-        <h2 style="color: #006a4e; text-align: center;">🚆 TrainKoi Live Injector</h2>
-        <p style="text-align: center; font-size: 14px; color: #555;">পঞ্চগড় এক্সপ্রেস (৭৯৪) - অটো ক্যালকুলেশন টেস্ট</p>
-        <hr>
-
-        <div style="margin: 20px 0; padding: 10px; border-radius: 8px; background: #e8f5e9; text-align: center;">
-            <strong>Server Status:</strong> 
-            <span id="status" style="color:orange; font-weight: bold;">Connecting...</span>
+        <div class="form-group">
+            <label>Select Train (বা ID লিখুন):</label>
+            <input list="train-list" id="trainInput" placeholder="যেমন: 794 বা Panchagarh Express" onchange="updateTrainInfo()">
+            <datalist id="train-list">
+                <option value="794">794 - Panchagarh Express</option>
+                <option value="701">701 - Suborno Express</option>
+                <option value="765">765 - Nilsagar Express</option>
+                <option value="803">803 - Kurigram Express</option>
+                </datalist>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-            <div>
-                <label>Train ID:</label>
-                <input type="number" id="trainId" value="794" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+        <div class="grid">
+            <div class="form-group">
+                <label>Latitude:</label>
+                <input type="text" id="lat" placeholder="23.1234">
             </div>
-            <div>
+            <div class="form-group">
+                <label>Longitude:</label>
+                <input type="text" id="lng" placeholder="89.1234">
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="form-group">
+                <label>Speed (km/h):</label>
+                <input type="number" id="speed" value="0">
+            </div>
+            <div class="form-group">
                 <label>Current Station Index:</label>
-                <select id="index" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="0">পঞ্চগড় (12:10 PM)</option>
-                    <option value="1" selected>ঠাকুরগাঁও (12:50 PM)</option>
-                    <option value="2">পীরগঞ্জ (01:20 PM)</option>
-                    <option value="3">দিনাজপুর (02:12 PM)</option>
-                    <option value="4">পার্বতীপুর (03:00 PM)</option>
-                </select>
-            </div>
-            
-            <div>
-                <label>Latitude (Lat):</label>
-                <input type="text" id="lat" value="26.0339" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-            <div>
-                <label>Longitude (Lng):</label>
-                <input type="text" id="lng" value="88.4617" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-
-            <div>
-                <label>Speed (KM/H):</label>
-                <input type="number" id="speed" value="45" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-            <div>
-                <label>Progress (%):</label>
-                <input type="number" id="progress" value="50" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-            <div style="grid-column: span 2;">
-                <label style="color: #d32f2f; font-weight: bold;">Manual Delay Override:</label>
-                <input type="number" id="manualDelay" placeholder="ফাঁকা রাখলে সার্ভার অটো ক্যালকুলেট করবে" style="width: 100%; padding: 8px; margin-top: 5px; border: 2px solid #006a4e; border-radius: 4px;">
+                <input type="number" id="index" value="0">
+                <div class="helper-text">0=প্রথম স্টেশন, 1=দ্বিতীয়...</div>
             </div>
         </div>
 
-        <button id="sendBtn" style="width: 100%; padding: 15px; font-size: 16px; cursor: pointer; background: #006a4e; color: white; border: none; border-radius: 8px; font-weight: bold;">
-            🚀 Send Live Update
-        </button>
+        <div class="form-group">
+            <label style="color: #c2410c;">Manual Delay (ঐচ্ছিক):</label>
+            <input type="number" id="manualDelay" placeholder="ফাঁকা রাখলে সার্ভার অটো হিসাব করবে">
+        </div>
 
-        <div style="margin-top: 25px;">
-            <strong>Injection Logs:</strong>
-            <div id="log" style="background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap;"></div>
+        <button id="sendBtn">🚀 Inject Live Location</button>
+        
+        <div style="margin-top: 15px; font-size: 13px; color: #666;">
+            <strong>Pro Tip:</strong> Google Maps থেকে ল্যাট-লং কপি করে এখানে বসান। 
         </div>
     </div>
 
-    <script>
-        const SERVER_URL = "https://train-koi.onrender.com"; 
-        const socket = io(SERVER_URL, { transports: ['websocket'] });
+    <div class="card">
+        <h3 style="margin-top:0">Live Logs</h3>
+        <div id="log" class="log-container"></div>
+        <button onclick="clearLogs()" style="background:#475569; padding: 8px; font-size: 12px; margin-top: 10px;">Clear Logs</button>
+    </div>
+</div>
 
-        const statusEl = document.getElementById("status");
-        const logEl = document.getElementById("log");
-        const btn = document.getElementById("sendBtn");
+<script>
+    const SERVER_URL = "https://train-koi.onrender.com"; 
+    const socket = io(SERVER_URL, { transports: ['websocket'] });
 
-        socket.on("connect", () => {
-            statusEl.innerText = "Connected ✅";
-            statusEl.style.color = "green";
-            addLog("System: Connected to Render Server");
-        });
+    const statusEl = document.getElementById("status");
+    const logEl = document.getElementById("log");
+    const btn = document.getElementById("sendBtn");
 
-        socket.on("connect_error", (err) => {
-            statusEl.innerText = "Connection Failed ❌";
-            statusEl.style.color = "red";
-            addLog("Error: " + err.message);
-        });
+    // কানেকশন হ্যান্ডেলিং
+    socket.on("connect", () => {
+        statusEl.innerText = "Connected to Render ✅";
+        statusEl.style.background = "#e8f5e9";
+        statusEl.style.color = "#2e7d32";
+        addLog("System: Backend connection established.");
+    });
 
-        btn.addEventListener("click", () => {
-            const manualDelayInput = document.getElementById('manualDelay').value;
-            
-            const data = {
-                trainId: parseInt(document.getElementById('trainId').value),
-                lat: parseFloat(document.getElementById('lat').value), 
-                lng: parseFloat(document.getElementById('lng').value),
-                speed: parseInt(document.getElementById('speed').value),
-                index: parseInt(document.getElementById('index').value),
-                progress: parseInt(document.getElementById('progress').value),
-                // যদি ইনপুট খালি থাকে তবে null পাঠাবে যাতে সার্ভার অটো ক্যালকুলেট করে
-                manualDelay: manualDelayInput === "" ? null : parseInt(manualDelayInput)
-            };
+    socket.on("connect_error", (err) => {
+        statusEl.innerText = "Disconnected ❌";
+        statusEl.style.background = "#ffebee";
+        statusEl.style.color = "#c62828";
+        addLog("Error: " + err.message);
+    });
 
-            socket.emit("send_location", data);
-            addLog("Sent >> " + JSON.stringify(data));
-        });
+    // ডাটা পাঠানোর লজিক
+    btn.addEventListener("click", () => {
+        const trainInput = document.getElementById('trainInput').value;
+        const trainId = parseInt(trainInput.split(' ')[0]); // ID বের করা
 
-        socket.on("receive_location", (data) => {
-            addLog("Server Response << Delay: " + data.delay + "m | Speed: " + data.speed + "km/h");
-        });
-
-        function addLog(message) {
-            const time = new Date().toLocaleTimeString();
-            logEl.innerText += `[${time}] ${message}\n`;
-            logEl.scrollTop = logEl.scrollHeight;
+        if(!trainId) {
+            alert("দয়া করে সঠিক Train ID দিন");
+            return;
         }
-    </script>
+
+        const data = {
+            trainId: trainId,
+            lat: parseFloat(document.getElementById('lat').value) || 0, 
+            lng: parseFloat(document.getElementById('lng').value) || 0,
+            speed: parseInt(document.getElementById('speed').value) || 0,
+            index: parseInt(document.getElementById('index').value) || 0,
+            manualDelay: document.getElementById('manualDelay').value === "" ? null : parseInt(document.getElementById('manualDelay').value)
+        };
+
+        socket.emit("send_location", data);
+        addLog(`Sent [${trainId}] >> Lat: ${data.lat}, Lng: ${data.lng}, Speed: ${data.speed}`);
+    });
+
+    socket.on("receive_location", (data) => {
+        addLog(`Success [${data.trainId}] << Delay: ${data.delayText} | Server Updated.`);
+    });
+
+    function addLog(msg) {
+        const time = new Date().toLocaleTimeString();
+        logEl.innerHTML += `<div><span style="color:#64748b">[${time}]</span> ${msg}</div>`;
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLogs() { logEl.innerHTML = ""; }
+
+    function updateTrainInfo() {
+        const val = document.getElementById('trainInput').value;
+        addLog("Selected Train: " + val);
+    }
+</script>
+
 </body>
 </html>

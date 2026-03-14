@@ -2169,6 +2169,8 @@ export const trains = [
       { name: "বুড়িমারী (Burimari)", arrival: "09:45 pm", departure: "END", km: 564 }
     ]
   },
+  
+  
 ]
 
 // ২. ডাটা চেক করার লগ (এটি ডাটা তৈরির পরেই আসবে)
