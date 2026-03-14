@@ -218,20 +218,19 @@ const io = new Server(server, {
 const trainsDataMap = {
   "794": {
     stations: [
-      { arrival: "START", departure: "12:10 pm" }, // Index 0: পঞ্চগড়
-      { arrival: "12:50 pm", departure: "12:55 pm" }, // Index 1: ঠাকুরগাঁও
-      { arrival: "01:20 pm", departure: "01:23 pm" }, // Index 2: পীরগঞ্জ
-      { arrival: "02:12 pm", departure: "02:20 pm" }, // Index 3: দিনাজপুর
-      { arrival: "03:00 pm", departure: "03:20 pm" }, // Index 4: পার্বতীপুর
-      { arrival: "04:13 pm", departure: "04:16 pm" }, // Index 5: জয়পুরহাট
-      { arrival: "04:50 pm", departure: "04:55 pm" }, // Index 6: সান্তাহার
-      { arrival: "05:36 pm", departure: "05:39 pm" }, // Index 7: নাটোর
-      { arrival: "10:10 pm", departure: "END" }      // Index 8: ঢাকা
+      { arrival: "START", departure: "12:10 pm" },
+      { arrival: "12:50 pm", departure: "12:55 pm" },
+      { arrival: "01:20 pm", departure: "01:23 pm" },
+      { arrival: "02:12 pm", departure: "02:20 pm" },
+      { arrival: "03:00 pm", departure: "03:20 pm" },
+      { arrival: "04:13 pm", departure: "04:16 pm" },
+      { arrival: "04:50 pm", departure: "04:55 pm" },
+      { arrival: "05:36 pm", departure: "05:39 pm" },
+      { arrival: "10:10 pm", departure: "END" }
     ]
   }
 };
 
-// --- Strict Time Parser ---
 const parseToMinutes = (timeStr) => {
   if (!timeStr || typeof timeStr !== 'string' || ["START", "END", "---"].includes(timeStr)) return null;
   const match = timeStr.toLowerCase().match(/(\d+):(\d+)\s*(am|pm)/);
@@ -243,29 +242,63 @@ const parseToMinutes = (timeStr) => {
   return h * 60 + m;
 };
 
-// --- Socket logic ---
+// ==========================================
+// ১. API Routes (যা আপনার কোডে ছিল না)
+// ==========================================
+
+// রুট রাউট (যাতে Cannot GET / না দেখায়)
+app.get('/', (req, res) => {
+  res.send('TrainKoi Backend Server is Running...');
+});
+
+// ট্রেনের বর্তমান লোকেশন পাওয়ার API
+app.get('/api/train-location/:trainId', async (req, res) => {
+  try {
+    const trainId = parseInt(req.params.trainId);
+    const trainData = await Train.findOne({ trainId: trainId });
+    
+    if (!trainData) {
+      return res.status(404).json({ message: "Train not found in database" });
+    }
+    
+    // ফ্রন্টেন্ডের ফরম্যাট অনুযায়ী ডাটা পাঠানো
+    res.json({
+      trainId: trainData.trainId,
+      lat: trainData.lastLocation?.lat,
+      lng: trainData.lastLocation?.lng,
+      speed: trainData.speed || 0,
+      delay: trainData.delay || 0,
+      updatedAt: trainData.lastLocation?.updatedAt,
+      index: trainData.currentStationIndex || 0
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/ping', (req, res) => res.send('pong'));
+
+// ==========================================
+// ২. Socket logic
+// ==========================================
 io.on("connection", (socket) => {
-  console.log("New Client:", socket.id);
+  console.log("New Client Connected:", socket.id);
 
   socket.on("send_location", async (data) => {
     try {
-      const { trainId, lat, lng, speed, index, progress, manualDelay } = data;
-      
+      const { trainId, lat, lng, speed, index, manualDelay } = data;
       let calcDelay = 0;
       const tidString = String(trainId);
 
-      // ১. বাংলাদেশ সময় বের করা
       const now = new Date();
       const bdt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
       const currentMin = (bdt.getHours() * 60) + bdt.getMinutes();
 
-      // ২. ডিলে ক্যালকুলেশন
       if (trainsDataMap[tidString]) {
         const station = trainsDataMap[tidString].stations[parseInt(index) || 0];
         if (station) {
           const schedTimeStr = (station.arrival === "START") ? station.departure : station.arrival;
           const schedMin = parseToMinutes(schedTimeStr);
-          
           if (schedMin !== null) {
             let diff = currentMin - schedMin;
             if (diff < -720) diff += 1440;
@@ -275,48 +308,56 @@ io.on("connection", (socket) => {
         }
       }
 
-      // ৩. ফাইনাল ডিলে (Manual vs Auto)
-      const finalDelay = (manualDelay !== null && manualDelay !== undefined && manualDelay !== "") 
+      const finalDelay = (manualDelay !== undefined && manualDelay !== null && manualDelay !== "") 
                          ? parseInt(manualDelay) : calcDelay;
 
-      // ৪. ডাটাবেজ আপডেট
       const updateObj = {
         "lastLocation.lat": parseFloat(lat) || 0,
         "lastLocation.lng": parseFloat(lng) || 0,
         "lastLocation.updatedAt": new Date(),
         delay: finalDelay,
         currentStationIndex: parseInt(index) || 0,
-        progress: parseFloat(progress) || 0,
         speed: parseFloat(speed) || 0
       };
 
       await Train.findOneAndUpdate(
         { trainId: parseInt(trainId) },
         { $set: updateObj },
-        { upsert: true }
+        { upsert: true, new: true }
       );
 
-      // ৫. ব্রডকাস্ট (সরাসরি ভ্যালু পাঠানো)
       io.emit("receive_location", {
         trainId: parseInt(trainId),
         lat: updateObj["lastLocation.lat"],
         lng: updateObj["lastLocation.lng"],
         speed: updateObj.speed,
         delay: finalDelay,
-        index: updateObj.currentStationIndex,
-        progress: updateObj.progress
+        updatedAt: updateObj["lastLocation.updatedAt"],
+        index: updateObj.currentStationIndex
       });
 
-      console.log(`[LIVE] Train ${trainId} | Delay: ${finalDelay}m | BDT: ${bdt.getHours()}:${bdt.getMinutes()}`);
-
     } catch (err) {
-      console.error("Error:", err.message);
+      console.error("Socket Error:", err.message);
     }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client Disconnected");
   });
 });
 
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => console.log(`🚀 Server on port ${PORT}`));
 
-app.get('/ping', (req, res) => res.send('pong'));
-setInterval(() => axios.get('https://train-koi.onrender.com/ping').catch(()=>{}), 600000);
+// Self-ping to keep server alive
+// ১২ মিনিট পর পর সেলফ-পিং (১২ মিনিট = ৭২০,০০০ মিলিসেকেন্ড)
+const SELF_URL = 'https://train-koi.onrender.com/ping';
+
+setInterval(async () => {
+  try {
+    const response = await axios.get(SELF_URL);
+    console.log(`[Self-Ping] Status: ${response.status} - Server kept alive at ${new Date().toLocaleString()}`);
+  } catch (err) {
+    console.error(`[Self-Ping] Error: ${err.message}`);
+  }
+}, 720000); // ১২ * ৬০ * ১০০০
