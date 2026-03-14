@@ -202,9 +202,9 @@ const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
 
-// ডাটা ইমপোর্ট করার আগে কনসোল করে চেক করবো ফাইল পাচ্ছে কি না
-const trainDataFile = require('../src/data/trainData'); 
-const trains = trainDataFile.trains || trainDataFile; 
+// শিডিউল ডাটা ইমপোর্ট - পাথ হ্যান্ডলিং ফিক্স
+const trainDataImport = require('../src/data/trainData'); 
+const trains = trainDataImport.trains || trainDataImport;
 
 dotenv.config();
 connectDB();
@@ -212,48 +212,63 @@ connectDB();
 const app = express();
 app.use(cors());
 app.use(express.json());
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
-// --- Strict Parser ---
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] }
+});
+
+// --- Helper: Time Parser ---
 const parseToMinutes = (timeStr) => {
   if (!timeStr || typeof timeStr !== 'string' || ["START", "END", "---"].includes(timeStr)) return null;
   const match = timeStr.toLowerCase().match(/(\d+):(\d+)\s*(am|pm)/);
   if (!match) return null;
+  
   let hrs = parseInt(match[1]);
   let mins = parseInt(match[2]);
-  if (match[3] === 'pm' && hrs < 12) hrs += 12;
-  if (match[3] === 'am' && hrs === 12) hrs = 0;
-  return hrs * 60 + mins;
+  let mod = match[3];
+  
+  if (mod === 'pm' && hrs < 12) hrs += 12;
+  if (mod === 'am' && hrs === 12) hrs = 0;
+  
+  return (hrs * 60) + mins;
 };
 
-// --- Socket Logic ---
+// --- API Routes ---
+app.get('/api/train-location/:trainId', async (req, res) => {
+  try {
+    const trainData = await Train.findOne({ trainId: parseInt(req.params.trainId) });
+    if (!trainData) return res.status(404).json({ message: "Not found" });
+    res.json(trainData);
+  } catch (error) { res.status(500).send("Error"); }
+});
+
+app.get('/', (req, res) => res.send("Server Running..."));
+app.get('/ping', (req, res) => res.send('pong'));
+
+// --- Socket.io Logic ---
 io.on("connection", (socket) => {
   socket.on("send_location", async (data) => {
     try {
       const { trainId, lat, lng, speed, index, progress, manualDelay } = data;
-      let calculatedDelayMinutes = 0; 
+      let finalDelay = 0; 
 
-      // ১. ট্রেনের ডাটা খুঁজে দেখা
       const trainStaticInfo = trains.find(t => t.id === parseInt(trainId));
       
-      if (!trainStaticInfo) {
-          console.log(`❌ Error: Train ID ${trainId} not found in trainData.js`);
-      } else {
-          // ২. বাংলাদেশ টাইম ক্যালকুলেশন (Strict UTC+6)
+      if (trainStaticInfo) {
+          // ১. টাইমজোন ফিক্স (BD Time)
           const now = new Date();
-          const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-          const bdt = new Date(utc + (3600000 * 6)); 
-          const currentTotalMin = (bdt.getHours() * 60) + bdt.getMinutes();
+          const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+          const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
 
           const currentIndex = parseInt(index) || 0;
           const currentStation = trainStaticInfo.stations[currentIndex];
 
           if (currentStation) {
-              const schedTimeStr = (currentStation.arrival === "START" || !currentStation.arrival) 
-                                   ? currentStation.departure : currentStation.arrival;
+              const schedStr = (currentStation.arrival === "START" || !currentStation.arrival) 
+                               ? currentStation.departure : currentStation.arrival;
               
-              const scheduledMin = parseToMinutes(schedTimeStr);
+              const scheduledMin = parseToMinutes(schedStr);
               
               if (scheduledMin !== null) {
                   let diff = currentTotalMin - scheduledMin;
@@ -265,19 +280,22 @@ io.on("connection", (socket) => {
                       const recovery = Math.floor((speed - 50) / 5) * 2;
                       diff = Math.max(0, diff - recovery);
                   }
-                  calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
-                  
-                  console.log(`✅ Success: Train ${trainId} | BDT: ${bdt.getHours()}:${bdt.getMinutes()} | Sched: ${schedTimeStr} | Delay: ${calculatedDelayMinutes}`);
+                  finalDelay = diff > 0 ? Math.round(diff) : 0;
               }
           }
       }
 
-      // ৩. ডাটাবেজ আপডেট
+      // ২. ম্যানুয়াল ডিলে চেক
+      if (manualDelay !== null && manualDelay !== undefined && manualDelay !== "") {
+          finalDelay = parseInt(manualDelay);
+      }
+
+      // ৩. ডাটাবেজ আপডেট নিশ্চিত করা
       const updatePayload = {
-        "lastLocation.lat": parseFloat(lat), 
-        "lastLocation.lng": parseFloat(lng),
+        "lastLocation.lat": parseFloat(lat) || 0, 
+        "lastLocation.lng": parseFloat(lng) || 0,
         "lastLocation.updatedAt": new Date(),
-        delay: manualDelay !== null ? parseInt(manualDelay) : calculatedDelayMinutes, 
+        delay: finalDelay, // এখানে ০ বা ক্যালকুলেটেড ভ্যালু থাকবেই (undefined হওয়ার সুযোগ নেই)
         currentStationIndex: parseInt(index) || 0,
         progress: parseFloat(progress) || 0,
         speed: parseFloat(speed) || 0
@@ -289,15 +307,18 @@ io.on("connection", (socket) => {
         { upsert: true, new: true } 
       );
 
+      // ৪. ক্লায়েন্টকে ডাটা পাঠানো
       io.emit("receive_location", {
         trainId: updatedTrain.trainId,
         lat: updatedTrain.lastLocation.lat,
         lng: updatedTrain.lastLocation.lng,
         speed: updatedTrain.speed,
-        delay: updatedTrain.delay, 
+        delay: updatedTrain.delay || 0, // সেফটি চেক
         index: updatedTrain.currentStationIndex,
         progress: updatedTrain.progress
       }); 
+
+      console.log(`Live Update: Train ${trainId} - Speed: ${speed} - Delay: ${finalDelay}`);
 
     } catch (err) {
       console.error("Socket Error:", err.message);
@@ -306,4 +327,8 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 5001; 
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Running on ${PORT}`));
+
+setInterval(async () => {
+  try { await axios.get('https://train-koi.onrender.com/ping'); } catch (e) {}
+}, 10 * 60 * 1000);
