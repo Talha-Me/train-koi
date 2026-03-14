@@ -202,154 +202,93 @@ const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
 
-// শিডিউল ডাটা ইমপোর্ট
-const { trains } = require('../src/data/trainData'); 
+// ডাটা ইমপোর্ট করার আগে কনসোল করে চেক করবো ফাইল পাচ্ছে কি না
+const trainDataFile = require('../src/data/trainData'); 
+const trains = trainDataFile.trains || trainDataFile; 
 
-// কনফিগারেশন
 dotenv.config();
 connectDB();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
-// সকেট ইনিশিয়লাইজেশন
-const io = new Server(server, {
-  cors: {
-    origin: "*", 
-    methods: ["GET", "POST"]
-  }
-});
-
-// --- Helpers ---
-
-/**
- * সময়কে (hh:mm am/pm) মিনিটে রূপান্তর করার ফাংশন
- * এটি আপনার trainData.js এর ফরম্যাট (যেমন: "12:50 pm") নিখুঁতভাবে রিড করবে
- */
+// --- Strict Parser ---
 const parseToMinutes = (timeStr) => {
-  if (!timeStr || ["START", "END", "---"].includes(timeStr)) return null;
-  
-  try {
-    const cleanTime = timeStr.trim().toLowerCase();
-    // Regex টি এমনভাবে সেট করা যাতে am/pm এর আগে স্পেস থাকলেও কাজ করে
-    const match = cleanTime.match(/(\d+):(\d+)\s*(am|pm)/);
-    
-    if (!match) return null;
-    
-    let hrs = parseInt(match[1]);
-    let mins = parseInt(match[2]);
-    let mod = match[3];
-    
-    if (mod === 'pm' && hrs < 12) hrs += 12;
-    if (mod === 'am' && hrs === 12) hrs = 0;
-    
-    return hrs * 60 + mins;
-  } catch (e) {
-    return null;
-  }
+  if (!timeStr || typeof timeStr !== 'string' || ["START", "END", "---"].includes(timeStr)) return null;
+  const match = timeStr.toLowerCase().match(/(\d+):(\d+)\s*(am|pm)/);
+  if (!match) return null;
+  let hrs = parseInt(match[1]);
+  let mins = parseInt(match[2]);
+  if (match[3] === 'pm' && hrs < 12) hrs += 12;
+  if (match[3] === 'am' && hrs === 12) hrs = 0;
+  return hrs * 60 + mins;
 };
 
-// --- API Routes ---
-
-app.get('/api/train-location/:trainId', async (req, res) => {
-  try {
-    const { trainId } = req.params;
-    const trainData = await Train.findOne({ trainId: parseInt(trainId) });
-    if (!trainData) return res.status(404).json({ message: "No data found" });
-    res.json(trainData);
-  } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-app.post('/api/contact', async (req, res) => {
-  try {
-    const { name, email, subject, message } = req.body;
-    const newMessage = new Message({ name, email, subject, message });
-    await newMessage.save();
-    res.status(201).json({ success: true });
-  } catch (error) {
-    res.status(500).json({ success: false });
-  }
-});
-
-app.get('/', (req, res) => res.send("Train Tracking Server is Running..."));
-app.get('/ping', (req, res) => res.send('pong'));
-
-// --- Socket.io Logic ---
-
+// --- Socket Logic ---
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
-
   socket.on("send_location", async (data) => {
     try {
       const { trainId, lat, lng, speed, index, progress, manualDelay } = data;
       let calculatedDelayMinutes = 0; 
-      
+
+      // ১. ট্রেনের ডাটা খুঁজে দেখা
       const trainStaticInfo = trains.find(t => t.id === parseInt(trainId));
       
-      // ১. টাইমজোন ফিক্স (সার্ভার যেখানেই থাকুক BDT বের করবে)
-      const now = new Date();
-      const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
-      const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
+      if (!trainStaticInfo) {
+          console.log(`❌ Error: Train ID ${trainId} not found in trainData.js`);
+      } else {
+          // ২. বাংলাদেশ টাইম ক্যালকুলেশন (Strict UTC+6)
+          const now = new Date();
+          const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+          const bdt = new Date(utc + (3600000 * 6)); 
+          const currentTotalMin = (bdt.getHours() * 60) + bdt.getMinutes();
 
-      if (trainStaticInfo) {
           const currentIndex = parseInt(index) || 0;
           const currentStation = trainStaticInfo.stations[currentIndex];
 
           if (currentStation) {
               const schedTimeStr = (currentStation.arrival === "START" || !currentStation.arrival) 
-                                   ? currentStation.departure 
-                                   : currentStation.arrival;
+                                   ? currentStation.departure : currentStation.arrival;
               
               const scheduledMin = parseToMinutes(schedTimeStr);
               
               if (scheduledMin !== null) {
-                  // ২. গাণিতিক পার্থক্য (Current Time - Scheduled Time)
                   let diff = currentTotalMin - scheduledMin;
-
-                  // ৩. টাইম লজিক অ্যাডজাস্টমেন্ট (Midnight adjustment)
                   if (diff < -720) diff += 1440; 
                   if (diff > 720) diff -= 1440;
 
-                  // ৪. স্পিড রিকভারি লজিক
+                  // স্পিড রিকভারি
                   if (diff > 0 && speed > 50) {
-                      const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
-                      diff = Math.max(0, diff - recoveryFactor);
+                      const recovery = Math.floor((speed - 50) / 5) * 2;
+                      diff = Math.max(0, diff - recovery);
                   }
-
                   calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
+                  
+                  console.log(`✅ Success: Train ${trainId} | BDT: ${bdt.getHours()}:${bdt.getMinutes()} | Sched: ${schedTimeStr} | Delay: ${calculatedDelayMinutes}`);
               }
           }
       }
 
-      // ৫. ম্যানুয়াল ডিলে থাকলে সেটি অগ্রাধিকার পাবে (Override)
-      if (manualDelay !== null && manualDelay !== undefined && manualDelay !== "") {
-          calculatedDelayMinutes = parseInt(manualDelay);
-      }
-
-      // ৬. ডাটাবেজ আপডেট পে-লোড
+      // ৩. ডাটাবেজ আপডেট
       const updatePayload = {
         "lastLocation.lat": parseFloat(lat), 
         "lastLocation.lng": parseFloat(lng),
         "lastLocation.updatedAt": new Date(),
-        delay: calculatedDelayMinutes, 
+        delay: manualDelay !== null ? parseInt(manualDelay) : calculatedDelayMinutes, 
         currentStationIndex: parseInt(index) || 0,
         progress: parseFloat(progress) || 0,
         speed: parseFloat(speed) || 0
       };
 
-      // ৭. ডাটাবেজে সেভ করা
       const updatedTrain = await Train.findOneAndUpdate(
         { trainId: parseInt(trainId) }, 
         { $set: updatePayload },
         { upsert: true, new: true } 
       );
 
-      // ৮. সব ক্লায়েন্টকে আপডেট ব্রডকাস্ট করা
       io.emit("receive_location", {
         trainId: updatedTrain.trainId,
         lat: updatedTrain.lastLocation.lat,
@@ -357,26 +296,14 @@ io.on("connection", (socket) => {
         speed: updatedTrain.speed,
         delay: updatedTrain.delay, 
         index: updatedTrain.currentStationIndex,
-        progress: updatedTrain.progress,
-        updatedAt: updatedTrain.lastLocation.updatedAt
+        progress: updatedTrain.progress
       }); 
-
-      console.log(`[OK] Train: ${trainId} | BDT: ${bdtTime.getHours()}:${bdtTime.getMinutes()} | Delay: ${calculatedDelayMinutes}m`);
 
     } catch (err) {
       console.error("Socket Error:", err.message);
     }
   });
-
-  socket.on("disconnect", () => console.log("Disconnected:", socket.id));
 });
 
 const PORT = process.env.PORT || 5001; 
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-// Self-Ping to keep Render alive
-setInterval(async () => {
-  try { 
-    await axios.get('https://train-koi.onrender.com/ping'); 
-  } catch (e) {}
-}, 10 * 60 * 1000);
