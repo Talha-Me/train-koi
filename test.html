@@ -10,7 +10,8 @@
 <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5;">
 
     <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-        <h2 style="color: #006a4e; text-align: center;">🚆 TrainKoi Data Injector</h2>
+        <h2 style="color: #006a4e; text-align: center;">🚆 TrainKoi Live Injector</h2>
+        <p style="text-align: center; font-size: 14px; color: #555;">পঞ্চগড় এক্সপ্রেস (৭৯৪) - অটো ক্যালকুলেশন টেস্ট</p>
         <hr>
 
         <div style="margin: 20px 0; padding: 10px; border-radius: 8px; background: #e8f5e9; text-align: center;">
@@ -24,21 +25,36 @@
                 <input type="number" id="trainId" value="794" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div>
-                <label>Station Index:</label>
-                <input type="number" id="index" value="1" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                <label>Current Station Index:</label>
+                <select id="index" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="0">পঞ্চগড় (12:10 PM)</option>
+                    <option value="1" selected>ঠাকুরগাঁও (12:50 PM)</option>
+                    <option value="2">পীরগঞ্জ (01:20 PM)</option>
+                    <option value="3">দিনাজপুর (02:12 PM)</option>
+                    <option value="4">পার্বতীপুর (03:00 PM)</option>
+                </select>
             </div>
+            
+            <div>
+                <label>Latitude (Lat):</label>
+                <input type="text" id="lat" value="26.0339" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div>
+                <label>Longitude (Lng):</label>
+                <input type="text" id="lng" value="88.4617" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
             <div>
                 <label>Speed (KM/H):</label>
                 <input type="number" id="speed" value="45" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div>
                 <label>Progress (%):</label>
-                <input type="number" id="progress" value="20" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="number" id="progress" value="50" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
             <div style="grid-column: span 2;">
-                <label style="color: #d32f2f; font-weight: bold;">Manual Delay (Minutes):</label>
-                <input type="number" id="manualDelay" placeholder="৪৫ মিনিট লেট দেখাতে চাইলে এখানে ৪৫ লিখুন" style="width: 100%; padding: 8px; margin-top: 5px; border: 2px solid #006a4e; border-radius: 4px;">
-                <small style="color: #666;">*ফাঁকা রাখলে অটো ক্যালকুলেট হবে</small>
+                <label style="color: #d32f2f; font-weight: bold;">Manual Delay Override:</label>
+                <input type="number" id="manualDelay" placeholder="ফাঁকা রাখলে সার্ভার অটো ক্যালকুলেট করবে" style="width: 100%; padding: 8px; margin-top: 5px; border: 2px solid #006a4e; border-radius: 4px;">
             </div>
         </div>
 
@@ -47,8 +63,8 @@
         </button>
 
         <div style="margin-top: 25px;">
-            <strong>Console Logs:</strong>
-            <div id="log" style="background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 250px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap;"></div>
+            <strong>Injection Logs:</strong>
+            <div id="log" style="background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; margin-top: 10px; white-space: pre-wrap;"></div>
         </div>
     </div>
 
@@ -77,13 +93,13 @@
             
             const data = {
                 trainId: parseInt(document.getElementById('trainId').value),
-                lat: 25.8940, // পঞ্চগড়/ঠাকুরগাঁও এরিয়া
-                lng: 88.4320,
+                lat: parseFloat(document.getElementById('lat').value), 
+                lng: parseFloat(document.getElementById('lng').value),
                 speed: parseInt(document.getElementById('speed').value),
                 index: parseInt(document.getElementById('index').value),
                 progress: parseInt(document.getElementById('progress').value),
-                // ম্যানুয়াল ডিলে থাকলে সেটি পাঠাবে, না থাকলে null
-                manualDelay: manualDelayInput !== "" ? parseInt(manualDelayInput) : null
+                // যদি ইনপুট খালি থাকে তবে null পাঠাবে যাতে সার্ভার অটো ক্যালকুলেট করে
+                manualDelay: manualDelayInput === "" ? null : parseInt(manualDelayInput)
             };
 
             socket.emit("send_location", data);
@@ -91,7 +107,7 @@
         });
 
         socket.on("receive_location", (data) => {
-            addLog("Received << Delay: " + data.delay + "m | Speed: " + data.speed + "km/h");
+            addLog("Server Response << Delay: " + data.delay + "m | Speed: " + data.speed + "km/h");
         });
 
         function addLog(message) {
