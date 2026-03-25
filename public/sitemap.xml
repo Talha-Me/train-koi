@@ -447,6 +447,40 @@
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  
+  <url>
+  <loc>https://www.trainkoi.com/schedule/suborno-express</loc>
+  <lastmod>2026-03-25</lastmod>
+  <changefreq>daily</changefreq>
+  <priority>0.9</priority>
+</url>
+
+  <url>
+    <loc>https://www.trainkoi.com/schedule/banglabandha-express</loc>
+    <lastmod>2026-03-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.trainkoi.com/schedule/sonar-bangla-express</loc>
+    <lastmod>2026-03-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.trainkoi.com/schedule/parjotak-express</loc>
+    <lastmod>2026-03-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.trainkoi.com/schedule/benapole-express</loc>
+    <lastmod>2026-03-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
 
   <url>
     <loc>https://www.trainkoi.com/schedule/burimari-express</loc>
@@ -454,6 +488,7 @@
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  
   <url>
     <loc>https://www.trainkoi.com/metro-rail</loc>
     <lastmod>2026-03-01</lastmod>
@@ -485,5 +520,234 @@
     <priority>0.9</priority>
   </url>
 
+<url>
+  <loc>https://www.trainkoi.com/track/751</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/752</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/757</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/758</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/793</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/794</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/797</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/798</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/771</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/772</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/765</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/766</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/805</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/806</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/769</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/770</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/775</loc>
+  <priority>1.0</priority>
+  <changefreq>always</changefreq>
+</url>
+<url><loc>https://www.trainkoi.com/track/776</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/791</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/792</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/707</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/708</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/709</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/710</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/711</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/712</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/713</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/714</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/717</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/718</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/719</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/720</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/721</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/722</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/723</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/724</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/729</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/730</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/735</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/736</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/737</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/738</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/739</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/740</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/741</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/742</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/745</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/746</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/749</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/750</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/767</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/768</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/773</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/774</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/777</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/778</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/781</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/782</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/785</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/786</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/715</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/716</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/725</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/726</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/727</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/728</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/731</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/732</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/733</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/734</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/747</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/748</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/753</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/754</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/755</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/756</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/759</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/760</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/761</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/762</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/763</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/764</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/743</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/744</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/703</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/704</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/813</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/814</loc><priority>1.0</priority></url>
+
+<url><loc>https://www.trainkoi.com/track/705</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/706</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/809</loc><priority>1.0</priority></url>
+<url><loc>https://www.trainkoi.com/track/810</loc><priority>1.0</priority></url>
+<url>
+  <loc>https://www.trainkoi.com/track/809</loc>
+  <priority>1.0</priority>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/810</loc>
+  <priority>1.0</priority>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/803</loc>
+  <priority>1.0</priority>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/804</loc>
+  <priority>1.0</priority>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/787</loc>
+  <priority>1.0</priority>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/788</loc>
+  <priority>1.0</priority>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/815</loc>
+  <priority>1.0</priority>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/816</loc>
+  <priority>1.0</priority>
+</url>
+
+<url>
+  <loc>https://www.trainkoi.com/track/795</loc>
+  <priority>1.0</priority>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/796</loc>
+  <priority>1.0</priority>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/701</loc>
+  <priority>1.0</priority>
+</url>
+<url>
+  <loc>https://www.trainkoi.com/track/702</loc>
+  <priority>1.0</priority>
+</url>
 
 </urlset>

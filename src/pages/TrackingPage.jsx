@@ -676,25 +676,26 @@ const TrackingPage = () => {
   const train = useMemo(() => trains.find(t => t.id === parseInt(trainId)), [trainId]);
 
   // --- Train title change korar code ---
-useEffect(() => {
-  const originalTitle = "Train Live Location | Train Tracking - TrainKoi";
-  let currentTitle = "Live Train Tracking & Location | TrainKoi";
-  
-  if (train) {
-    currentTitle = `${train.name} Live Location & Tracking | TrainKoi`;
-  }
-  
-  document.title = currentTitle;
+// --- Dynamic SEO Title Logic ---
+  useEffect(() => {
+    if (train) {
+      // ট্রেনের নাম (যেমন: কক্সবাজার এক্সপ্রেস) এবং আইডি (৭৫১) ব্যবহার করে টাইটেল
+      const trainName = train.name.split('(')[0].trim(); // ব্র্যাকেটের অংশ বাদ দিয়ে শুধু নাম
+      const dynamicTitle = `${trainId} Live Location | ${trainName} এখন কোথায়? - TrainKoi`;
+      
+      document.title = dynamicTitle;
 
-  const timer = setTimeout(() => {
-    document.title = currentTitle;
-  }, 150);
+      // React-এর রেন্ডারিংয়ের কারণে টাইটেল মাঝেমধ্যে রিসেট হতে পারে, তাই একটি ছোট বাফার
+      const timer = setTimeout(() => {
+        document.title = dynamicTitle;
+      }, 100);
 
-  return () => {
-    clearTimeout(timer);
-    document.title = originalTitle;
-  };
-}, [train, trainId]);
+      return () => {
+        clearTimeout(timer);
+        document.title = "Train Live Location | Train Tracking - TrainKoi";
+      };
+    }
+  }, [train, trainId]);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);

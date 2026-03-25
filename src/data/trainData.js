@@ -2169,6 +2169,192 @@ export const trains = [
       { name: "বুড়িমারী (Burimari)", arrival: "09:45 pm", departure: "END", km: 564 }
     ]
   },
+  // --- BANGLABANDHA EXPRESS (803 & 804) ---
+  {
+    id: 803,
+    name: "বাংলাবান্ধা এক্সপ্রেস (Banglabandha Express)",
+    from: "Rajshahi",
+    to: "Panchagarh",
+    offDay: "শুক্রবার",
+    stations: [
+      { name: "রাজশাহী (Rajshahi)", arrival: "START", departure: "09:00 pm", km: 0 },
+      { name: "আব্দুলপুর (Abdulpur)", arrival: "09:40 pm", departure: "10:00 pm", km: 26 },
+      { name: "নাটোর (Natore)", arrival: "10:17 pm", departure: "10:20 pm", km: 42 },
+      { name: "মাধনগর (Madhnagar)", arrival: "10:46 pm", departure: "10:48 pm", km: 68 },
+      { name: "আহসানগঞ্জ (Ahsanganj)", arrival: "10:57 pm", departure: "10:59 pm", km: 78 },
+      { name: "সান্তাহার (Santahar)", arrival: "11:21 pm", departure: "11:25 pm", km: 100 },
+      { name: "আক্কেলপুর (Akkelpur)", arrival: "11:45 pm", departure: "11:47 pm", km: 121 },
+      { name: "জয়পুরহাট (Joypurhat)", arrival: "12:02 am", departure: "12:04 am", km: 138 },
+      { name: "পাঁচবিবি (Panchbibi)", arrival: "12:15 am", departure: "12:17 am", km: 151 },
+      { name: "বিরামপুর (Birampur)", arrival: "12:37 am", departure: "12:40 am", km: 175 },
+      { name: "ফুলবাড়ী (Fulbari)", arrival: "12:58 am", departure: "01:01 am", km: 194 },
+      { name: "পার্বতীপুর (Parbatipur)", arrival: "01:30 am", departure: "01:50 am", km: 216 },
+      { name: "চিরিরবন্দর (Chirirbandar)", arrival: "02:05 am", departure: "02:07 am", km: 231 },
+      { name: "দিনাজপুর (Dinajpur)", arrival: "02:25 am", departure: "02:30 am", km: 247 },
+      { name: "সেতাবগঞ্জ (Setabganj)", arrival: "03:01 am", departure: "03:03 am", km: 275 },
+      { name: "পীরগঞ্জ (Pirganj)", arrival: "03:17 am", departure: "03:19 am", km: 290 },
+      { name: "শিবগঞ্জ (Shibganj)", arrival: "03:34 am", departure: "03:36 am", km: 304 },
+      { name: "ঠাকুরগাঁও রোড (Thakurgaon Road)", arrival: "03:43 am", departure: "03:47 am", km: 311 },
+      { name: "রুহিয়া (Ruhia)", arrival: "04:02 am", departure: "04:04 am", km: 326 },
+      { name: "কিসমত (Kismat)", arrival: "04:15 am", departure: "04:17 am", km: 337 },
+      { name: "পঞ্চগড় (Panchagarh)", arrival: "04:40 am", departure: "END", km: 355 }
+    ]
+  },
+  {
+    id: 804,
+    name: "বাংলাবান্ধা এক্সপ্রেস (Banglabandha Express)",
+    from: "Panchagarh",
+    to: "Rajshahi",
+    offDay: "শনিবার",
+    stations: [
+      { name: "পঞ্চগড় (Panchagarh)", arrival: "START", departure: "09:00 am", km: 0 },
+      { name: "কিসমত (Kismat)", arrival: "09:18 am", departure: "09:20 am", km: 18 },
+      { name: "রুহিয়া (Ruhia)", arrival: "09:29 am", departure: "09:31 am", km: 29 },
+      { name: "ঠাকুরগাঁও রোড (Thakurgaon Road)", arrival: "09:47 am", departure: "09:50 am", km: 44 },
+      { name: "শিবগঞ্জ (Shibganj)", arrival: "09:57 am", departure: "09:59 am", km: 51 },
+      { name: "পীরগঞ্জ (Pirganj)", arrival: "10:15 am", departure: "10:17 am", km: 67 },
+      { name: "সেতাবগঞ্জ (Setabganj)", arrival: "10:34 am", departure: "10:36 am", km: 84 },
+      { name: "দিনাজপুর (Dinajpur)", arrival: "11:07 am", departure: "11:15 am", km: 112 },
+      { name: "চিরিরবন্দর (Chirirbandar)", arrival: "11:34 am", departure: "11:36 am", km: 131 },
+      { name: "পার্বতীপুর (Parbatipur)", arrival: "12:00 pm", departure: "12:20 pm", km: 147 },
+      { name: "ফুলবাড়ী (Fulbari)", arrival: "12:38 pm", departure: "12:41 pm", km: 169 },
+      { name: "বিরামপুর (Birampur)", arrival: "12:52 pm", departure: "12:55 pm", km: 180 },
+      { name: "পাঁচবিবি (Panchbibi)", arrival: "01:30 pm", departure: "01:32 pm", km: 215 },
+      { name: "জয়পুরহাট (Joypurhat)", arrival: "01:43 pm", departure: "01:46 pm", km: 226 },
+      { name: "আক্কেলপুর (Akkelpur)", arrival: "02:12 pm", departure: "02:14 pm", km: 252 },
+      { name: "সান্তাহার (Santahar)", arrival: "02:40 pm", departure: "02:45 pm", km: 278 },
+      { name: "আহসানগঞ্জ (Ahsanganj)", arrival: "03:07 pm", departure: "03:09 pm", km: 300 },
+      { name: "মাধনগর (Madhnagar)", arrival: "03:18 pm", departure: "03:20 pm", km: 309 },
+      { name: "নাটোর (Natore)", arrival: "03:35 pm", departure: "03:37 pm", km: 324 },
+      { name: "আব্দুলপুর (Abdulpur)", arrival: "03:55 pm", departure: "04:15 pm", km: 342 },
+      { name: "রাজশাহী (Rajshahi)", arrival: "05:15 pm", departure: "END", km: 368 }
+    ]
+  },
+  // --- SONAR BANGLA EXPRESS (787 & 788) ---
+  {
+    id: 787,
+    name: "সোনার বাংলা এক্সপ্রেস (Sonar Bangla Express)",
+    from: "Chattogram",
+    to: "Dhaka",
+    offDay: "মঙ্গলবার",
+    stations: [
+      { name: "চট্টগ্রাম (Chattogram)", arrival: "START", departure: "05:00 pm", km: 0 },
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "09:55 pm", departure: "END", km: 321 }
+    ]
+  },
+  {
+    id: 788,
+    name: "সোনার বাংলা এক্সপ্রেস (Sonar Bangla Express)",
+    from: "Dhaka",
+    to: "Chattogram",
+    offDay: "বুধবার",
+    stations: [
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "START", departure: "07:00 am", km: 0 },
+      { name: "ঢাকা বিমানবন্দর (Dhaka Airport)", arrival: "07:22 am", departure: "07:27 am", km: 21 },
+      { name: "চট্টগ্রাম (Chattogram)", arrival: "11:55 am", departure: "END", km: 321 }
+    ]
+  },
+  // --- PARJOTAK EXPRESS (815 & 816) ---
+  {
+    id: 815,
+    name: "পর্যটক এক্সপ্রেস (Parjotak Express)",
+    from: "Cox's Bazar",
+    to: "Dhaka",
+    offDay: "বুধবার",
+    stations: [
+      { name: "কক্সবাজার (Cox's Bazar)", arrival: "START", departure: "07:45 pm", km: 0 },
+      { name: "চট্টগ্রাম (Chattogram)", arrival: "10:45 pm", departure: "11:15 pm", km: 189 },
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "04:20 am", departure: "END", km: 510 }
+    ]
+  },
+  {
+    id: 816,
+    name: "পর্যটক এক্সপ্রেস (Parjotak Express)",
+    from: "Dhaka",
+    to: "Cox's Bazar",
+    offDay: "সুইবার",
+    stations: [
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "START", departure: "06:15 am", km: 0 },
+      { name: "ঢাকা বিমানবন্দর (Dhaka Airport)", arrival: "06:38 am", departure: "06:43 am", km: 21 },
+      { name: "চট্টগ্রাম (Chattogram)", arrival: "11:20 am", departure: "11:40 am", km: 321 },
+      { name: "কক্সবাজার (Cox's Bazar)", arrival: "02:40 pm", departure: "END", km: 510 }
+    ]
+  },
+  // --- BENAPOLE EXPRESS (795 & 796) ---
+  {
+    id: 795,
+    name: "বেনাপোল এক্সপ্রেস (Benapole Express)",
+    from: "Benapole",
+    to: "Dhaka",
+    offDay: "বুধবার",
+    stations: [
+      { name: "বেনাপোল (Benapole)", arrival: "START", departure: "12:25 pm", km: 0 },
+      { name: "ঝিকরগাছা (Jhikargacha)", arrival: "12:55 pm", departure: "12:57 pm", km: 18 },
+      { name: "যশোর (Jashore)", arrival: "01:20 pm", departure: "01:40 pm", km: 38 },
+      { name: "মোবারকগঞ্জ (Mubarakganj)", arrival: "02:19 pm", departure: "02:21 pm", km: 68 },
+      { name: "কোটচাঁদপুর (Kotchandpur)", arrival: "02:33 pm", departure: "02:35 pm", km: 78 },
+      { name: "দর্শনা হল্ট (Darshana Halt)", arrival: "02:59 pm", departure: "03:02 pm", km: 98 },
+      { name: "চুয়াডাঙ্গা (Chuadanga)", arrival: "03:21 pm", departure: "03:23 pm", km: 115 },
+      { name: "আলমডাঙ্গা (Alamdanga)", arrival: "03:39 pm", departure: "03:41 pm", km: 133 },
+      { name: "পোড়াদহ (Poradaha)", arrival: "03:57 pm", departure: "04:00 pm", km: 148 },
+      { name: "কুষ্টিয়া কোর্ট (Kushtia Court)", arrival: "04:12 pm", departure: "04:15 pm", km: 160 },
+      { name: "খোকসা (Khoksha)", arrival: "04:49 pm", departure: "04:51 pm", km: 195 },
+      { name: "কালুখালী (Kalukhali)", arrival: "05:10 pm", departure: "05:12 pm", km: 212 },
+      { name: "রাজবাড়ী (Rajbari)", arrival: "05:30 pm", departure: "05:50 pm", km: 228 },
+      { name: "ফরিদপুর (Faridpur)", arrival: "06:22 pm", departure: "06:25 pm", km: 258 },
+      { name: "ভাঙ্গা (Bhanga)", arrival: "06:56 pm", departure: "06:58 pm", km: 288 },
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "08:30 pm", departure: "END", km: 365 }
+    ]
+  },
+  {
+    id: 796,
+    name: "বেনাপোল এক্সপ্রেস (Benapole Express)",
+    from: "Dhaka",
+    to: "Benapole",
+    offDay: "বুধবার",
+    stations: [
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "START", departure: "11:30 pm", km: 0 },
+      { name: "ভাঙ্গা (Bhanga)", arrival: "12:40 am", departure: "12:42 am", km: 77 },
+      { name: "ফরিদপুর (Faridpur)", arrival: "01:13 am", departure: "01:16 am", km: 107 },
+      { name: "রাজবাড়ী (Rajbari)", arrival: "01:50 am", departure: "02:00 am", km: 137 },
+      { name: "কালুখালী (Kalukhali)", arrival: "02:23 am", departure: "02:25 am", km: 153 },
+      { name: "খোকসা (Khoksha)", arrival: "02:44 am", departure: "02:46 am", km: 170 },
+      { name: "কুষ্টিয়া কোর্ট (Kushtia Court)", arrival: "03:09 am", departure: "03:12 am", km: 205 },
+      { name: "পোড়াদহ (Poradaha)", arrival: "03:23 am", departure: "03:25 am", km: 217 },
+      { name: "আলমডাঙ্গা (Alamdanga)", arrival: "03:41 am", departure: "03:43 am", km: 232 },
+      { name: "চুয়াডাঙ্গা (Chuadanga)", arrival: "04:01 am", departure: "04:04 am", km: 250 },
+      { name: "দর্শনা হল্ট (Darshana Halt)", arrival: "04:25 am", departure: "04:28 am", km: 267 },
+      { name: "কোটচাঁদপুর (Kotchandpur)", arrival: "04:52 am", departure: "04:54 am", km: 287 },
+      { name: "মোবারকগঞ্জ (Mubarakganj)", arrival: "05:08 am", departure: "05:10 am", km: 297 },
+      { name: "যশোর (Jashore)", arrival: "05:40 am", departure: "06:00 am", km: 327 },
+      { name: "ঝিকরগাছা (Jhikargacha)", arrival: "06:19 am", departure: "06:21 am", km: 347 },
+      { name: "বেনাপোল (Benapole)", arrival: "07:00 am", departure: "END", km: 365 }
+    ]
+  },
+  // --- SUBORNO EXPRESS (701 & 702) ---
+  {
+    id: 701,
+    name: "সুবর্ণ এক্সপ্রেস (Suborno Express)",
+    from: "Chattogram",
+    to: "Dhaka",
+    offDay: "সোমবার",
+    stations: [
+      { name: "চট্টগ্রাম (Chattogram)", arrival: "START", departure: "07:00 am", km: 0 },
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "11:55 am", departure: "END", km: 321 }
+    ]
+  },
+  {
+    id: 702,
+    name: "সুবর্ণ এক্সপ্রেস (Suborno Express)",
+    from: "Dhaka",
+    to: "Chattogram",
+    offDay: "সোমবার",
+    stations: [
+      { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "START", departure: "04:30 pm", km: 0 },
+      { name: "ঢাকা বিমানবন্দর (Dhaka Airport)", arrival: "04:53 pm", departure: "04:58 pm", km: 21 },
+      { name: "চট্টগ্রাম (Chattogram)", arrival: "09:25 pm", departure: "END", km: 321 }
+    ]
+  }
   
   
 ]
