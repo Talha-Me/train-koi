@@ -8,7 +8,7 @@ import {
 const Contact = () => {
   const navigate = useNavigate();
   
-  // ১. প্রয়োজনীয় স্টেটগুলো এখানে ডিক্লেয়ার করা হলো
+  // ১. প্রয়োজনীয় স্টেটগুলো এখানে ডিক্লেয়ার করা হলো
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,32 +30,30 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const res = await fetch("https://train-koi.onrender.com/api/contact", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+    // হোয়াটসঅ্যাপ মেসেজ ফরম্যাট তৈরি
+    const phoneNumber = "8801516579760";
+    const text = `নতুন মেসেজ/অভিযোগ:%0A
+-----------------------%0A
+নাম: ${formData.name}%0A
+ইমেইল: ${formData.email}%0A
+বিষয়: ${formData.subject}%0A
+বার্তা: ${formData.message}`;
 
-      const data = await response.json();
+    // হোয়াটসঅ্যাপ ইউআরএল তৈরি
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${text}`;
 
-      if (data.success) {
-        setSubmitted(true);
-        setFormData({ name: '', email: '', subject: 'সাধারণ জিজ্ঞাসা', message: '' });
-        setTimeout(() => setSubmitted(false), 3000);
-      } else {
-        alert("দুঃখিত, মেসেজ পাঠানো যায়নি।");
-      }
-    } catch (error) {
-      console.error("Submission failed", error);
-      alert("সার্ভারের সাথে সংযোগ বিচ্ছিন্ন!");
-    } finally {
-      setLoading(false);
-    }
+    // সরাসরি হোয়াটসঅ্যাপে পাঠিয়ে দেওয়া
+    window.open(whatsappUrl, '_blank');
+
+    // স্টেট আপডেট (আগের মতোই রাখা হলো)
+    setSubmitted(true);
+    setLoading(false);
+    setFormData({ name: '', email: '', subject: 'সাধারণ জিজ্ঞাসা', message: '' });
+    setTimeout(() => setSubmitted(false), 3000);
   };
 
   return (
@@ -80,7 +78,9 @@ const Contact = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <ContactItem icon={<Mail color="#006a4e" size={20} />} label="ইমেইল" value="support@trainkoi.com" />
                 <ContactItem icon={<ShieldAlert color="#e67e22" size={20} />} label="অভিযোগ কেন্দ্র" value="support@trainkoi.com" />
-                <ContactItem icon={<Phone color="#006a4e" size={20} />} label="হটলাইন" value="+৮৮০১৫১৬৫৭৯৭৬০" />
+                <a href="https://wa.me/8801516579760" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <ContactItem icon={<Phone color="#006a4e" size={20} />} label="হটলাইন (WhatsApp)" value="+৮৮০১৫১৬৫৭৯৭৬০" />
+                </a>
               </div>
             </div>
 
