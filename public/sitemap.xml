@@ -1,68 +1,3 @@
-<!-- <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.trainkoi.com/</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/schedule</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/travel-laws</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/blogs</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/books</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/about</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/contact</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/faq</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://www.trainkoi.com/settings</loc>
-    <lastmod>2026-02-26</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-</urlset> -->
 
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -697,14 +632,6 @@
 <url><loc>https://www.trainkoi.com/track/706</loc><priority>1.0</priority></url>
 <url><loc>https://www.trainkoi.com/track/809</loc><priority>1.0</priority></url>
 <url><loc>https://www.trainkoi.com/track/810</loc><priority>1.0</priority></url>
-<url>
-  <loc>https://www.trainkoi.com/track/809</loc>
-  <priority>1.0</priority>
-</url>
-<url>
-  <loc>https://www.trainkoi.com/track/810</loc>
-  <priority>1.0</priority>
-</url>
 
 <url>
   <loc>https://www.trainkoi.com/track/803</loc>
