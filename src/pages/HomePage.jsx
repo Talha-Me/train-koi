@@ -8,6 +8,7 @@ import {
   HelpCircle, // <--- এটি যোগ করা হয়েছে
   TrainFront, CreditCard, Gavel // মেট্রো সেকশনের জন্য নতুন আইকন
 } from 'lucide-react';
+import PullToRefresh from 'react-pull-to-refresh';
 
 const HomePage = () => {
   const [searchMode, setSearchMode] = useState('name'); 
@@ -150,12 +151,6 @@ useEffect(() => {
 
   return (
     <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '100px' }}>
-      {/* রিফ্রেশার কোডটি এখানে বসান */}
-    <div className="ion-refresher-container" style={{ textAlign: 'center', padding: '10px' }}>
-      <button onClick={() => window.location.reload()} style={{ border: 'none', background: 'transparent', fontSize: '12px', color: '#666' }}>
-        {isRefreshing ? 'রিফ্রেশ হচ্ছে...' : 'টান দিয়ে রিফ্রেশ করুন'}
-      </button>
-    </div>
 
       <div style={{ 
         background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
