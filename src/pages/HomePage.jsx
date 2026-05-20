@@ -15,6 +15,7 @@ const HomePage = () => {
   const [fromCity, setFromCity] = useState('');
   const [toCity, setToCity] = useState('');
   const [isMobile, setIsMobile] = useState(false); // মোবাইল চেকিং এর জন্য স্টেট
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // মোবাইল ব্রাউজার ডিটেক্ট করার ইফেক্ট
   useEffect(() => {
@@ -64,6 +65,14 @@ const HomePage = () => {
       window.history.back();
     }
   };
+  const handleRefresh = (event) => {
+  setIsRefreshing(true);
+  // ডেটা রিফ্রেশ করার লজিক (যেমন: API কল বা উইন্ডো রিলোড)
+  setTimeout(() => {
+    window.location.reload(); 
+    setIsRefreshing(false);
+  }, 1000);
+};
 
   // ১. Suggestion Generator
   const getSuggestions = (input, type) => {
@@ -141,7 +150,13 @@ useEffect(() => {
 
   return (
     <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '100px' }}>
-      
+      {/* রিফ্রেশার কোডটি এখানে বসান */}
+    <div className="ion-refresher-container" style={{ textAlign: 'center', padding: '10px' }}>
+      <button onClick={() => window.location.reload()} style={{ border: 'none', background: 'transparent', fontSize: '12px', color: '#666' }}>
+        {isRefreshing ? 'রিফ্রেশ হচ্ছে...' : 'টান দিয়ে রিফ্রেশ করুন'}
+      </button>
+    </div>
+
       <div style={{ 
         background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
         padding: '30px 20px 70px', 
