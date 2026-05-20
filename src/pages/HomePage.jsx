@@ -9,7 +9,6 @@ import {
   TrainFront, CreditCard, Gavel // মেট্রো সেকশনের জন্য নতুন আইকন
 } from 'lucide-react';
 import PullToRefresh from 'react-pull-to-refresh';
-import { IonContent, IonRefresher, IonRefresherContent } from '@ionic/react';
 const HomePage = () => {
   const [searchMode, setSearchMode] = useState('name'); 
   const [searchTerm, setSearchTerm] = useState('');
@@ -141,7 +140,7 @@ useEffect(() => {
     setIsMobile(isMobileDevice || isSmallScreen);
   };
 
-  // প্রথমবার রান করার জন্য
+  // প্রথমবার রান করার জন্য ok thik ase
   handleResize();
 
   // স্ক্রিন ছোট-বড় করলে যেন রিয়েল-টাইমে কাজ করে
@@ -149,16 +148,20 @@ useEffect(() => {
   return () => window.removeEventListener('resize', handleResize);
 }, []);
 
-  return (
-<IonContent fullscreen={true}> 
-      <IonRefresher slot="fixed" onIonRefresh={(event) => {
+return (
+    <PullToRefresh 
+      onRefresh={() => new Promise((resolve) => {
         window.location.reload();
-        event.detail.complete();
+        resolve();
+      })}
+    >
+      <div style={{ 
+        backgroundColor: '#f4f7f6', 
+        minHeight: '100vh', 
+        fontFamily: "'Hind Siliguri', sans-serif", 
+        paddingBottom: '100px',
+        overflowY: 'auto' // স্ক্রল করার জন্য এটি প্রয়োজন
       }}>
-        <IonRefresherContent pullingText="টান দিন..." refreshingSpinner="circles" />
-      </IonRefresher>
-    
-    <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '100px' }}>
 
       <div style={{ 
         background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
@@ -573,7 +576,7 @@ useEffect(() => {
         </div>
       )}
     </div>
-    </IonContent>
+    </PullToRefresh>
   );
 };
 
