@@ -8,7 +8,7 @@ import {
   HelpCircle, // <--- এটি যোগ করা হয়েছে
   TrainFront, CreditCard, Gavel // মেট্রো সেকশনের জন্য নতুন আইকন
 } from 'lucide-react';
-import PullToRefresh from 'react-pull-to-refresh';
+
 const HomePage = () => {
   const [searchMode, setSearchMode] = useState('name'); 
   const [searchTerm, setSearchTerm] = useState('');
@@ -149,12 +149,8 @@ useEffect(() => {
 }, []);
 
 return (
-    <PullToRefresh 
-      onRefresh={() => new Promise((resolve) => {
-        window.location.reload();
-        resolve();
-      })}
-    >
+
+    
       <div style={{ 
         backgroundColor: '#f4f7f6', 
         minHeight: '100vh', 
@@ -245,6 +241,13 @@ return (
               border: '2px solid #006a4e'
             }}></span>
           </div>
+          // হেডারের ভেতরে যেখানে Bell আইকন আছে, তার পাশে এটি দিন:
+<div 
+  onClick={() => window.location.reload()} 
+  style={{ cursor: 'pointer', padding: '10px' }}
+>
+  <RefreshCw size={22} />
+</div>
 
         </div>
       </div>
@@ -576,7 +579,7 @@ return (
         </div>
       )}
     </div>
-    </PullToRefresh>
+    
   );
 };
 
