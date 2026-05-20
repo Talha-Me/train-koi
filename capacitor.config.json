@@ -1,0 +1,13 @@
+{
+  "appId": "com.example.app",
+  "appName": "trainkoi",
+  "webDir": "dist",
+  "server": {
+    "url": "https://www.trainkoi.com/",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
+  }
+}

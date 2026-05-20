@@ -2042,7 +2042,1150 @@ const trainsDataMap = {
       { arrival: "09:23 pm", departure: "09:28 pm" }, // পাটগ্রাম (Index: 15)
       { arrival: "09:45 pm", departure: "END" }      // বুড়িমারী (Index: 16)
     ]
-  }
+  },
+  // --- চট্টলা এক্সপ্রেস (৮০১ ও ৮০২) ---
+// ঢাকা থেকে চট্টগ্রাম
+"802": {
+  stations: [
+    { arrival: "START", departure: "02:15 pm" }, // ঢাকা কমলাপুর (Index: 0)
+    { arrival: "02:38 pm", departure: "02:43 pm" }, // ঢাকা বিমানবন্দর (Index: 1)
+    { arrival: "03:20 pm", departure: "03:23 pm" }, // নরসিংদী (Index: 2)
+    { arrival: "03:41 pm", departure: "03:43 pm" }, // মেথিকান্দা (Index: 3)
+    { arrival: "03:57 pm", departure: "04:00 pm" }, // ভৈরব বাজার (Index: 4)
+    { arrival: "04:19 pm", departure: "04:23 pm" }, // ব্রাহ্মণবাড়িয়া (Index: 5)
+    { arrival: "04:42 pm", departure: "04:45 pm" }, // আখাউড়া (Index: 6)
+    { arrival: "05:01 pm", departure: "05:03 pm" }, // কসবা (Index: 7)
+    { arrival: "05:16 pm", departure: "05:18 pm" }, // শশীদল (Index: 8)
+    { arrival: "05:40 pm", departure: "05:42 pm" }, // কুমিল্লা (Index: 9)
+    { arrival: "06:04 pm", departure: "06:07 pm" }, // লাকসাম (Index: 10)
+    { arrival: "06:21 pm", departure: "06:23 pm" }, // নাঙ্গলকোট (Index: 11)
+    { arrival: "06:30 pm", departure: "06:32 pm" }, // হাসানপুর (Index: 12)
+    { arrival: "06:53 pm", departure: "06:55 pm" }, // ফেনী (Index: 13)
+    { arrival: "07:56 pm", departure: "07:58 pm" }, // কুমিরা (Index: 14)
+    { arrival: "08:30 pm", departure: "END" }      // চট্টগ্রাম (Index: 15)
+  ]
+},
+
+// চট্টগ্রাম থেকে ঢাকা
+"801": {
+  stations: [
+    { arrival: "START", departure: "06:00 am" }, // চট্টগ্রাম (Index: 0)
+    { arrival: "06:26 am", departure: "06:28 am" }, // কুমিরা (Index: 1)
+    { arrival: "07:28 am", departure: "07:31 am" }, // ফেনী (Index: 2)
+    { arrival: "07:52 am", departure: "07:54 am" }, // হাসানপুর (Index: 3)
+    { arrival: "08:02 am", departure: "08:04 am" }, // নাঙ্গলকোট (Index: 4)
+    { arrival: "08:17 am", departure: "08:20 am" }, // লাকসাম (Index: 5)
+    { arrival: "08:41 am", departure: "08:44 am" }, // কুমিল্লা (Index: 6)
+    { arrival: "09:05 am", departure: "09:07 am" }, // শশীদল (Index: 7)
+    { arrival: "09:39 am", departure: "09:41 am" }, // কসবা (Index: 8)
+    { arrival: "10:05 am", departure: "10:08 am" }, // আখাউড়া (Index: 9)
+    { arrival: "10:26 am", departure: "10:29 am" }, // ব্রাহ্মণবাড়িয়া (Index: 10)
+    { arrival: "10:50 am", departure: "10:53 am" }, // ভৈরব বাজার (Index: 11)
+    { arrival: "11:08 am", departure: "11:10 am" }, // মেথিকান্দা (Index: 12)
+    { arrival: "11:27 am", departure: "11:30 am" }, // নরসিংদী (Index: 13)
+    { arrival: "12:10 pm", departure: "12:13 pm" }, // ঢাকা বিমানবন্দর (Index: 14)
+    { arrival: "12:40 pm", departure: "END" }      // ঢাকা কমলাপুর (Index: 15)
+  ]
+},
+// --- CHATTALA EXPRESS (801 & 802) ---
+
+"801": {
+  stations: [
+    { arrival: "START", departure: "06:00 am" }, // চট্টগ্রাম (Chattogram) (Index: 0)
+    { arrival: "06:26 am", departure: "06:28 am" }, // কুমিরা (Kumira) (Index: 1)
+    { arrival: "07:28 am", departure: "07:31 am" }, // ফেনী (Feni) (Index: 2)
+    { arrival: "07:52 am", departure: "07:54 am" }, // হাসানপুর (Hasanpur) (Index: 3)
+    { arrival: "08:02 am", departure: "08:04 am" }, // নাঙ্গলকোট (Nangolkot) (Index: 4)
+    { arrival: "08:17 am", departure: "08:20 am" }, // লাকসাম (Laksam) (Index: 5)
+    { arrival: "08:41 am", departure: "08:44 am" }, // কুমিল্লা (Cumilla) (Index: 6)
+    { arrival: "09:05 am", departure: "09:07 am" }, // শশীদল (Shashidal) (Index: 7)
+    { arrival: "09:39 am", departure: "09:41 am" }, // কসবা (Quasba) (Index: 8)
+    { arrival: "10:05 am", departure: "10:08 am" }, // আখাউড়া (Akhaura) (Index: 9)
+    { arrival: "10:26 am", departure: "10:29 am" }, // ব্রাহ্মণবাড়িয়া (Brahmanbaria) (Index: 10)
+    { arrival: "10:50 am", departure: "10:53 am" }, // ভৈরব বাজার (Bhairab Bazar) (Index: 11)
+    { arrival: "11:08 am", departure: "11:10 am" }, // মেথিকান্দা (Methikanda) (Index: 12)
+    { arrival: "11:27 am", departure: "11:30 am" }, // নরসিংদী (Narsingdi) (Index: 13)
+    { arrival: "12:10 pm", departure: "12:13 pm" }, // ঢাকা বিমানবন্দর (Dhaka Airport) (Index: 14)
+    { arrival: "12:40 pm", departure: "END" } // ঢাকা (Dhaka) (Index: 15)
+  ]
+},
+
+"802": {
+  stations: [
+    { arrival: "START", departure: "02:15 pm" }, // ঢাকা (Dhaka) (Index: 0)
+    { arrival: "02:38 pm", departure: "02:43 pm" }, // ঢাকা বিমানবন্দর (Dhaka Airport) (Index: 1)
+    { arrival: "03:20 pm", departure: "03:23 pm" }, // নরসিংদী (Narsingdi) (Index: 2)
+    { arrival: "03:41 pm", departure: "03:43 pm" }, // মেথিকান্দা (Methikanda) (Index: 3)
+    { arrival: "03:57 pm", departure: "04:00 pm" }, // ভৈরব বাজার (Bhairab Bazar) (Index: 4)
+    { arrival: "04:19 pm", departure: "04:23 pm" }, // ব্রাহ্মণবাড়িয়া (Brahmanbaria) (Index: 5)
+    { arrival: "04:42 pm", departure: "04:45 pm" }, // আখাউড়া (Akhaura) (Index: 6)
+    { arrival: "05:01 pm", departure: "05:03 pm" }, // কসবা (Quasba) (Index: 7)
+    { arrival: "05:16 pm", departure: "05:18 pm" }, // শশীদল (Shashidal) (Index: 8)
+    { arrival: "05:40 pm", departure: "05:42 pm" }, // কুমিল্লা (Cumilla) (Index: 9)
+    { arrival: "06:04 pm", departure: "06:07 pm" }, // লাকসাম (Laksam) (Index: 10)
+    { arrival: "06:21 pm", departure: "06:23 pm" }, // নাঙ্গলকোট (Nangolkot) (Index: 11)
+    { arrival: "06:30 pm", departure: "06:32 pm" }, // হাসানপুর (Hasanpur) (Index: 12)
+    { arrival: "06:53 pm", departure: "06:55 pm" }, // ফেনী (Feni) (Index: 13)
+    { arrival: "07:56 pm", departure: "07:58 pm" }, // কুমিরা (Kumira) (Index: 14)
+    { arrival: "08:30 pm", departure: "END" } // চট্টগ্রাম (Chattogram) (Index: 15)
+  ]
+},
+
+// --- JAMALPUR EXPRESS (799 & 800) ---
+
+"799": {
+  stations: [
+    { arrival: "START", departure: "10:00 am" }, // ঢাকা (Dhaka) (Index: 0)
+    { arrival: "10:22 am", departure: "10:27 am" }, // ঢাকা বিমানবন্দর (Dhaka Airport) (Index: 1)
+    { arrival: "10:53 am", departure: "10:56 am" }, // জয়দেবপুর (Joydebpur) (Index: 2)
+    { arrival: "12:14 pm", departure: "12:17 pm" }, // গফরগাঁও (Gafargaon) (Index: 3)
+    { arrival: "01:05 pm", departure: "01:10 pm" }, // ময়মনসিংহ (Mymensingh) (Index: 4)
+    { arrival: "01:32 pm", departure: "01:34 pm" }, // বিদ্যাগঞ্জ (Bidyaganj) (Index: 5)
+    { arrival: "02:08 pm", departure: "02:12 pm" }, // নান্দিনা (Nandina) (Index: 6)
+    { arrival: "02:25 pm", departure: "02:28 pm" }, // জামালপুর টাউন (Jamalpur Town) (Index: 7)
+    { arrival: "03:21 pm", departure: "03:24 pm" }, // সরিষাবাড়ী (Sarishabari) (Index: 8)
+    { arrival: "03:42 pm", departure: "03:45 pm" }, // তারাকান্দি (Tarakandi) (Index: 9)
+    { arrival: "04:45 pm", departure: "END" } // ভূয়াপুর (Bhuapur) (Index: 10)
+  ]
+},
+
+"800": {
+  stations: [
+    { arrival: "START", departure: "05:15 pm" }, // ভূয়াপুর (Bhuapur) (Index: 0)
+    { arrival: "06:06 pm", departure: "06:11 pm" }, // তারাকান্দি (Tarakandi) (Index: 1)
+    { arrival: "06:27 pm", departure: "06:30 pm" }, // সরিষাবাড়ী (Sarishabari) (Index: 2)
+    { arrival: "07:22 pm", departure: "07:25 pm" }, // জামালপুর টাউন (Jamalpur Town) (Index: 3)
+    { arrival: "07:38 pm", departure: "07:40 pm" }, // নান্দিনা (Nandina) (Index: 4)
+    { arrival: "08:11 pm", departure: "08:13 pm" }, // বিদ্যাগঞ্জ (Bidyaganj) (Index: 5)
+    { arrival: "08:35 pm", departure: "08:40 pm" }, // ময়মনসিংহ (Mymensingh) (Index: 6)
+    { arrival: "09:37 pm", departure: "09:39 pm" }, // গফরগাঁও (Gafargaon) (Index: 7)
+    { arrival: "10:56 pm", departure: "10:58 pm" }, // জয়দেবপুর (Joydebpur) (Index: 8)
+    { arrival: "11:55 pm", departure: "END" } // ঢাকা (Dhaka) (Index: 9)
+  ]
+},
+
+// --- TUNGIPARA EXPRESS (783 & 784) ---
+
+"783": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" }, // গোবরা (Gobra) (Index: 0)
+    { arrival: "06:39 am", departure: "06:41 am" }, // বোরাশী (Borashi) (Index: 1)
+    { arrival: "06:50 am", departure: "06:53 am" }, // গোপালগঞ্জ (Gopalganj) (Index: 2)
+    { arrival: "07:05 am", departure: "07:07 am" }, // চন্দ্রদিঘলিয়া (Chandradighalia) (Index: 3)
+    { arrival: "07:44 am", departure: "07:47 am" }, // কাশিয়ানী (Kashiani) (Index: 4)
+    { arrival: "08:09 am", departure: "08:11 am" }, // বোয়ালমারী বাজার (Boalmari Bazar) (Index: 5)
+    { arrival: "08:30 am", departure: "08:32 am" }, // মধুখালী (Madhukhali) (Index: 6)
+    { arrival: "09:10 am", departure: "09:12 am" }, // কালুখালী (Kalukhali) (Index: 7)
+    { arrival: "09:21 am", departure: "09:23 am" }, // পাংশা (Pangsha) (Index: 8)
+    { arrival: "09:36 am", departure: "09:38 am" }, // খোকসা (Khoksa) (Index: 9)
+    { arrival: "09:47 am", departure: "09:49 am" }, // কুমারখালী (Kumarkhali) (Index: 10)
+    { arrival: "10:06 am", departure: "10:09 am" }, // কুষ্টিয়া কোর্ট (Kushtia Court) (Index: 11)
+    { arrival: "10:30 am", departure: "11:00 am" }, // পোড়াদহ (Poradaha) (Index: 12)
+    { arrival: "11:17 am", departure: "11:20 am" }, // ভেড়ামারা (Bheramara) (Index: 13)
+    { arrival: "11:40 am", departure: "12:00 pm" }, // ঈশ্বরদী (Ishurdi) (Index: 14)
+    { arrival: "01:15 pm", departure: "END" } // রাজশাহী (Rajshahi) (Index: 15)
+  ]
+},
+
+"784": {
+  stations: [
+    { arrival: "START", departure: "03:30 pm" }, // রাজশাহী (Rajshahi) (Index: 0)
+    { arrival: "04:30 pm", departure: "04:40 pm" }, // ঈশ্বরদী (Ishurdi) (Index: 1)
+    { arrival: "05:00 pm", departure: "05:03 pm" }, // ভেড়ামারা (Bheramara) (Index: 2)
+    { arrival: "05:20 pm", departure: "05:45 pm" }, // পোড়াদহ (Poradaha) (Index: 3)
+    { arrival: "05:57 pm", departure: "06:00 pm" }, // কুষ্টিয়া কোর্ট (Kushtia Court) (Index: 4)
+    { arrival: "06:18 pm", departure: "06:20 pm" }, // কুমারখালী (Kumarkhali) (Index: 5)
+    { arrival: "06:30 pm", departure: "06:32 pm" }, // খোকসা (Khoksa) (Index: 6)
+    { arrival: "06:58 pm", departure: "07:00 pm" }, // পাংশা (Pangsha) (Index: 7)
+    { arrival: "07:10 pm", departure: "07:12 pm" }, // কালুখালী (Kalukhali) (Index: 8)
+    { arrival: "07:51 pm", departure: "07:54 pm" }, // মধুখালী (Madhukhali) (Index: 9)
+    { arrival: "08:14 pm", departure: "08:16 pm" }, // বোয়ালমারী বাজার (Boalmari Bazar) (Index: 10)
+    { arrival: "08:40 pm", departure: "08:43 pm" }, // কাশিয়ানী (Kashiani) (Index: 11)
+    { arrival: "09:33 pm", departure: "09:38 pm" }, // গোপালগঞ্জ (Gopalganj) (Index: 12)
+    { arrival: "09:49 pm", departure: "09:51 pm" }, // বোরাশী (Borashi) (Index: 13)
+    { arrival: "10:10 pm", departure: "END" } // গোবরা (Gobra) (Index: 14)
+  ]
+},
+
+// mail train place here
+
+// --- DHAKA EXPRESS (11 UP / 12 DOWN) ---
+
+"11": {
+  stations: [
+    { arrival: "START", departure: "08:10 pm" }, // নোয়াখালী (Noakhali) (Index: 0)
+    { arrival: "10:35 pm", departure: "10:55 pm" }, // লাকসাম (Laksam) (Index: 1)
+    { arrival: "11:35 pm", departure: "11:45 pm" }, // কুমিল্লা (Cumilla) (Index: 2)
+    { arrival: "01:25 am", departure: "01:50 am" }, // আখাউড়া (Akhaura) (Index: 3)
+    { arrival: "03:10 am", departure: "03:30 am" }, // ভৈরব বাজার (Bhairab Bazar) (Index: 4)
+    { arrival: "06:40 am", departure: "END" } // ঢাকা (Dhaka) (Index: 5)
+  ]
+},
+
+"12": {
+  stations: [
+    { arrival: "START", departure: "07:30 am" }, // ঢাকা (Dhaka) (Index: 0)
+    { arrival: "10:45 am", departure: "11:05 am" }, // ভৈরব বাজার (Bhairab Bazar) (Index: 1)
+    { arrival: "12:15 pm", departure: "12:40 pm" }, // আখাউড়া (Akhaura) (Index: 2)
+    { arrival: "02:05 pm", departure: "02:15 pm" }, // কুমিল্লা (Cumilla) (Index: 3)
+    { arrival: "03:00 pm", departure: "03:20 pm" }, // লাকসাম (Laksam) (Index: 4)
+    { arrival: "05:50 pm", departure: "END" } // নোয়াখালী (Noakhali) (Index: 5)
+  ]
+},
+
+// --- UTTARBANGA MAIL (7 UP / 8 DOWN) ---
+
+"7": {
+  stations: [
+    { arrival: "START", departure: "10:00 pm" }, // সান্তাহার (Santahar) (Index: 0)
+    { arrival: "01:20 am", departure: "01:45 am" }, // পার্বতীপুর (Parbatipur) (Index: 1)
+    { arrival: "02:30 am", departure: "02:50 am" }, // দিনাজপুর (Dinajpur) (Index: 2)
+    { arrival: "04:35 am", departure: "04:45 am" }, // ঠাকুরগাঁও রোড (Thakurgaon Road) (Index: 3)
+    { arrival: "06:15 am", departure: "END" } // পঞ্চগড় (Panchagarh) (Index: 4)
+  ]
+},
+
+"8": {
+  stations: [
+    { arrival: "START", departure: "09:00 pm" }, // পঞ্চগড় (Panchagarh) (Index: 0)
+    { arrival: "10:25 pm", departure: "10:35 pm" }, // ঠাকুরগাঁও রোড (Thakurgaon Road) (Index: 1)
+    { arrival: "12:30 am", departure: "12:50 am" }, // দিনাজপুর (Dinajpur) (Index: 2)
+    { arrival: "01:35 am", departure: "02:00 am" }, // পার্বতীপুর (Parbatipur) (Index: 3)
+    { arrival: "05:40 am", departure: "END" } // সান্তাহার (Santahar) (Index: 4)
+  ]
+},
+
+// --- JALALABAD EXPRESS (13 UP / 14 DOWN) ---
+
+"13": {
+  stations: [
+    { arrival: "START", departure: "08:00 pm" }, // চট্টগ্রাম (Chattogram) (Index: 0)
+    { arrival: "10:45 pm", departure: "10:55 pm" }, // ফেনী (Feni) (Index: 1)
+    { arrival: "12:45 am", departure: "12:55 am" }, // কুমিল্লা (Cumilla) (Index: 2)
+    { arrival: "02:40 am", departure: "03:10 am" }, // আখাউড়া (Akhaura) (Index: 3)
+    { arrival: "06:50 am", departure: "07:10 am" }, // কুলাউড়া (Kulaura) (Index: 4)
+    { arrival: "09:10 am", departure: "END" } // সিলেট (Sylhet) (Index: 5)
+  ]
+},
+
+"14": {
+  stations: [
+    { arrival: "START", departure: "08:30 pm" }, // সিলেট (Sylhet) (Index: 0)
+    { arrival: "10:35 pm", departure: "10:55 pm" }, // কুলাউড়া (Kulaura) (Index: 1)
+    { arrival: "02:50 am", departure: "03:20 am" }, // আখাউড়া (Akhaura) (Index: 2)
+    { arrival: "04:55 am", departure: "05:05 am" }, // কুমিল্লা (Cumilla) (Index: 3)
+    { arrival: "07:05 am", departure: "07:15 am" }, // ফেনী (Feni) (Index: 4)
+    { arrival: "10:00 am", departure: "END" } // চট্টগ্রাম (Chattogram) (Index: 5)
+  ]
+},
+
+// --- KUSHIARA EXPRESS (19 UP / 20 DOWN) ---
+
+"19": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" }, // আখাউড়া (Akhaura) (Index: 0)
+    { arrival: "08:15 am", departure: "08:25 am" }, // শায়েস্তাগঞ্জ (Shaistaganj) (Index: 1)
+    { arrival: "09:30 am", departure: "09:40 am" }, // শ্রীমঙ্গল (Sreemangal) (Index: 2)
+    { arrival: "10:45 am", departure: "11:00 am" }, // কুলাউড়া (Kulaura) (Index: 3)
+    { arrival: "01:20 pm", departure: "END" } // সিলেট (Sylhet) (Index: 4)
+  ]
+},
+
+"20": {
+  stations: [
+    { arrival: "START", departure: "02:30 pm" }, // সিলেট (Sylhet) (Index: 0)
+    { arrival: "04:40 pm", departure: "04:55 pm" }, // কুলাউড়া (Kulaura) (Index: 1)
+    { arrival: "05:50 pm", departure: "06:00 pm" }, // শ্রীমঙ্গল (Sreemangal) (Index: 2)
+    { arrival: "07:10 pm", departure: "07:20 pm" }, // শায়েস্তাগঞ্জ (Shaistaganj) (Index: 3)
+    { arrival: "09:15 pm", departure: "END" } // আখাউড়া (Akhaura) (Index: 4)
+  ]
+},
+
+// --- UTTARA EXPRESS (31 UP / 32 DOWN) ---
+
+"31": {
+  stations: [
+    { arrival: "START", departure: "12:45 pm" }, // রাজশাহী (Rajshahi) (Index: 0)
+    { arrival: "01:45 pm", departure: "02:00 pm" }, // আব্দুলপুর (Abdulpur) (Index: 1)
+    { arrival: "02:25 pm", departure: "02:30 pm" }, // নাটোর (Natore) (Index: 2)
+    { arrival: "04:00 pm", departure: "04:15 pm" }, // সান্তাহার (Santahar) (Index: 3)
+    { arrival: "07:45 pm", departure: "END" } // পার্বতীপুর (Parbatipur) (Index: 4)
+  ]
+},
+
+"32": {
+  stations: [
+    { arrival: "START", departure: "03:45 am" }, // পার্বতীপুর (Parbatipur) (Index: 0)
+    { arrival: "07:10 am", departure: "07:25 am" }, // সান্তাহার (Santahar) (Index: 1)
+    { arrival: "08:55 am", departure: "09:00 am" }, // নাটোর (Natore) (Index: 2)
+    { arrival: "09:30 am", departure: "09:45 am" }, // আব্দুলপুর (Abdulpur) (Index: 3)
+    { arrival: "11:10 am", departure: "END" } // রাজশাহী (Rajshahi) (Index: 4)
+  ]
+},
+
+// --- BOGURA EXPRESS (127 UP / 128 DOWN) ---
+
+"127": {
+  stations: [
+    { arrival: "START", departure: "08:00 pm" }, // সান্তাহার (Santahar) (Index: 0)
+    { arrival: "09:15 pm", departure: "09:25 pm" }, // বগুড়া (Bogura) (Index: 1)
+    { arrival: "10:50 pm", departure: "11:00 pm" }, // বোনারপাড়া (Bonarpara) (Index: 2)
+    { arrival: "02:30 am", departure: "END" } // লালমনিরহাট (Lalmonirhat) (Index: 3)
+  ]
+},
+
+"128": {
+  stations: [
+    { arrival: "START", departure: "07:30 am" }, // লালমনিরহাট (Lalmonirhat) (Index: 0)
+    { arrival: "11:00 am", departure: "11:10 am" }, // বোনারপাড়া (Bonarpara) (Index: 1)
+    { arrival: "12:35 pm", departure: "12:45 pm" }, // বগুড়া (Bogura) (Index: 2)
+    { arrival: "02:15 pm", departure: "END" } // সান্তাহার (Santahar) (Index: 3)
+  ]
+},
+
+// --- PADMARAG EXPRESS (113 UP / 114 DOWN) ---
+
+"113": {
+  stations: [
+    { arrival: "START", departure: "06:00 am" }, // সান্তাহার (Santahar) (Index: 0)
+    { arrival: "07:10 am", departure: "07:20 am" }, // বগুড়া (Bogura) (Index: 1)
+    { arrival: "08:45 am", departure: "08:55 am" }, // বোনারপাড়া (Bonarpara) (Index: 2)
+    { arrival: "09:30 am", departure: "09:35 am" }, // গাইবান্ধা (Gaibandha) (Index: 3)
+    { arrival: "11:45 am", departure: "11:55 am" }, // কাউনিয়া (Kaunia) (Index: 4)
+    { arrival: "12:40 pm", departure: "END" } // লালমনিরহাট (Lalmonirhat) (Index: 5)
+  ]
+},
+
+"114": {
+  stations: [
+    { arrival: "START", departure: "06:00 pm" }, // লালমনিরহাট (Lalmonirhat) (Index: 0)
+    { arrival: "06:45 pm", departure: "06:55 pm" }, // কাউনিয়া (Kaunia) (Index: 1)
+    { arrival: "08:40 pm", departure: "08:45 pm" }, // গাইবান্ধা (Gaibandha) (Index: 2)
+    { arrival: "09:20 pm", departure: "09:30 pm" }, // বোনারপাড়া (Bonarpara) (Index: 3)
+    { arrival: "10:55 pm", departure: "11:05 pm" }, // বগুড়া (Bogura) (Index: 4)
+    { arrival: "12:30 am", departure: "END" } // সান্তাহার (Santahar) (Index: 5)
+  ]
+},
+// --- ROCKET EXPRESS (11 UP / 12 DOWN) ---
+
+"11": {
+  stations: [
+    { arrival: "START", departure: "09:00 pm" }, // খুলনা (Khulna) (Index: 0)
+    { arrival: "10:50 pm", departure: "11:10 pm" }, // যশোর (Jashore) (Index: 1)
+    { arrival: "02:10 am", departure: "02:35 am" }, // পোড়াদহ (Poradaha) (Index: 2)
+    { arrival: "03:50 am", departure: "04:15 am" }, // ঈশ্বরদী (Ishurdi) (Index: 3)
+    { arrival: "06:30 am", departure: "06:50 am" }, // সান্তাহার (Santahar) (Index: 4)
+    { arrival: "10:20 am", departure: "END" } // পার্বতীপুর (Parbatipur) (Index: 5)
+  ]
+},
+
+"12": {
+  stations: [
+    { arrival: "START", departure: "04:00 pm" }, // পার্বতীপুর (Parbatipur) (Index: 0)
+    { arrival: "07:30 pm", departure: "07:50 pm" }, // সান্তাহার (Santahar) (Index: 1)
+    { arrival: "10:10 pm", departure: "10:35 pm" }, // ঈশ্বরদী (Ishurdi) (Index: 2)
+    { arrival: "11:45 pm", departure: "12:10 am" }, // পোড়াদহ (Poradaha) (Index: 3)
+    { arrival: "03:10 am", departure: "03:30 am" }, // যশোর (Jashore) (Index: 4)
+    { arrival: "05:30 am", departure: "END" } // খুলনা (Khulna) (Index: 5)
+  ]
+},
+
+// --- NAKSHIKANTHA EXPRESS (75 UP / 76 DOWN) ---
+
+"75": {
+  stations: [
+    { arrival: "START", departure: "11:30 pm" }, // খুলনা (Khulna) (Index: 0)
+    { arrival: "01:10 am", departure: "01:25 am" }, // যশোর (Jashore) (Index: 1)
+    { arrival: "03:50 am", departure: "04:15 am" }, // পোড়াদহ (Poradaha) (Index: 2)
+    { arrival: "06:15 am", departure: "06:30 am" }, // রাজবাড়ী (Rajbari) (Index: 3)
+    { arrival: "07:55 am", departure: "08:05 am" }, // ভাঙ্গা (Bhanga) (Index: 4)
+    { arrival: "10:10 am", departure: "END" } // ঢাকা (Dhaka) (Index: 5)
+  ]
+},
+
+"76": {
+  stations: [
+    { arrival: "START", departure: "11:40 am" }, // ঢাকা (Dhaka) (Index: 0)
+    { arrival: "01:40 pm", departure: "01:50 pm" }, // ভাঙ্গা (Bhanga) (Index: 1)
+    { arrival: "03:20 pm", departure: "03:35 pm" }, // রাজবাড়ী (Rajbari) (Index: 2)
+    { arrival: "05:40 pm", departure: "06:05 pm" }, // পোড়াদহ (Poradaha) (Index: 3)
+    { arrival: "08:35 pm", departure: "08:50 pm" }, // যশোর (Jashore) (Index: 4)
+    { arrival: "10:40 pm", departure: "END" } // খুলনা (Khulna) (Index: 5)
+  ]
+},
+
+// --- MAHANANDA EXPRESS (15 UP / 16 DOWN) ---
+
+"15": {
+  stations: [
+    { arrival: "START", departure: "11:00 am" }, // খুলনা (Khulna) (Index: 0)
+    { arrival: "12:35 pm", departure: "12:50 pm" }, // যশোর (Jashore) (Index: 1)
+    { arrival: "03:15 pm", departure: "03:30 pm" }, // পোড়াদহ (Poradaha) (Index: 2)
+    { arrival: "04:40 pm", departure: "05:10 pm" }, // ঈশ্বরদী (Ishurdi) (Index: 3)
+    { arrival: "06:45 pm", departure: "07:00 pm" }, // রাজশাহী (Rajshahi) (Index: 4)
+    { arrival: "08:40 pm", departure: "END" } // চাঁপাইনবাবগঞ্জ (Chapai Nawabganj) (Index: 5)
+  ]
+},
+
+"16": {
+  stations: [
+    { arrival: "START", departure: "07:15 am" }, // চাঁপাইনবাবগঞ্জ (Chapai Nawabganj) (Index: 0)
+    { arrival: "08:55 am", departure: "09:15 am" }, // রাজশাহী (Rajshahi) (Index: 1)
+    { arrival: "10:45 am", departure: "11:15 am" }, // ঈশ্বরদী (Ishurdi) (Index: 2)
+    { arrival: "12:20 pm", departure: "12:45 pm" }, // পোড়adaha (Poradaha) (Index: 3)
+    { arrival: "03:05 pm", departure: "03:25 pm" }, // যশোর (Jashore) (Index: 4)
+    { arrival: "05:10 pm", departure: "END" } // খুলনা (Khulna) (Index: 5)
+  ]
+},
+
+// --- RAJSHAHI EXPRESS (5 UP / 6 DOWN) ---
+
+"5": {
+  stations: [
+    { arrival: "START", departure: "12:20 pm" }, // ঢাকা (Dhaka) (Index: 0)
+    { arrival: "01:25 pm", departure: "01:30 pm" }, // জয়দেবপুর (Joydebpur) (Index: 1)
+    { arrival: "03:35 pm", departure: "03:40 pm" }, // টাঙ্গাইল (Tangail) (Index: 2)
+    { arrival: "07:50 pm", departure: "08:20 pm" }, // ঈশ্বরদী (Ishurdi) (Index: 3)
+    { arrival: "10:00 pm", departure: "10:20 pm" }, // রাজশাহী (Rajshahi) (Index: 4)
+    { arrival: "12:15 am", departure: "END" } // চাঁপাইনবাবগঞ্জ (Chapai Nawabganj) (Index: 5)
+  ]
+},
+
+"6": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" }, // চাঁপাইনবাবগঞ্জ (Chapai Nawabganj) (Index: 0)
+    { arrival: "08:15 am", departure: "08:40 am" }, // রাজশাহী (Rajshahi) (Index: 1)
+    { arrival: "10:25 am", departure: "11:00 am" }, // ঈশ্বরদী (Ishurdi) (Index: 2)
+    { arrival: "03:10 pm", departure: "03:15 pm" }, // টাঙ্গাইল (Tangail) (Index: 3)
+    { arrival: "05:25 pm", departure: "05:30 pm" }, // জয়দেবপুর (Joydebpur) (Index: 4)
+    { arrival: "07:00 pm", departure: "END" } // ঢাকা (Dhaka) (Index: 5)
+  ]
+},
+
+// --- SAGARIKA EXPRESS (31 UP / 32 DOWN) ---
+
+"31": {
+  stations: [
+    { arrival: "START", departure: "07:40 am" }, // চট্টগ্রাম (Chattogram) (Index: 0)
+    { arrival: "08:12 am", departure: "08:14 am" }, // কুমিরা (Kumira) (Index: 1)
+    { arrival: "09:35 am", departure: "09:45 am" }, // ফেনী (Feni) (Index: 2)
+    { arrival: "10:45 am", departure: "11:10 am" }, // লাকসাম (Laksam) (Index: 3)
+    { arrival: "01:20 pm", departure: "END" } // চাঁদপুর (Chandpur) (Index: 4)
+  ]
+},
+
+"32": {
+  stations: [
+    { arrival: "START", departure: "02:30 pm" }, // চাঁদপুর (Chandpur) (Index: 0)
+    { arrival: "04:30 pm", departure: "04:55 pm" }, // লাকসাম (Laksam) (Index: 1)
+    { arrival: "05:55 pm", departure: "06:05 pm" }, // ফেনী (Feni) (Index: 2)
+    { arrival: "07:25 pm", departure: "07:27 pm" }, // কুমিরা (Kumira) (Index: 3)
+    { arrival: "08:10 pm", departure: "END" } // চট্টগ্রাম (Chattogram) (Index: 4)
+  ]
+},
+
+// --- MYMENSINGH EXPRESS (37 UP / 38 DOWN) ---
+
+"37": {
+  stations: [
+    { arrival: "START", departure: "07:00 pm" }, // চট্টগ্রাম (Chattogram) (Index: 0)
+    { arrival: "09:40 pm", departure: "09:50 pm" }, // ফেনী (Feni) (Index: 1)
+    { arrival: "11:15 pm", departure: "11:25 pm" }, // কুমিল্লা (Cumilla) (Index: 2)
+    { arrival: "01:05 am", departure: "01:35 am" }, // আখাউড়া (Akhaura) (Index: 3)
+    { arrival: "02:35 am", departure: "03:00 am" }, // ভৈরব বাজার (Bhairab Bazar) (Index: 4)
+    { arrival: "06:10 am", departure: "06:40 am" }, // ময়মনসিংহ (Mymensingh) (Index: 5)
+    { arrival: "10:30 am", departure: "END" } // বঙ্গবন্ধু সেতু পূর্ব (BB East) (Index: 6)
+  ]
+},
+
+"38": {
+  stations: [
+    { arrival: "START", departure: "12:30 pm" }, // বঙ্গবন্ধু সেতু পূর্ব (BB East) (Index: 0)
+    { arrival: "04:20 pm", departure: "04:50 pm" }, // ময়মনসিংহ (Mymensingh) (Index: 1)
+    { arrival: "07:50 pm", departure: "08:15 pm" }, // ভৈরব বাজার (Bhairab Bazar) (Index: 2)
+    { arrival: "09:15 pm", departure: "09:45 pm" }, // আখাউড়া (Akhaura) (Index: 3)
+    { arrival: "11:10 pm", departure: "11:20 pm" }, // কুমিল্লা (Cumilla) (Index: 4)
+    { arrival: "04:30 am", departure: "END" } // চট্টগ্রাম (Chattogram) (Index: 5)
+  ]
+},
+"39": {
+  stations: [
+    { arrival: "START", departure: "11:30 am" }, // ঢাকা (Dhaka)
+    { arrival: "01:15 pm", departure: "01:18 pm" }, // নরসিংদী (Narsingdi)
+    { arrival: "02:35 pm", departure: "03:00 pm" }, // ভৈরব বাজার (Bhairab Bazar)
+    { arrival: "05:15 pm", departure: "05:30 pm" }, // কিশোরগঞ্জ (Kishoreganj)
+    { arrival: "08:45 pm", departure: "END" } // ময়মনসিংহ (Mymensingh)
+  ]
+},
+
+"40": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "09:30 am", departure: "09:45 am" }, // কিশোরগঞ্জ (Kishoreganj)
+    { arrival: "12:15 pm", departure: "12:40 pm" }, // ভৈরব বাজার (Bhairab Bazar)
+    { arrival: "01:50 pm", departure: "01:53 pm" }, // নরসিংদী (Narsingdi)
+    { arrival: "03:45 pm", departure: "END" } // ঢাকা (Dhaka)
+  ]
+},
+
+"43": {
+  stations: [
+    { arrival: "START", departure: "08:15 am" }, // ঢাকা (Dhaka)
+    { arrival: "08:40 am", departure: "08:45 am" }, // ঢাকা বিমানবন্দর (Dhaka Airport)
+    { arrival: "12:35 pm", departure: "01:00 pm" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "02:15 pm", departure: "02:20 pm" }, // নেত্রকোণা (Netrokona)
+    { arrival: "03:40 pm", departure: "END" } // মোহনগঞ্জ (Mohanganj)
+  ]
+},
+
+"44": {
+  stations: [
+    { arrival: "START", departure: "09:30 pm" }, // মোহনগঞ্জ (Mohanganj)
+    { arrival: "10:45 pm", departure: "10:50 pm" }, // নেত্রকোণা (Netrokona)
+    { arrival: "12:20 am", departure: "12:45 am" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "04:10 am", departure: "04:15 am" }, // ঢাকা বিমানবন্দর (Dhaka Airport)
+    { arrival: "05:00 am", departure: "END" } // ঢাকা (Dhaka)
+  ]
+},
+
+"51": {
+  stations: [
+    { arrival: "START", departure: "06:15 am" }, // নোয়াখালী (Noakhali)
+    { arrival: "07:25 am", departure: "07:27 am" }, // সোনাইমুড়ী (Sonaimuri)
+    { arrival: "08:30 am", departure: "END" } // লাকসাম (Laksam)
+  ]
+},
+
+"52": {
+  stations: [
+    { arrival: "START", departure: "09:30 am" }, // লাকসাম (Laksam)
+    { arrival: "10:35 am", departure: "10:37 am" }, // সোনাইমুড়ী (Sonaimuri)
+    { arrival: "11:50 am", departure: "END" } // নোয়াখালী (Noakhali)
+  ]
+},
+
+"25": {
+  stations: [
+    { arrival: "START", departure: "09:00 pm" }, // ঢাকা (Dhaka)
+    { arrival: "10:15 pm", departure: "10:25 pm" }, // জয়দেবপুর (Joydebpur)
+    { arrival: "01:30 am", departure: "02:00 am" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "03:45 am", departure: "04:00 am" }, // জামালপুর (Jamalpur)
+    { arrival: "05:40 am", departure: "END" } // দেওয়ানগঞ্জ বাজার (Dewanganj Bazar)
+  ]
+},
+
+"26": {
+  stations: [
+    { arrival: "START", departure: "06:40 am" }, // দেওয়ানগঞ্জ বাজার (Dewanganj Bazar)
+    { arrival: "08:20 am", departure: "08:35 am" }, // জামালপুর (Jamalpur)
+    { arrival: "10:20 am", departure: "10:50 am" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "02:30 pm", departure: "02:45 pm" }, // জয়দেবপুর (Joydebpur)
+    { arrival: "04:15 pm", departure: "END" } // ঢাকা (Dhaka)
+  ]
+},
+
+"73": {
+  stations: [
+    { arrival: "START", departure: "08:30 am" }, // নোয়াখালী (Noakhali)
+    { arrival: "10:45 am", departure: "11:10 am" }, // লাকসাম (Laksam)
+    { arrival: "01:10 pm", departure: "01:40 pm" }, // আখাউড়া (Akhaura)
+    { arrival: "02:40 pm", departure: "03:00 pm" }, // ভৈরব বাজার (Bhairab Bazar)
+    { arrival: "06:20 pm", departure: "END" } // ময়মনসিংহ (Mymensingh)
+  ]
+},
+
+"74": {
+  stations: [
+    { arrival: "START", departure: "07:30 am" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "10:50 am", departure: "11:15 am" }, // ভৈরব বাজার (Bhairab Bazar)
+    { arrival: "12:15 pm", departure: "12:45 pm" }, // আখাউড়া (Akhaura)
+    { arrival: "02:45 pm", departure: "03:10 pm" }, // লাকসাম (Laksam)
+    { arrival: "05:20 pm", departure: "END" } // নোয়াখালী (Noakhali)
+  ]
+},
+
+"59": {
+  stations: [
+    { arrival: "START", departure: "05:30 am" }, // বোনারপাড়া (Bonarpara)
+    { arrival: "06:05 am", departure: "06:10 am" }, // গাইবান্ধা (Gaibandha)
+    { arrival: "08:10 am", departure: "08:20 am" }, // কাউনিয়া (Kaunia)
+    { arrival: "08:55 am", departure: "09:05 am" }, // রংপুর (Rangpur)
+    { arrival: "11:35 am", departure: "11:50 am" }, // দিনাজপুর (Dinajpur)
+    { arrival: "02:30 pm", departure: "END" } // পঞ্চগড় (Panchagarh)
+  ]
+},
+
+"60": {
+  stations: [
+    { arrival: "START", departure: "05:20 pm" }, // পঞ্চগড় (Panchagarh)
+    { arrival: "07:55 pm", departure: "08:10 pm" }, // দিনাজপুর (Dinajpur)
+    { arrival: "10:45 pm", departure: "10:55 pm" }, // রংপুর (Rangpur)
+    { arrival: "11:30 pm", departure: "11:40 pm" }, // কাউনিয়া (Kaunia)
+    { arrival: "02:10 am", departure: "END" } // বোনারপাড়া (Bonarpara)
+  ]
+},
+
+"125": {
+  stations: [
+    { arrival: "START", departure: "10:30 am" }, // সান্তাহার (Santahar)
+    { arrival: "11:40 am", departure: "11:50 am" }, // বগুড়া (Bogura)
+    { arrival: "01:15 pm", departure: "01:25 pm" }, // বোনারপাড়া (Bonarpara)
+    { arrival: "02:00 pm", departure: "02:05 pm" }, // গাইবান্ধা (Gaibandha)
+    { arrival: "05:20 pm", departure: "END" } // লালমনিরহাট (Lalmonirhat)
+  ]
+},
+
+"126": {
+  stations: [
+    { arrival: "START", departure: "12:15 am" }, // লালমনিরহাট (Lalmonirhat)
+    { arrival: "03:15 am", departure: "03:20 am" }, // গাইবান্ধা (Gaibandha)
+    { arrival: "05:30 am", departure: "05:40 am" }, // বগুড়া (Bogura)
+    { arrival: "07:00 am", departure: "END" } // সান্তাহার (Santahar)
+  ]
+},
+
+"41": {
+  stations: [
+    { arrival: "START", departure: "01:30 pm" }, // পার্বতীপুর (Parbatipur)
+    { arrival: "02:15 pm", departure: "02:30 pm" }, // দিনাজপুর (Dinajpur)
+    { arrival: "04:25 pm", departure: "04:35 pm" }, // ঠাকুরগাঁও রোড (Thakurgaon)
+    { arrival: "06:00 pm", departure: "END" } // পঞ্চগড় (Panchagarh)
+  ]
+},
+
+"42": {
+  stations: [
+    { arrival: "START", departure: "07:30 am" }, // পঞ্চগড় (Panchagarh)
+    { arrival: "08:50 am", departure: "09:00 am" }, // ঠাকুরগাঁও রোড (Thakurgaon)
+    { arrival: "10:55 am", departure: "11:10 am" }, // দিনাজপুর (Dinajpur)
+    { arrival: "12:00 pm", departure: "END" } // পার্বতীপুর (Parbatipur)
+  ]
+},
+
+"33": {
+  stations: [
+    { arrival: "START", departure: "05:45 pm" }, // ঢাকা (Dhaka)
+    { arrival: "05:58 pm", departure: "06:00 pm" }, // তেজগাঁও (Tejgaon)
+    { arrival: "06:20 pm", departure: "06:25 pm" }, // বিমানবন্দর (Airport)
+    { arrival: "07:35 pm", departure: "07:40 pm" }, // নরসিংদী (Narsingdi)
+    { arrival: "08:40 pm", departure: "08:45 pm" }, // ব্রাহ্মণবাড়িয়া (B. Baria)
+    { arrival: "09:20 pm", departure: "END" } // আখাউড়া (Akhaura)
+  ]
+},
+
+"34": {
+  stations: [
+    { arrival: "START", departure: "05:15 am" }, // আখাউড়া (Akhaura)
+    { arrival: "05:40 am", departure: "05:45 am" }, // ব্রাহ্মণবাড়িয়া (B. Baria)
+    { arrival: "07:05 am", departure: "07:10 am" }, // নরসিংদী (Narsingdi)
+    { arrival: "08:15 am", departure: "08:20 am" }, // বিমানবন্দর (Airport)
+    { arrival: "09:00 am", departure: "END" } // ঢাকা (Dhaka)
+  ]
+},
+
+"47": {
+  stations: [
+    { arrival: "START", departure: "05:40 am" }, // ঢাকা (Dhaka)
+    { arrival: "08:10 am", departure: "08:15 am" }, // গফরগাঁও (Gafargaon)
+    { arrival: "09:15 am", departure: "09:35 am" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "11:05 am", departure: "11:20 am" }, // জামালপুর (Jamalpur)
+    { arrival: "12:50 pm", departure: "END" } // দেওয়ানগঞ্জ বাজার (Dewanganj)
+  ]
+},
+
+"48": {
+  stations: [
+    { arrival: "START", departure: "01:50 pm" }, // দেওয়ানগঞ্জ বাজার (Dewanganj)
+    { arrival: "03:10 pm", departure: "03:25 pm" }, // জামালপুর (Jamalpur)
+    { arrival: "04:55 pm", departure: "05:20 pm" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "06:15 pm", departure: "06:20 pm" }, // গফরগাঁও (Gafargaon)
+    { arrival: "09:15 pm", departure: "END" } // ঢাকা (Dhaka)
+  ]
+},
+
+"49": {
+  stations: [
+    { arrival: "START", departure: "10:30 am" }, // ঢাকা (Dhaka)
+    { arrival: "11:35 am", departure: "11:45 am" }, // জয়দেবপুর (Joydebpur)
+    { arrival: "12:35 pm", departure: "12:40 pm" }, // শ্রীপুর (Sreepur)
+    { arrival: "01:15 pm", departure: "01:20 pm" }, // গফরগাঁও (Gafargaon)
+    { arrival: "02:30 pm", departure: "END" } // ময়মনসিংহ (Mymensingh)
+  ]
+},
+
+"50": {
+  stations: [
+    { arrival: "START", departure: "03:00 pm" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "04:05 pm", departure: "04:10 pm" }, // গফরগাঁও (Gafargaon)
+    { arrival: "04:55 pm", departure: "05:00 pm" }, // শ্রীপুর (Sreepur)
+    { arrival: "06:15 pm", departure: "06:25 pm" }, // জয়দেবপুর (Joydebpur)
+    { arrival: "07:45 pm", departure: "END" } // ঢাকা (Dhaka)
+  ]
+},
+
+"51": {
+  stations: [
+    { arrival: "START", departure: "03:40 pm" }, // ঢাকা (Dhaka)
+    { arrival: "04:50 pm", departure: "05:00 pm" }, // জয়দেবপুর (Joydebpur)
+    { arrival: "07:40 pm", departure: "08:10 pm" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "10:00 pm", departure: "10:15 pm" }, // জামালপুর (Jamalpur)
+    { arrival: "11:45 pm", departure: "END" } // দেওয়ানগঞ্জ বাজার (Dewanganj)
+  ]
+},
+
+"52": {
+  stations: [
+    { arrival: "START", departure: "04:15 am" }, // দেওয়ানগঞ্জ বাজার (Dewanganj)
+    { arrival: "05:40 am", departure: "05:55 am" }, // জামালপুর (Jamalpur)
+    { arrival: "07:45 am", departure: "08:15 am" }, // ময়মনসিংহ (Mymensingh)
+    { arrival: "11:20 am", departure: "11:30 am" }, // জয়দেবপুর (Joydebpur)
+    { arrival: "01:00 pm", departure: "END" } // ঢাকা (Dhaka)
+  ]
+},
+
+"57": {
+  stations: [
+    { arrival: "START", departure: "07:00 am" }, // ঈশ্বরদী (Ishurdi)
+    { arrival: "07:25 am", departure: "07:35 am" }, // আব্দুলপুর (Abdulpur)
+    { arrival: "08:40 am", departure: "09:00 am" }, // রাজশাহী (Rajshahi)
+    { arrival: "10:10 am", departure: "10:20 am" }, // আমনুরা (Amnura)
+    { arrival: "11:15 am", departure: "END" } // রহনপুর (Rohanpur)
+  ]
+},
+
+"58": {
+  stations: [
+    { arrival: "START", departure: "01:15 pm" }, // রহনপুর (Rohanpur)
+    { arrival: "02:10 pm", departure: "02:20 pm" }, // আমনুরা (Amnura)
+    { arrival: "03:40 pm", departure: "04:00 pm" }, // রাজশাহী (Rajshahi)
+    { arrival: "05:15 pm", departure: "05:25 pm" }, // আব্দুলপুর (Abdulpur)
+    { arrival: "06:00 pm", departure: "END" } // ঈশ্বরদী (Ishurdi)
+  ]
+},
+
+"69": {
+  stations: [
+    { arrival: "START", departure: "05:30 pm" }, // ঈশ্বরদী (Ishurdi)
+    { arrival: "07:15 pm", departure: "07:35 pm" }, // রাজশাহী (Rajshahi)
+    { arrival: "09:40 pm", departure: "END" } // রহনপুর (Rohanpur)
+  ]
+},
+
+"70": {
+  stations: [
+    { arrival: "START", departure: "05:45 am" }, // রহনপুর (Rohanpur)
+    { arrival: "08:10 am", departure: "08:30 am" }, // রাজশাহী (Rajshahi)
+    { arrival: "10:20 am", departure: "END" } // ঈশ্বরদী (Ishurdi)
+  ]
+},
+
+"55": {
+  stations: [
+    { arrival: "START", departure: "06:30 pm" }, // সান্তাহার (Santahar)
+    { arrival: "07:45 pm", departure: "07:55 pm" }, // বগুড়া (Bogura)
+    { arrival: "09:20 pm", departure: "09:30 pm" }, // বোনারপাড়া (Bonarpara)
+    { arrival: "12:30 am", departure: "END" } // লালমনিরহাট (Lalmonirhat)
+  ]
+},
+
+"56": {
+  stations: [
+    { arrival: "START", departure: "08:00 am" }, // লালমনিরহাট (Lalmonirhat)
+    { arrival: "11:20 am", departure: "11:30 am" }, // বোনারপাড়া (Bonarpara)
+    { arrival: "01:10 pm", departure: "01:20 pm" }, // বগুড়া (Bogura)
+    { arrival: "02:40 pm", departure: "END" } // সান্তাহার (Santahar)
+  ]
+},
+
+// --- PADMARAG COMMUTER ---
+"61": {
+  stations: [
+    { arrival: "START", departure: "06:00 am" },
+    { arrival: "07:10 am", departure: "07:20 am" },
+    { arrival: "08:45 am", departure: "08:55 am" },
+    { arrival: "11:45 am", departure: "11:55 am" },
+    { arrival: "12:40 pm", departure: "END" }
+  ]
+},
+"62": {
+  stations: [
+    { arrival: "START", departure: "06:00 pm" },
+    { arrival: "06:45 pm", departure: "06:55 pm" },
+    { arrival: "09:20 pm", departure: "09:30 pm" },
+    { arrival: "10:55 pm", departure: "11:05 pm" },
+    { arrival: "12:30 am", departure: "END" }
+  ]
+},
+
+// --- KURIGRAM COMMUTER ---
+"65": {
+  stations: [
+    { arrival: "START", departure: "08:15 am" },
+    { arrival: "08:45 am", departure: "09:10 am" },
+    { arrival: "10:10 am", departure: "END" }
+  ]
+},
+"66": {
+  stations: [
+    { arrival: "START", departure: "10:40 am" },
+    { arrival: "11:40 am", departure: "12:05 pm" },
+    { arrival: "12:35 pm", departure: "END" }
+  ]
+},
+
+// --- LALMONI COMMUTER ---
+"67": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" },
+    { arrival: "07:15 am", departure: "07:25 am" },
+    { arrival: "08:00 am", departure: "08:10 am" },
+    { arrival: "09:30 am", departure: "END" }
+  ]
+},
+"68": {
+  stations: [
+    { arrival: "START", departure: "05:15 pm" },
+    { arrival: "06:35 pm", departure: "06:45 pm" },
+    { arrival: "07:20 pm", departure: "07:30 pm" },
+    { arrival: "08:20 pm", departure: "END" }
+  ]
+},
+
+// --- BURIMARI COMMUTER ---
+"71": {
+  stations: [
+    { arrival: "START", departure: "07:30 am" },
+    { arrival: "08:25 am", departure: "08:27 am" },
+    { arrival: "09:35 am", departure: "09:40 am" },
+    { arrival: "11:15 am", departure: "END" }
+  ]
+},
+"72": {
+  stations: [
+    { arrival: "START", departure: "12:15 pm" },
+    { arrival: "01:50 pm", departure: "01:55 pm" },
+    { arrival: "03:00 pm", departure: "03:02 pm" },
+    { arrival: "04:00 pm", departure: "END" }
+  ]
+},
+
+// --- DINAJPUR COMMUTER ---
+"77": {
+  stations: [
+    { arrival: "START", departure: "07:45 pm" },
+    { arrival: "08:30 pm", departure: "08:45 pm" },
+    { arrival: "10:40 pm", departure: "10:50 pm" },
+    { arrival: "12:15 am", departure: "END" }
+  ]
+},
+"78": {
+  stations: [
+    { arrival: "START", departure: "02:45 pm" },
+    { arrival: "04:05 pm", departure: "04:15 pm" },
+    { arrival: "06:10 pm", departure: "06:25 pm" },
+    { arrival: "07:10 pm", departure: "END" }
+  ]
+},
+
+// --- PARBATIPUR COMMUTER ---
+"53": {
+  stations: [
+    { arrival: "START", departure: "06:45 am" },
+    { arrival: "07:55 am", departure: "08:00 am" },
+    { arrival: "08:45 am", departure: "08:50 am" },
+    { arrival: "09:35 am", departure: "END" }
+  ]
+},
+"54": {
+  stations: [
+    { arrival: "START", departure: "12:30 pm" },
+    { arrival: "01:15 pm", departure: "01:20 pm" },
+    { arrival: "02:10 pm", departure: "02:15 pm" },
+    { arrival: "03:30 pm", departure: "END" }
+  ]
+},
+
+// --- PANCHAGARH COMMUTER ---
+"81": {
+  stations: [
+    { arrival: "START", departure: "05:15 am" },
+    { arrival: "06:00 am", departure: "06:15 am" },
+    { arrival: "07:25 am", departure: "07:27 am" },
+    { arrival: "08:15 am", departure: "08:25 am" },
+    { arrival: "09:40 am", departure: "END" }
+  ]
+},
+"82": {
+  stations: [
+    { arrival: "START", departure: "10:30 am" },
+    { arrival: "11:50 am", departure: "12:00 pm" },
+    { arrival: "02:00 pm", departure: "02:15 pm" },
+    { arrival: "03:10 pm", departure: "END" }
+  ]
+},
+
+// --- BENAPOLE COMMUTER ---
+"95": {
+  stations: [
+    { arrival: "START", departure: "06:15 pm" },
+    { arrival: "07:35 pm", departure: "07:50 pm" },
+    { arrival: "08:50 pm", departure: "END" }
+  ]
+},
+"96": {
+  stations: [
+    { arrival: "START", departure: "09:15 pm" },
+    { arrival: "10:15 pm", departure: "10:30 pm" },
+    { arrival: "11:50 pm", departure: "END" }
+  ]
+},
+
+// --- BETNA COMMUTER ---
+"91": {
+  stations: [
+    { arrival: "START", departure: "06:10 am" },
+    { arrival: "07:25 am", departure: "07:45 am" },
+    { arrival: "08:45 am", departure: "END" }
+  ]
+},
+"92": {
+  stations: [
+    { arrival: "START", departure: "09:15 am" },
+    { arrival: "10:15 am", departure: "10:30 am" },
+    { arrival: "11:50 am", departure: "END" }
+  ]
+},
+
+// --- KHULNA COMMUTER ---
+"93": {
+  stations: [
+    { arrival: "START", departure: "12:30 pm" },
+    { arrival: "01:50 pm", departure: "02:05 pm" },
+    { arrival: "03:00 pm", departure: "END" }
+  ]
+},
+"94": {
+  stations: [
+    { arrival: "START", departure: "03:30 pm" },
+    { arrival: "04:30 pm", departure: "04:45 pm" },
+    { arrival: "06:05 pm", departure: "END" }
+  ]
+},
+// --- LAKSAM COMMUTER ---
+"63": {
+  stations: [
+    { arrival: "START", departure: "07:30 am" },
+    { arrival: "08:10 am", departure: "08:35 am" },
+    { arrival: "09:30 am", departure: "09:32 am" },
+    { arrival: "10:50 am", departure: "END" }
+  ]
+},
+"64": {
+  stations: [
+    { arrival: "START", departure: "01:30 pm" },
+    { arrival: "02:40 pm", departure: "02:42 pm" },
+    { arrival: "03:45 pm", departure: "04:10 pm" },
+    { arrival: "04:50 pm", departure: "END" }
+  ]
+},
+
+// --- CHANDPUR COMMUTER ---
+"105": {
+  stations: [
+    { arrival: "START", departure: "05:00 am" },
+    { arrival: "05:35 am", departure: "05:37 am" },
+    { arrival: "06:15 am", departure: "06:17 am" },
+    { arrival: "07:15 am", departure: "END" }
+  ]
+},
+"106": {
+  stations: [
+    { arrival: "START", departure: "08:15 am" },
+    { arrival: "09:10 am", departure: "09:12 am" },
+    { arrival: "09:50 am", departure: "09:52 am" },
+    { arrival: "10:30 am", departure: "END" }
+  ]
+},
+
+// --- COMILLA COMMUTER ---
+"87": {
+  stations: [
+    { arrival: "START", departure: "11:45 pm" },
+    { arrival: "12:15 am", departure: "12:20 am" },
+    { arrival: "03:10 am", departure: "03:15 am" },
+    { arrival: "03:45 am", departure: "04:10 am" },
+    { arrival: "05:45 am", departure: "END" }
+  ]
+},
+"88": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" },
+    { arrival: "08:15 am", departure: "08:40 am" },
+    { arrival: "09:05 am", departure: "09:10 am" },
+    { arrival: "11:35 am", departure: "11:40 am" },
+    { arrival: "12:20 pm", departure: "END" }
+  ]
+},
+
+// --- NOAKHALI COMMUTER ---
+"11": {
+  stations: [
+    { arrival: "START", departure: "07:20 pm" },
+    { arrival: "11:40 pm", departure: "11:50 pm" },
+    { arrival: "12:30 am", departure: "12:55 am" },
+    { arrival: "02:05 am", departure: "02:07 am" },
+    { arrival: "03:40 am", departure: "END" }
+  ]
+},
+"12": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" },
+    { arrival: "09:10 am", departure: "09:35 am" },
+    { arrival: "10:15 am", departure: "10:25 am" },
+    { arrival: "03:45 pm", departure: "END" }
+  ]
+},
+
+// --- SYLHET COMMUTER ---
+"61": {
+  stations: [
+    { arrival: "START", departure: "12:30 pm" },
+    { arrival: "01:55 pm", departure: "02:05 pm" },
+    { arrival: "02:50 pm", departure: "02:55 pm" },
+    { arrival: "04:15 pm", departure: "04:20 pm" },
+    { arrival: "06:00 pm", departure: "END" }
+  ]
+},
+
+// --- JOYDEBPUR COMMUTER ---
+"1": {
+  stations: [
+    { arrival: "START", departure: "08:15 am" },
+    { arrival: "08:28 am", departure: "08:30 am" },
+    { arrival: "08:50 am", departure: "08:55 am" },
+    { arrival: "09:10 am", departure: "09:12 am" },
+    { arrival: "09:40 am", departure: "END" }
+  ]
+},
+
+// --- NARAYANGANJ COMMUTER ---
+"201": {
+  stations: [
+    { arrival: "START", departure: "05:00 am" },
+    { arrival: "05:12 am", departure: "05:14 am" },
+    { arrival: "05:40 am", departure: "05:42 am" },
+    { arrival: "05:50 am", departure: "END" }
+  ]
+},
+
+// --- NAZIRHAT COMMUTER ---
+"121": {
+  stations: [
+    { arrival: "START", departure: "06:30 am" },
+    { arrival: "06:45 am", departure: "06:47 am" },
+    { arrival: "07:30 am", departure: "07:35 am" },
+    { arrival: "08:20 am", departure: "END" }
+  ]
+},
+
+// --- ROHANPUR COMMUTER ---
+"77": {
+  stations: [
+    { arrival: "START", departure: "03:15 pm" },
+    { arrival: "04:55 pm", departure: "05:15 pm" },
+    { arrival: "06:15 pm", departure: "06:20 pm" },
+    { arrival: "07:00 pm", departure: "END" }
+  ]
+},
+
+// --- KANCHAN COMMUTER ---
+"73": {
+  stations: [
+    { arrival: "START", departure: "07:30 am" },
+    { arrival: "08:15 am", departure: "08:30 am" },
+    { arrival: "10:30 am", departure: "10:40 am" },
+    { arrival: "11:55 am", departure: "END" }
+  ]
+},
+"74": {
+  stations: [
+    { arrival: "START", departure: "12:30 pm" },
+    { arrival: "01:50 pm", departure: "02:00 pm" },
+    { arrival: "04:00 pm", departure: "04:15 pm" },
+    { arrival: "05:00 pm", departure: "END" }
+  ]
+},
+
+// --- SAGARIKA COMMUTER ---
+"31": {
+  stations: [
+    { arrival: "START", departure: "07:40 am" },
+    { arrival: "09:45 am", departure: "09:50 am" },
+    { arrival: "10:45 am", departure: "11:10 am" },
+    { arrival: "01:20 pm", departure: "END" }
+  ]
+},
+"32": {
+  stations: [
+    { arrival: "START", departure: "02:15 pm" },
+    { arrival: "04:20 pm", departure: "04:45 pm" },
+    { arrival: "05:40 pm", departure: "05:45 pm" },
+    { arrival: "08:20 pm", departure: "END" }
+  ]
+},
+
+// --- MOHUA COMMUTER ---
+"43": {
+  stations: [
+    { arrival: "START", departure: "08:20 am" },
+    { arrival: "10:50 am", departure: "10:55 am" },
+    { arrival: "12:05 pm", departure: "12:30 pm" },
+    { arrival: "01:55 pm", departure: "02:00 pm" },
+    { arrival: "03:15 pm", departure: "END" }
+  ]
+},
+"44": {
+  stations: [
+    { arrival: "START", departure: "09:30 pm" },
+    { arrival: "10:45 pm", departure: "10:50 pm" },
+    { arrival: "12:45 am", departure: "01:10 am" },
+    { arrival: "04:50 am", departure: "END" }
+  ]
+},
+
+// --- TURAG EXPRESS ---
+"97": {
+  stations: [
+    { arrival: "START", departure: "07:15 am" },
+    { arrival: "07:40 am", departure: "07:42 am" },
+    { arrival: "08:00 am", departure: "08:05 am" },
+    { arrival: "08:50 am", departure: "END" }
+  ]
+},
+
+// --- KARNAPHULI COMMUTER ---
+"3": {
+  stations: [
+    { arrival: "START", departure: "08:45 am" },
+    { arrival: "11:55 am", departure: "12:00 pm" },
+    { arrival: "12:35 pm", departure: "01:00 pm" },
+    { arrival: "02:35 pm", departure: "02:45 pm" },
+    { arrival: "04:15 pm", departure: "04:20 pm" },
+    { arrival: "06:50 pm", departure: "END" }
+  ]
+},
+"4": {
+  stations: [
+    { arrival: "START", departure: "10:00 am" },
+    { arrival: "12:35 pm", departure: "12:40 pm" },
+    { arrival: "02:10 pm", departure: "02:20 pm" },
+    { arrival: "04:00 pm", departure: "04:25 pm" },
+    { arrival: "04:55 pm", departure: "05:00 pm" },
+    { arrival: "08:25 pm", departure: "END" }
+  ]
+}
+
+
 };
 
 const parseToMinutes = (timeStr) => {
