@@ -9,7 +9,7 @@ import {
   TrainFront, CreditCard, Gavel // মেট্রো সেকশনের জন্য নতুন আইকন
 } from 'lucide-react';
 import PullToRefresh from 'react-pull-to-refresh';
-
+import { IonContent, IonRefresher, IonRefresherContent } from '@ionic/react';
 const HomePage = () => {
   const [searchMode, setSearchMode] = useState('name'); 
   const [searchTerm, setSearchTerm] = useState('');
@@ -150,6 +150,15 @@ useEffect(() => {
 }, []);
 
   return (
+    <IonContent> 
+    {/* রিফ্রেশারটি একদম শুরুতে রাখুন */}
+    <IonRefresher slot="fixed" onIonRefresh={(event) => {
+      window.location.reload();
+      event.detail.complete();
+    }}>
+      <IonRefresherContent pullingText="টান দিন..." refreshingSpinner="circles" />
+    </IonRefresher>
+    
     <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '100px' }}>
 
       <div style={{ 
@@ -237,6 +246,7 @@ useEffect(() => {
 
         </div>
       </div>
+      
 
       {/* Search Container */}
       <div style={{ margin: '-50px 20px 0', backgroundColor: 'white', borderRadius: '30px', padding: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', position: 'relative', zIndex: 100 }}>
@@ -564,6 +574,7 @@ useEffect(() => {
         </div>
       )}
     </div>
+    </IonContent>
   );
 };
 
