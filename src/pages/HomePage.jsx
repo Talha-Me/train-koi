@@ -150,14 +150,13 @@ useEffect(() => {
 }, []);
 
   return (
-    <IonContent> 
-    {/* রিফ্রেশারটি একদম শুরুতে রাখুন */}
-    <IonRefresher slot="fixed" onIonRefresh={(event) => {
-      window.location.reload();
-      event.detail.complete();
-    }}>
-      <IonRefresherContent pullingText="টান দিন..." refreshingSpinner="circles" />
-    </IonRefresher>
+<IonContent fullscreen={true}> 
+      <IonRefresher slot="fixed" onIonRefresh={(event) => {
+        window.location.reload();
+        event.detail.complete();
+      }}>
+        <IonRefresherContent pullingText="টান দিন..." refreshingSpinner="circles" />
+      </IonRefresher>
     
     <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '100px' }}>
 
