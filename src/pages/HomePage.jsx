@@ -705,15 +705,17 @@ const HomePage = () => {
   ];
 
   return (
-    <div style={{ 
-      backgroundColor: '#f4f7f6', 
-      minHeight: '100vh', 
-      fontFamily: "'Hind Siliguri', sans-serif", 
-      paddingBottom: '100px',
-      overflowX: 'hidden',
-      overflowY: 'auto', // মাউস স্ক্রল নিশ্চিত করার জন্য
-      position: 'relative'
-    }}>
+<div style={{ 
+  backgroundColor: '#f4f7f6', 
+  minHeight: '100vh', 
+  width: '100%',
+  fontFamily: "'Hind Siliguri', sans-serif", 
+  paddingBottom: '100px',
+  overflowX: 'hidden',
+  overflowY: 'auto', // মাউস স্ক্রল নিশ্চিত করতে
+  position: 'relative',
+  pointerEvents: 'auto' // নিশ্চিত করে যে মাউস ক্লিক/হুইল কাজ করবে
+}}>
       {/* Header Section */}
       <div style={{ 
         background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 

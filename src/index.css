@@ -11,26 +11,33 @@ body {
 
 /* index.css */
 * {
+  box-sizing: border-box;
   font-family: 'Hind Siliguri', sans-serif;
   -webkit-font-smoothing: antialiased;
-  /* রিফ্রেশার যাতে বাধা না পায় */
-  touch-action: pan-y; 
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #f0f2f5;
-  height: 100%;
+  background-color: #f4f7f6;
+  /* height: 100% স্ক্রল আটকে দেয়, তাই এটি ব্যবহার করুন */
+  min-height: 100vh;
   width: 100%;
-  /* এটিই মূল কোড যা Chrome-এর মতো রিফ্রেশার ট্রিগার করে */
-  overscroll-behavior-y: contain;
+  /* স্ক্রল সচল রাখতে নিচের লাইনগুলো গুরুত্বপূর্ণ */
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  scroll-behavior: smooth;
 }
 
 #root {
   min-height: 100vh;
   width: 100%;
-  overflow-y: auto;
-  /* রিফ্রেশার যাতে মসৃণভাবে কাজ করে */
-  overscroll-behavior-y: contain;
+  display: flex;
+  flex-direction: column;
+  /* root লেভেলে overflow-y: auto অনেক সময় মাউস হুইল ব্লক করে, তাই এটি visible রাখা ভালো */
+  overflow-y: visible;
+  position: relative;
 }
+
+/* রিফ্রেশার যাতে মাউসের চাকায় বাধা না দেয় তার জন্য নির্দিষ্ট কিছু বাদ দেওয়া হয়েছে */
