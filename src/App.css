@@ -41,3 +41,19 @@
   color: #888;
 }
 
+/* পুল-টু-রিফ্রেশ এরিয়া যেন পুরো স্ক্রিন পায় */
+.ptr__children {
+  min-height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* আইফোনের জন্য স্মুথ স্ক্রলিং */
+}
+
+/* রিফ্রেশ হওয়ার সময় এনিমেশন (ঐচ্ছিক) */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
