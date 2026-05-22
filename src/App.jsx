@@ -115,7 +115,8 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react'; 
-import PullToRefresh from 'react-simple-pull-to-refresh'; // নতুন যোগ করা হয়েছে
+import ReactGA from 'react-ga4'; // গুগল অ্যানালিটিক্স প্যাকেজ ইমপোর্ট করা হলো
+import PullToRefresh from 'react-simple-pull-to-refresh'; // নতুন যোগ করা হয়েছে
 import { RefreshCw } from 'lucide-react';
 
 // Pages Import
@@ -143,6 +144,12 @@ import Disclaimer from './pages/Disclaimer';
 
 // Capacitor for App
 import { App as CapacitorApp } from '@capacitor/app';
+
+// .env বা Vercel সেটিংস থেকে Google Analytics ID রিড করে ইনিশিয়ালাইজ করা
+const GA_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
+if (GA_ID) {
+  ReactGA.initialize(GA_ID);
+}
 
 // ১. গ্লোবাল রিফ্রেশ লেআউট কম্পোনেন্ট
 const PullToRefreshLayout = ({ children }) => {
@@ -180,6 +187,17 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // গুগল অ্যানালিটিক্স পেজ ভিউ ট্র্যাকিং হুক
+  useEffect(() => {
+    if (GA_ID) {
+      ReactGA.send({ 
+        hitType: 'pageview', 
+        page: location.pathname + location.search 
+      });
+    }
+  }, [location]); // প্রতিবার রাউট বা ইউআরএল পরিবর্তন হলে এটি রান করবে
+
+  // ক্যাপাসিটর ব্যাক বাটন হ্যান্ডলার
   useEffect(() => {
     const handleBackButton = async (data) => {
       if (location.pathname === '/' || !data.canGoBack) {
@@ -198,7 +216,7 @@ function AppContent() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* ২. এখানে আমরা পুরো রাউটসকে রিফ্রেশ লেআউটের ভেতরে ঢুকিয়ে দিলাম */}
+      {/* ২. এখানে আমরা পুরো রাউটসকে রিফ্রেশ লেআউটের ভেতরে ঢুকিয়ে দিলাম */}
       <PullToRefreshLayout>
         <div style={{ flex: 1 }}>
           <Routes>
