@@ -57,13 +57,33 @@ const Footer = () => {
         {/* কলাম ২: লিঙ্কসমূহ */}
         <div>
           <h4 style={{ fontSize: '18px', marginBottom: '20px', borderBottom: '2px solid #2ecc71', display: 'inline-block', paddingBottom: '5px' }}>গুরুত্বপূর্ণ লিঙ্ক</h4>
-          <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px' }}>
+          {/* <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px' }}>
             <li style={{ marginBottom: '10px' }}><a href="/" style={{ color: '#cbd5e1', textDecoration: 'none' }}>হোম পেজ</a></li>
             <li style={{ marginBottom: '10px' }}><a href="/schedule" style={{ color: '#cbd5e1', textDecoration: 'none' }}>ট্রেন শিডিউল</a></li>
             <li style={{ marginBottom: '10px' }}><a href="/blogs" style={{ color: '#cbd5e1', textDecoration: 'none' }}>ভ্রমণ ব্লগ</a></li>
             <li style={{ marginBottom: '10px' }}><a href="https://eticket.railway.gov.bd/" target="_blank" style={{ color: '#cbd5e1', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}>টিকিট বুকিং <ExternalLink size={14} /></a></li>
             <li style={{ marginBottom: '10px' }}><a href="/Contact" style={{ color: '#cbd5e1', textDecoration: 'none' }}>যোগাযোগ করুন</a></li>
-          </ul>
+          </ul> */}
+          <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+  {/* প্রধান লিংকসমূহ */}
+  <li style={{ marginBottom: '10px' }}>
+    <a href="/" style={{ color: '#cbd5e1', textDecoration: 'none' }}>হোম পেজ</a>
+  </li>
+
+  <li style={{ marginBottom: '15px' }}>
+    <a href="/Contact" style={{ color: '#cbd5e1', textDecoration: 'none' }}>যোগাযোগ করুন</a>
+  </li>
+  {/* আইনি ও পলিসি লিংকসমূহ (AdSense পাসের জন্য অত্যন্ত জরুরি) */}
+  <li style={{ marginBottom: '10px' }}>
+    <a href="privacy" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>প্রাইভেসি পলিসি</a>
+  </li>
+  <li style={{ marginBottom: '10px' }}>
+    <a href="/terms" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>ব্যবহারের শর্তাবলী</a>
+  </li>
+  <li style={{ marginBottom: '10px' }}>
+    <a href="/disclaimer" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>দায়মুক্তি নোটিশ</a>
+  </li>
+</ul>
         </div>
 
         {/* কলাম ৩: কন্টাক্ট */}
