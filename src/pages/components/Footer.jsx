@@ -75,7 +75,7 @@ const Footer = () => {
   </li>
   {/* আইনি ও পলিসি লিংকসমূহ (AdSense পাসের জন্য অত্যন্ত জরুরি) */}
   <li style={{ marginBottom: '10px' }}>
-    <a href="/privacy-policy" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>প্রাইভেসি পলিসি</a>
+    <a href="privacy" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>প্রাইভেসি পলিসি</a>
   </li>
   <li style={{ marginBottom: '10px' }}>
     <a href="/terms" style={{ color: '#cbd5e1', textDecoration: 'none', fontSize: '14px' }}>ব্যবহারের শর্তাবলী</a>
