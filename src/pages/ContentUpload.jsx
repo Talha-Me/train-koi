@@ -10,13 +10,16 @@ const ContentUpload = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  // Tabs: 'create' ba 'manage'
+  // Tabs: 'create' অথবা 'manage'
   const [activeTab, setActiveTab] = useState('create');
 
   // Form State
   const [type, setType] = useState('news');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState('ভ্রমণ গাইড');
+  const [author, setAuthor] = useState('TrainKoi Team');
+  const [thumbnail, setThumbnail] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', text: '' });
 
@@ -26,9 +29,10 @@ const ContentUpload = () => {
   const [listLoading, setListLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
+  // Backend Host Logic (লোকালহোস্ট ও লাইভ রেন্ডার ব্যাকএন্ড)
   const isLocal = typeof window !== 'undefined' && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://api.trainkoi.com';
+  const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onrender.com';
 
   useEffect(() => {
     const savedToken = localStorage.getItem('trainkoi_admin_token');
@@ -37,19 +41,12 @@ const ContentUpload = () => {
     }
   }, []);
 
-  // Manage Tab-e thakle list load hobe
-  useEffect(() => {
-    if (isLoggedIn && activeTab === 'manage') {
-      fetchManageList();
-    }
-  }, [isLoggedIn, activeTab, manageType]);
-
   const fetchManageList = async () => {
     setListLoading(true);
     try {
       const endpoint = manageType === 'news' ? '/api/news' : '/api/blogs';
       const res = await fetch(`${API_BASE_URL}${endpoint}`);
-      if (!res.ok) throw new Error('Data load korte parini');
+      if (!res.ok) throw new Error('Data load failed');
       const data = await res.json();
       setContentList(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -59,6 +56,14 @@ const ContentUpload = () => {
       setListLoading(false);
     }
   };
+
+  // Manage Tab সক্রিয় থাকলে ডেটা ফেচ হবে
+  useEffect(() => {
+    if (isLoggedIn && activeTab === 'manage') {
+      fetchManageList();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, activeTab, manageType]);
 
   // Login Handler
   const handleLogin = async (e) => {
@@ -77,14 +82,14 @@ const ContentUpload = () => {
       if (res.ok && data.success) {
         localStorage.setItem('trainkoi_admin_token', data.token);
         setIsLoggedIn(true);
-        setStatus({ type: 'success', text: 'স্বাগতম! অ্যাডমিন হিসেবে লগইন সফল হয়েছে।' });
+        setStatus({ type: 'success', text: 'স্বাগতম! অ্যাডমিন হিসেবে লগইন সফল হয়েছে।' });
         setUsername('');
         setPassword('');
       } else {
-        setStatus({ type: 'error', text: data.error || 'লগইন ব্যর্থ হয়েছে!' });
+        setStatus({ type: 'error', text: data.error || 'লগইন ব্যর্থ হয়েছে!' });
       }
     } catch (err) {
-      setStatus({ type: 'error', text: 'সার্ভারে কানেক্ট করা যাচ্ছে না! ব্যাকএন্ড (port 5001) রানিং আছে কি না দেখুন।' });
+      setStatus({ type: 'error', text: 'সার্ভারে কানেক্ট করা যাচ্ছে না! ব্যাকএন্ড সচল আছে কি না দেখুন।' });
     } finally {
       setLoading(false);
     }
@@ -112,30 +117,35 @@ const ContentUpload = () => {
 
     try {
       const endpoint = type === 'news' ? '/api/news/create' : '/api/blogs/create';
+      const payload = type === 'news' 
+        ? { title, content, thumbnail, source: author }
+        : { title, content, thumbnail, category, author };
+
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ title, content })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        setStatus({ type: 'success', text: 'সফলভাবে ডাটাবেসে সেভ হয়েছে!' });
+        setStatus({ type: 'success', text: 'সফলভাবে ডাটাবেসে সেভ হয়েছে!' });
         setTitle('');
         setContent('');
+        setThumbnail('');
       } else {
         if (res.status === 403 || res.status === 401) {
           localStorage.removeItem('trainkoi_admin_token');
           setIsLoggedIn(false);
         }
-        setStatus({ type: 'error', text: data.error || 'পোস্ট ব্যর্থ হয়েছে' });
+        setStatus({ type: 'error', text: data.error || 'পোস্ট প্রকাশ করা যায়নি।' });
       }
     } catch (err) {
-      setStatus({ type: 'error', text: 'সার্ভার এরর! ব্যাকএন্ড সচল আছে কি না দেখুন।' });
+      setStatus({ type: 'error', text: 'সার্ভার এরর! ব্যাকএন্ড সংযোগ পরীক্ষা করুন।' });
     } finally {
       setLoading(false);
     }
@@ -145,7 +155,7 @@ const ContentUpload = () => {
   const handleDelete = async (targetItem) => {
     const targetId = targetItem._id || targetItem.id;
     if (!targetId) {
-      alert("পোস্টটির ডেটাবেস ID পাওয়া যায়নি!");
+      alert("পোস্টটির ডেটাবেস ID পাওয়া যায়নি!");
       return;
     }
 
@@ -159,7 +169,6 @@ const ContentUpload = () => {
     try {
       const endpoint = manageType === 'news' ? `/api/news/${targetId}` : `/api/blogs/${targetId}`;
       const url = `${API_BASE_URL}${endpoint}`;
-      console.log("Requesting DELETE URL:", url);
 
       const res = await fetch(url, {
         method: 'DELETE',
@@ -172,21 +181,21 @@ const ContentUpload = () => {
 
       if (res.ok && data.success) {
         setContentList(prev => prev.filter(item => (item._id || item.id) !== targetId));
-        setStatus({ type: 'success', text: 'আইটেমটি সফলভাবে ডাটাবেস থেকে মুছে ফেলা হয়েছে!' });
+        setStatus({ type: 'success', text: 'আইটেমটি সফলভাবে ডাটাবেস থেকে মুছে ফেলা হয়েছে!' });
       } else {
         if (res.status === 403 || res.status === 401) {
           localStorage.removeItem('trainkoi_admin_token');
           setIsLoggedIn(false);
-          setStatus({ type: 'error', text: 'সেশন শেষ হয়ে গেছে! অনুগ্রহ করে পুনরায় লগইন করুন।' });
+          setStatus({ type: 'error', text: 'সেশন শেষ হয়ে গেছে! অনুগ্রহ করে পুনরায় লগইন করুন।' });
         } else if (res.status === 404) {
-          setStatus({ type: 'error', text: 'পোস্টটি সার্ভারে খুঁজে পাওয়া যায়নি (404)! ব্যাকএন্ড রিস্টার্ট করা হয়েছে কি না চেক করুন।' });
+          setStatus({ type: 'error', text: 'পোস্টটি সার্ভারে খুঁজে পাওয়া যায়নি (404)!' });
         } else {
-          setStatus({ type: 'error', text: data.error || 'মুছে ফেলা সম্ভব হয়নি!' });
+          setStatus({ type: 'error', text: data.error || 'মুছে ফেলা সম্ভব হয়নি!' });
         }
       }
     } catch (err) {
       console.error("Delete request error:", err);
-      setStatus({ type: 'error', text: 'ডিলিট করতে সমস্যা হয়েছে! সার্ভার সংযোগ পরীক্ষা করুন।' });
+      setStatus({ type: 'error', text: 'ডিলিট করতে সমস্যা হয়েছে! সার্ভার সংযোগ পরীক্ষা করুন।' });
     } finally {
       setDeletingId(null);
     }
@@ -208,6 +217,7 @@ const ContentUpload = () => {
           </div>
           {isLoggedIn && (
             <button 
+              type="button"
               onClick={handleLogout}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '8px 14px', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
             >
@@ -254,12 +264,12 @@ const ContentUpload = () => {
 
             <div>
               <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Lock size={16} color="#006a4e" /> পাসওয়ার্ড:
+                <Lock size={16} color="#006a4e" /> পাসওয়ার্ড:
               </label>
               <input 
                 type="password" 
                 required
-                placeholder="অ্যাডমিন পাসওয়ার্ড দিন..."
+                placeholder="অ্যাডমিন পাসওয়ার্ড দিন..."
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px', boxSizing: 'border-box' }}
@@ -358,16 +368,44 @@ const ContentUpload = () => {
                   <input 
                     type="text" 
                     required
-                    placeholder="পোস্টের আকর্ষণীয় শিরোনাম লিখুন..."
+                    placeholder="পোস্টের আকর্ষণীয় শিরোনাম লিখুন..."
                     value={title} 
                     onChange={(e) => setTitle(e.target.value)} 
                     style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px', boxSizing: 'border-box' }}
                   />
                 </div>
 
+                {type === 'blogs' && (
+                  <div>
+                    <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px', display: 'block' }}>
+                      ক্যাটাগরি:
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="যেমন: ভ্রমণ গাইড, টিপস, টিকিট নিয়ম"
+                      value={category} 
+                      onChange={(e) => setCategory(e.target.value)} 
+                      style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px', display: 'block' }}>
-                    বিস্তারিত বিষয়বস্তু (Content):
+                    থাম্বনেইল ইমেজ লিঙ্ক (Optional):
+                  </label>
+                  <input 
+                    type="url" 
+                    placeholder="ছবির সরাসরি লিঙ্ক (https://...)"
+                    value={thumbnail} 
+                    onChange={(e) => setThumbnail(e.target.value)} 
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '14px', fontWeight: 'bold', color: '#334155', marginBottom: '6px', display: 'block' }}>
+                    বিস্তারিত বিষয়বস্তু (Content):
                   </label>
                   <textarea 
                     rows="9" 
@@ -524,7 +562,7 @@ const ContentUpload = () => {
                   </div>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '40px 10px', backgroundColor: '#f8fafc', borderRadius: '14px', border: '1px dashed #cbd5e1' }}>
-                    <p style={{ margin: 0, fontSize: '13.5px', color: '#64748b' }}>ডাটাবেসে কোনো {manageType === 'news' ? 'সংবাদ' : 'ব্লগ'} পাওয়া যায়নি।</p>
+                    <p style={{ margin: 0, fontSize: '13.5px', color: '#64748b' }}>ডাটাবেসে কোনো {manageType === 'news' ? 'সংবাদ' : 'ব্লগ'} পাওয়া যায়নি।</p>
                   </div>
                 )}
               </div>
