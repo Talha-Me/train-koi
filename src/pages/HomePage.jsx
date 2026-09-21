@@ -587,6 +587,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trains } from '../data/trainData'; 
+import { Newspaper } from 'lucide-react';
 import { 
   Search, MapPin, Settings, Bell, Navigation, ArrowRightLeft, X, 
   Train, BookOpen, User, Info, MessageSquare, ShieldAlert, 
@@ -694,7 +695,7 @@ const HomePage = () => {
   })();
 
   const features = [
-    { title: 'বই পড়ুন', icon: <BookOpen size={24} />, color: '#9b59b6', path: '/books' }, 
+    { title: 'রেল সংবাদ', icon: <Newspaper size={24} />, color: '#e67e22', path: '/rail-news' },
     { title: 'ট্রেন টিকিট', icon: <Ticket size={24} />, color: '#e67e22', external: 'https://eticket.railway.gov.bd/' }, 
     { title: 'ট্রেন ব্লগ', icon: <MessageSquare size={24} />, color: '#2ecc71', path: '/blogs' }, 
     { title: 'ভ্রমণ আইন', icon: <ShieldAlert size={24} />, color: '#e74c3c', path: '/travel-laws' },

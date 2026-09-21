@@ -201,6 +201,7 @@ const axios = require('axios');
 const connectDB = require('./config/db');
 const Train = require('./models/Train');
 const Message = require('./models/Message');
+const contentRoutes = require('./routes/contentRoutes');
 
 dotenv.config();
 connectDB();
@@ -208,7 +209,7 @@ connectDB();
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use('/api', contentRoutes);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] }

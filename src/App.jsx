@@ -126,8 +126,7 @@ import TravelLaws from './pages/TravelLaws';
 import TrainSchedule from './pages/TrainSchedule'; 
 import BlogList from './pages/BlogList';
 import BlogDetail from './pages/BlogDetail';
-import BookList from './pages/BookList'; 
-import BookReader from './pages/BookReader'; 
+
 import Footer from "./pages/components/Footer";
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
@@ -141,7 +140,8 @@ import MetroRules from './pages/MetroRules';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Disclaimer from './pages/Disclaimer';
-
+import NewsList from './pages/NewsList';
+import ContentUpload from './pages/ContentUpload';
 // Capacitor for App
 import { App as CapacitorApp } from '@capacitor/app';
 
@@ -232,12 +232,12 @@ function AppContent() {
             <Route path="/travel-laws" element={<TravelLaws />} />
             <Route path="/blogs" element={<BlogList />} />
             <Route path="/blog/:id" element={<BlogDetail />} />
-            <Route path="/books" element={<BookList />} />
-            <Route path="/book/:id" element={<BookReader />} />
+            <Route path="/rail-news" element={<NewsList />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/admin-upload" element={<ContentUpload />} />
 
             {/* আইনি পেজগুলোর রাউট */}
             <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -250,6 +250,7 @@ function AppContent() {
             <Route path="/metro/fare" element={<MetroFare />} />
             <Route path="/metro/map" element={<MetroMap />} />
             <Route path="/metro/rules" element={<MetroRules />} />
+            
           </Routes>
         </div>
       </PullToRefreshLayout>

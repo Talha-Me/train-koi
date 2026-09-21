@@ -1131,4 +1131,11 @@
   <priority>1.0</priority>
   <changefreq>always</changefreq>
 </url>
+<!-- Rail News Main Page -->
+  <url>
+    <loc>https://trainkoi.com/rail-news</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>
