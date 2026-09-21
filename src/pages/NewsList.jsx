@@ -5,273 +5,7 @@ import {
   ChevronDown, ChevronUp, Share2, Clock, Radio, Check, WifiOff
 } from 'lucide-react';
 
-/* ---------- helpers ---------- */
-const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-
-const dayLabel = (value) => {
-  if (!value) return 'আজ';
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return 'আজ';
-  const now = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(now.getDate() - 1);
-  if (dayKey(d) === dayKey(now)) return 'আজ';
-  if (dayKey(d) === dayKey(yesterday)) return 'গতকাল';
-  return d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
-};
-
-const timeLabel = (value) => {
-  if (!value) return '';
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return '';
-  return d.toLocaleTimeString('bn-BD', { hour: 'numeric', minute: '2-digit' });
-};
-
-const isFresh = (value) => {
-  if (!value) return false;
-  const t = new Date(value).getTime();
-  return !isNaN(t) && Date.now() - t < 24 * 60 * 60 * 1000;
-};
-
-const readMinutes = (text = '') => {
-  const words = text.split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(words / 160)).toLocaleString('bn-BD');
-};
-
-const groupByDay = (items) => {
-  const groups = [];
-  items.forEach((item, index) => {
-    const label = dayLabel(item.createdAt);
-    const last = groups[groups.length - 1];
-    const entry = { item, index };
-    if (last && last.label === label) last.items.push(entry);
-    else groups.push({ label, items: [entry] });
-  });
-  return groups;
-};
-
-const NoticeText = ({ className }) => (
-  <div className={`nw-notice ${className || ''}`}>
-    <Radio size={18} />
-    <span>ট্রেন শিডিউল, টিকিট রিফান্ড ও জরুরি সতর্কবার্তা সবার আগে জানতে এখানে চোখ রাখুন।</span>
-  </div>
-);
-
-const NewsList = () => {
-  const navigate = useNavigate();
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
-  const [copiedId, setCopiedId] = useState(null);
-
-  const isLocal = typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://api.trainkoi.com';
-
-  const fetchNews = () => {
-    setLoading(true);
-    setError(false);
-    fetch(`${API_BASE_URL}/api/news`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Network error');
-        return res.json();
-      })
-      .then((data) => {
-        setNews(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('News fetch error:', err);
-        setError(true);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    fetchNews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const toggleExpand = (id) => setExpandedId((prev) => (prev === id ? null : id));
-
-  const handleShare = async (item, id) => {
-    const shareUrl = window.location.href;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: item.title, text: item.title, url: shareUrl });
-        return;
-      }
-    } catch (err) {
-      if (err && err.name === 'AbortError') return;
-    }
-    try {
-      await navigator.clipboard.writeText(`${item.title}\n${shareUrl}`);
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
-      console.error('Copy failed:', err);
-    }
-  };
-
-  const groups = groupByDay(news);
-  const latestTime = news[0] ? `${dayLabel(news[0].createdAt)}${timeLabel(news[0].createdAt) ? `, ${timeLabel(news[0].createdAt)}` : ''}` : '';
-
-  return (
-    <div className="nw-page">
-      <style>{css}</style>
-
-      {/* Sticky top bar with a railway track edge */}
-      <header className="nw-bar">
-        <div className="nw-bar-in">
-          <button className="nw-icon-btn" onClick={() => navigate(-1)} aria-label="Back">
-            <ChevronLeft size={22} />
-          </button>
-
-          <div className="nw-bar-title">
-            <h1>রেল বার্তা ও লাইভ নোটিশ</h1>
-            <p><span className="nw-live-dot" /> বাংলাদেশ রেলওয়ে সর্বশেষ আপডেট</p>
-          </div>
-
-          <button className="nw-icon-btn" onClick={fetchNews} title="রিফ্রেশ করুন" aria-label="রিফ্রেশ করুন">
-            <RefreshCw size={17} className={loading ? 'nw-spin' : ''} />
-          </button>
-        </div>
-        <div className="nw-track" aria-hidden="true" />
-      </header>
-
-      <main className="nw-main">
-        <NoticeText className="nw-notice-strip" />
-
-        <div className="nw-layout">
-          {/* ---------- Feed ---------- */}
-          <div className="nw-feed">
-            {loading ? (
-              <div className="nw-group">
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className="nw-skel-card">
-                    <div className="nw-skel" style={{ height: 20, width: '70%' }} />
-                    <div className="nw-skel" style={{ height: 13, width: '38%', marginTop: 12 }} />
-                    <div className="nw-skel" style={{ height: 13, width: '100%', marginTop: 18 }} />
-                    <div className="nw-skel" style={{ height: 13, width: '84%', marginTop: 8 }} />
-                  </div>
-                ))}
-              </div>
-            ) : error ? (
-              <div className="nw-state">
-                <div className="nw-state-icon is-error"><WifiOff size={30} /></div>
-                <h3>সংবাদ লোড করা যায়নি</h3>
-                <p>সংবাদ লোড করতে সাময়িক বিঘ্ন ঘটছে।</p>
-                <button className="nw-btn" onClick={fetchNews}>
-                  <RefreshCw size={15} /> পুনরায় চেষ্টা করুন
-                </button>
-              </div>
-            ) : news.length > 0 ? (
-              groups.map((group) => (
-                <section key={group.label} className="nw-group">
-                  <h3 className="nw-group-head">
-                    <span className="nw-station" />
-                    {group.label}
-                    <span className="nw-group-count">{group.items.length.toLocaleString('bn-BD')}টি</span>
-                  </h3>
-
-                  {group.items.map(({ item, index }) => {
-                    const id = item._id || item.slug || index;
-                    const isExpanded = expandedId === id;
-                    const isLong = item.content && item.content.length > 220;
-                    const fresh = isFresh(item.createdAt);
-                    const time = timeLabel(item.createdAt);
-
-                    return (
-                      <article key={id} className="nw-item">
-                        <span className={`nw-dot ${fresh ? 'is-new' : ''}`} />
-
-                        <div className="nw-card">
-                          <div className="nw-card-top">
-                            <div className="nw-tags">
-                              <span className="nw-tag">রেল বার্তা</span>
-                              {fresh && <span className="nw-tag is-new">নতুন</span>}
-                              {item.source && (
-                                <span className="nw-source"><Globe size={13} /> {item.source}</span>
-                              )}
-                            </div>
-
-                            <button
-                              className="nw-share"
-                              onClick={() => handleShare(item, id)}
-                              title="শেয়ার করুন"
-                              aria-label="শেয়ার করুন"
-                            >
-                              {copiedId === id
-                                ? <><Check size={15} color="#16a34a" /><span>কপি হয়েছে</span></>
-                                : <Share2 size={16} />}
-                            </button>
-                          </div>
-
-                          <h2 className="nw-title">{item.title}</h2>
-
-                          <div className="nw-meta">
-                            <span><Calendar size={13} /> {group.label}</span>
-                            {time && <span><Clock size={13} /> {time}</span>}
-                            <span>{readMinutes(item.content)} মিনিট পাঠ</span>
-                          </div>
-
-                          <div className={`nw-body ${!isExpanded && isLong ? 'is-clamped' : ''}`}>
-                            {item.content}
-                          </div>
-
-                          {isLong && (
-                            <button
-                              className="nw-toggle"
-                              onClick={() => toggleExpand(id)}
-                              aria-expanded={isExpanded}
-                            >
-                              {isExpanded
-                                ? <>সংক্ষিপ্ত করুন <ChevronUp size={16} /></>
-                                : <>সম্পূর্ণ পড়ুন <ChevronDown size={16} /></>}
-                            </button>
-                          )}
-                        </div>
-                      </article>
-                    );
-                  })}
-                </section>
-              ))
-            ) : (
-              <div className="nw-state">
-                <div className="nw-state-icon"><Newspaper size={30} /></div>
-                <h3>আপাতত নতুন কোনো নোটিশ নেই</h3>
-                <p>রেলওয়ের পরবর্তী কোনো নোটিশ বা আপডেট এলে এখানে স্বয়ংক্রিয়ভাবে প্রদর্শিত হবে।</p>
-              </div>
-            )}
-          </div>
-
-          {/* ---------- Desktop side panel ---------- */}
-          {!loading && !error && news.length > 0 && (
-            <aside className="nw-aside">
-              <div className="nw-panel">
-                <div className="nw-panel-head"><span className="nw-live-dot is-dark" /> লাইভ আপডেট</div>
-                <div className="nw-stat">
-                  <span>মোট নোটিশ</span>
-                  <strong>{news.length.toLocaleString('bn-BD')}টি</strong>
-                </div>
-                <div className="nw-stat">
-                  <span>সর্বশেষ আপডেট</span>
-                  <strong>{latestTime || '—'}</strong>
-                </div>
-                <button className="nw-btn nw-panel-btn" onClick={fetchNews}>
-                  <RefreshCw size={15} className={loading ? 'nw-spin' : ''} /> নতুন আপডেট দেখুন
-                </button>
-              </div>
-              <NoticeText />
-            </aside>
-          )}
-        </div>
-      </main>
-    </div>
-  );
-};
-
+/* ---------- CSS Definition (হোয়েস্টিং বাগ ঠেকাতে উপরে রাখা হয়েছে) ---------- */
 const css = `
 .nw-page {
   --ink: #0f1f1a;
@@ -524,5 +258,281 @@ const css = `
   }
 }
 `;
+
+/* ---------- helpers ---------- */
+const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+const dayLabel = (value) => {
+  if (!value) return 'আজ';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return 'আজ';
+  const now = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(now.getDate() - 1);
+  if (dayKey(d) === dayKey(now)) return 'আজ';
+  if (dayKey(d) === dayKey(yesterday)) return 'গতকাল';
+  return d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+const timeLabel = (value) => {
+  if (!value) return '';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('bn-BD', { hour: 'numeric', minute: '2-digit' });
+};
+
+const isFresh = (value) => {
+  if (!value) return false;
+  const t = new Date(value).getTime();
+  return !isNaN(t) && Date.now() - t < 24 * 60 * 60 * 1000;
+};
+
+const readMinutes = (text = '') => {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 160)).toLocaleString('bn-BD');
+};
+
+const groupByDay = (items) => {
+  const groups = [];
+  items.forEach((item, index) => {
+    const label = dayLabel(item.createdAt);
+    const last = groups[groups.length - 1];
+    const entry = { item, index };
+    if (last && last.label === label) last.items.push(entry);
+    else groups.push({ label, items: [entry] });
+  });
+  return groups;
+};
+
+const NoticeText = ({ className }) => (
+  <div className={`nw-notice ${className || ''}`}>
+    <Radio size={18} />
+    <span>ট্রেন শিডিউল, টিকিট রিফান্ড ও জরুরি সতর্কবার্তা সবার আগে জানতে এখানে চোখ রাখুন।</span>
+  </div>
+);
+
+const NewsList = () => {
+  const navigate = useNavigate();
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+
+  // Backend Host Logic (লাইভ রেন্ডার ও লোকালহোস্ট ফলব্যাক)
+  const isLocal = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onrender.com';
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
+  const fetchNews = () => {
+    setLoading(true);
+    setError(false);
+    fetch(`${API_BASE_URL}/api/news`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+      })
+      .then((data) => {
+        setNews(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('News fetch error:', err);
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggleExpand = (id) => setExpandedId((prev) => (prev === id ? null : id));
+
+  const handleShare = async (item, id) => {
+    const shareUrl = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: item.title, text: item.title, url: shareUrl });
+        return;
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${item.title}\n${shareUrl}`);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
+    }
+  };
+
+  const groups = groupByDay(news);
+  const latestTime = news[0] ? `${dayLabel(news[0].createdAt)}${timeLabel(news[0].createdAt) ? `, ${timeLabel(news[0].createdAt)}` : ''}` : '';
+
+  return (
+    <div className="nw-page">
+      <style>{css}</style>
+
+      {/* Sticky top bar with a railway track edge */}
+      <header className="nw-bar">
+        <div className="nw-bar-in">
+          <button className="nw-icon-btn" onClick={handleBack} aria-label="Back">
+            <ChevronLeft size={22} />
+          </button>
+
+          <div className="nw-bar-title">
+            <h1>রেল বার্তা ও লাইভ নোটিশ</h1>
+            <p><span className="nw-live-dot" /> বাংলাদেশ রেলওয়ে সর্বশেষ আপডেট</p>
+          </div>
+
+          <button className="nw-icon-btn" onClick={fetchNews} title="রিফ্রেশ করুন" aria-label="রিফ্রেশ করুন">
+            <RefreshCw size={17} className={loading ? 'nw-spin' : ''} />
+          </button>
+        </div>
+        <div className="nw-track" aria-hidden="true" />
+      </header>
+
+      <main className="nw-main">
+        <NoticeText className="nw-notice-strip" />
+
+        <div className="nw-layout">
+          {/* ---------- Feed ---------- */}
+          <div className="nw-feed">
+            {loading ? (
+              <div className="nw-group">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="nw-skel-card">
+                    <div className="nw-skel" style={{ height: 20, width: '70%' }} />
+                    <div className="nw-skel" style={{ height: 13, width: '38%', marginTop: 12 }} />
+                    <div className="nw-skel" style={{ height: 13, width: '100%', marginTop: 18 }} />
+                    <div className="nw-skel" style={{ height: 13, width: '84%', marginTop: 8 }} />
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="nw-state">
+                <div className="nw-state-icon is-error"><WifiOff size={30} /></div>
+                <h3>সংবাদ লোড করা যায়নি</h3>
+                <p>সংবাদ লোড করতে সাময়িক বিঘ্ন ঘটছে।</p>
+                <button className="nw-btn" onClick={fetchNews}>
+                  <RefreshCw size={15} /> পুনরায় চেষ্টা করুন
+                </button>
+              </div>
+            ) : news.length > 0 ? (
+              groups.map((group) => (
+                <section key={group.label} className="nw-group">
+                  <h3 className="nw-group-head">
+                    <span className="nw-station" />
+                    {group.label}
+                    <span className="nw-group-count">{group.items.length.toLocaleString('bn-BD')}টি</span>
+                  </h3>
+
+                  {group.items.map(({ item, index }) => {
+                    const id = item._id || item.slug || index;
+                    const isExpanded = expandedId === id;
+                    const isLong = item.content && item.content.length > 220;
+                    const fresh = isFresh(item.createdAt);
+                    const time = timeLabel(item.createdAt);
+
+                    return (
+                      <article key={id} className="nw-item">
+                        <span className={`nw-dot ${fresh ? 'is-new' : ''}`} />
+
+                        <div className="nw-card">
+                          <div className="nw-card-top">
+                            <div className="nw-tags">
+                              <span className="nw-tag">রেল বার্তা</span>
+                              {fresh && <span className="nw-tag is-new">নতুন</span>}
+                              {item.source && (
+                                <span className="nw-source"><Globe size={13} /> {item.source}</span>
+                              )}
+                            </div>
+
+                            <button
+                              className="nw-share"
+                              onClick={() => handleShare(item, id)}
+                              title="শেয়ার করুন"
+                              aria-label="শেয়ার করুন"
+                            >
+                              {copiedId === id
+                                ? <><Check size={15} color="#16a34a" /><span>কপি হয়েছে</span></>
+                                : <Share2 size={16} />}
+                            </button>
+                          </div>
+
+                          <h2 className="nw-title">{item.title}</h2>
+
+                          <div className="nw-meta">
+                            <span><Calendar size={13} /> {group.label}</span>
+                            {time && <span><Clock size={13} /> {time}</span>}
+                            <span>{readMinutes(item.content)} মিনিট পাঠ</span>
+                          </div>
+
+                          <div className={`nw-body ${!isExpanded && isLong ? 'is-clamped' : ''}`}>
+                            {item.content}
+                          </div>
+
+                          {isLong && (
+                            <button
+                              className="nw-toggle"
+                              onClick={() => toggleExpand(id)}
+                              aria-expanded={isExpanded}
+                            >
+                              {isExpanded
+                                ? <>সংক্ষিপ্ত করুন <ChevronUp size={16} /></>
+                                : <>সম্পূর্ণ পড়ুন <ChevronDown size={16} /></>}
+                            </button>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </section>
+              ))
+            ) : (
+              <div className="nw-state">
+                <div className="nw-state-icon"><Newspaper size={30} /></div>
+                <h3>আপাতত নতুন কোনো নোটিশ নেই</h3>
+                <p>রেলওয়ের পরবর্তী কোনো নোটিশ বা আপডেট এলে এখানে স্বয়ংক্রিয়ভাবে প্রদর্শিত হবে।</p>
+              </div>
+            )}
+          </div>
+
+          {/* ---------- Desktop side panel ---------- */}
+          {!loading && !error && news.length > 0 && (
+            <aside className="nw-aside">
+              <div className="nw-panel">
+                <div className="nw-panel-head"><span className="nw-live-dot is-dark" /> লাইভ আপডেট</div>
+                <div className="nw-stat">
+                  <span>মোট নোটিশ</span>
+                  <strong>{news.length.toLocaleString('bn-BD')}টি</strong>
+                </div>
+                <div className="nw-stat">
+                  <span>সর্বশেষ আপডেট</span>
+                  <strong>{latestTime || '—'}</strong>
+                </div>
+                <button className="nw-btn nw-panel-btn" onClick={fetchNews}>
+                  <RefreshCw size={15} className={loading ? 'nw-spin' : ''} /> নতুন আপডেট দেখুন
+                </button>
+              </div>
+              <NoticeText />
+            </aside>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+};
 
 export default NewsList;
