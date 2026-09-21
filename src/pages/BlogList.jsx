@@ -108,10 +108,11 @@ const BlogList = () => {
   const [selectedCategory, setSelectedCategory] = useState('সব');
   const isDesktop = useMedia('(min-width: 1024px)');
 
-  const isLocal = typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://api.trainkoi.com';
+ const isLocal = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
+// api.trainkoi.com এর পরিবর্তে আপনার কার্যকর Render ব্যাকএন্ড URL বসান:
+const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onrender.com';
   const fetchBlogs = () => {
     setLoading(true);
     setError(false);

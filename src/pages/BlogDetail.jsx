@@ -83,9 +83,10 @@ const BlogDetails = () => {
   const progressRef = useRef(null);
 
   const isLocal = typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://api.trainkoi.com';
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
+// api.trainkoi.com এর বদলে সরাসরি আপনার Render ব্যাকএন্ড লিঙ্ক দিন:
+const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onrender.com';
   /* ---------- Load blog (direct -> fallback to list lookup) ---------- */
   useEffect(() => {
     if (!key) return undefined;
