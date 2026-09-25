@@ -14,8 +14,7 @@ const BACKEND_URL = window.location.hostname === "localhost"
   ? "http://localhost:5001" 
   : "https://train-koi.onrender.com";
 
-// ফেচ করার সময়:
-fetch(`${BACKEND_URL}/api/live-trains`)
+const API_BASE_URL = `${BACKEND_URL}/api`;
 
 const HomePage = () => {
   const [searchMode, setSearchMode] = useState('name'); 
@@ -139,7 +138,7 @@ const HomePage = () => {
       return Object.values(groups);
     }
 
-    // একদম লেটেস্ট আপডেটেড ট্রেন অগ্রাধিকার দিয়ে সিরিয়াল অনুযায়ী সাজানো
+    // একদম লেটেস্ট আপডেটেড ট্রেন অগ্রাধিকার দিয়ে সিরিয়াল অনুযায়ী সাজানো
     const orderedLiveGroups = [];
     const addedTrainNames = new Set();
 
@@ -269,13 +268,13 @@ const HomePage = () => {
         padding: '30px 20px 70px', 
         color: 'white', 
         borderBottomLeftRadius: '40px', 
-        borderBottomRightRadius: '40px',
+        borderBottomRightRadius: '40px', 
         boxShadow: '0 10px 25px rgba(0, 77, 57, 0.2)'
       }}>
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center',
+          alignItems: 'center', 
           maxWidth: '1200px', 
           margin: '0 auto' 
         }}>
@@ -300,8 +299,8 @@ const HomePage = () => {
               fontWeight: 900, 
               fontSize: '28px', 
               background: 'linear-gradient(to right, #ffffff, #e0e0e0)', 
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              WebkitBackgroundClip: 'text', 
+              WebkitTextFillColor: 'transparent', 
             }}>
               ট্রেনকই
             </h2>
@@ -322,7 +321,7 @@ const HomePage = () => {
             >
               <span className="live-badge-dot"></span>
               <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fef08a' }}>
-                {totalLiveCount > 0 ? `${totalLiveCount}টি ট্রেনের লাইভ লোকেশন সচল` : 'লাইভ ট্র্যাকিং সক্রিয়'}
+                {totalLiveCount > 0 ? `${totalLiveCount}টি ট্রেনের লাইভ লোকেশন সচল` : 'লাইভ ট্র্যাকিং সক্রিয়'}
               </span>
             </div>
           </div>
@@ -457,10 +456,10 @@ const HomePage = () => {
                 }
               });
 
-              // প্রায়োরিটি ফিল্টারিং:
-              // ১. যে ট্রেনের গতি রয়েছে (speed > 0) অথবা স্টেশন অতিক্রম করেছে (index/stopsCleared > 0)
-              // ২. যার diffMinutes ১০ মিনিটের ভেতরে রয়েছে (actually live)
-              // ৩. সর্বশেষ diffSeconds অনুযায়ী ফ্রেশ
+              // প্রায়োরিটি ফিল্টারিং:
+              // ১. যে ট্রেনের গতি রয়েছে (speed > 0) অথবা স্টেশন অতিক্রম করেছে (index/stopsCleared > 0)
+              // ২. যার diffMinutes ১০ মিনিটের ভেতরে রয়েছে (actually live)
+              // ৩. সর্বশেষ diffSeconds অনুযায়ী ফ্রেশ
               const activeLiveInfo = matchedItems.length > 0 
                 ? [...matchedItems].sort((a, b) => {
                     const aSpeed = Number(a.speed || 0);
@@ -490,7 +489,7 @@ const HomePage = () => {
               const isActuallyLive = hasData && Number(activeLiveInfo.diffMinutes) <= 10;
               const isPredicted = hasData && Number(activeLiveInfo.diffMinutes) > 10;
 
-              // সক্রিয় রানিং ট্রেন আইডি অনুযায়ী গ্রুপের নির্দিষ্ট ডিরেকশন শনাক্তকরণ (৭৯৫ বনাম ৭৯৬)
+              // সক্রিয় রানিং ট্রেন আইডি অনুযায়ী গ্রুপের নির্দিষ্ট ডিরেকশন শনাক্তকরণ (৭৯৫ বনাম ৭৯৬)
               const targetDirectionIndex = activeLiveInfo 
                 ? group.findIndex(t => Number(t.id) === Number(activeLiveInfo.trainId))
                 : 0;
@@ -513,9 +512,9 @@ const HomePage = () => {
                     alignItems: 'center', 
                     gap: '15px', 
                     boxShadow: '0 4px 15px rgba(0,0,0,0.04)', 
-                    borderTop: '1px solid #f0f0f0',
-                    borderRight: '1px solid #f0f0f0',
-                    borderBottom: '1px solid #f0f0f0',
+                    borderTop: '1px solid #f0f0f0', 
+                    borderRight: '1px solid #f0f0f0', 
+                    borderBottom: '1px solid #f0f0f0', 
                     borderLeft: `6px solid ${isActuallyLive ? '#ef4444' : (isPredicted ? '#f59e0b' : '#006a4e')}`, 
                     cursor: 'pointer' 
                   }}
