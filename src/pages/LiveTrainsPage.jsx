@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, Navigation, Activity, Clock, Gauge, AlertCircle, RefreshCw } from 'lucide-react';
 import { trains } from '../data/trainData';
 
-const API_BASE_URL = "http://localhost:5001/api";
+const API_BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5001/api" 
+  : "https://train-koi.onrender.com/api";
 
 const LiveTrainsPage = () => {
   const [liveTrains, setLiveTrains] = useState([]);

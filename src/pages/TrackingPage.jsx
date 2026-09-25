@@ -600,10 +600,18 @@ import { stationCoords } from '../data/stationCoords';
 // --- src/data/railway.json ইমপোর্ট ---
 import railData from '../data/railway.json';
 
-// লোকাল টেস্টের জন্য
-const SOCKET_URL = "http://localhost:5001"; 
-const API_URL = "http://localhost:5001/api"; 
-const socket = io(SOCKET_URL, { transports: ['websocket'] });
+// প্রোডাকশন ও লোকাল ডায়নামিক URL
+const SOCKET_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5001" 
+  : "https://train-koi.onrender.com";
+
+const API_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5001/api" 
+  : "https://train-koi.onrender.com/api";
+
+const socket = io(SOCKET_URL, { 
+  transports: ['websocket', 'polling'] 
+});
 
 // --- Helpers ---
 const parseToMinutes = (timeStr) => {

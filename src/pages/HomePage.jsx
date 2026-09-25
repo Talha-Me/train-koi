@@ -10,7 +10,12 @@ import {
   TrainFront, CreditCard, Gavel
 } from 'lucide-react';
 
-const API_BASE_URL = "http://localhost:5001/api";
+const BACKEND_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5001" 
+  : "https://train-koi.onrender.com";
+
+// ফেচ করার সময়:
+fetch(`${BACKEND_URL}/api/live-trains`)
 
 const HomePage = () => {
   const [searchMode, setSearchMode] = useState('name'); 
