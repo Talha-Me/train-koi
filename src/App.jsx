@@ -26,6 +26,7 @@ import TermsOfService from './pages/TermsOfService';
 import Disclaimer from './pages/Disclaimer';
 import NewsList from './pages/NewsList';
 import ContentUpload from './pages/ContentUpload';
+import LiveTrainsPage from './pages/LiveTrainsPage';
 
 // Capacitor for App (Safe import for Web & Native)
 import { Capacitor } from '@capacitor/core';
@@ -91,6 +92,7 @@ function AppContent() {
           
           {/* Tracking Routes */}
           <Route path="/track/:trainId" element={<TrackingPage />} />
+          <Route path="/live-trains" element={<LiveTrainsPage />} />
           
           {/* Schedule Routes */}
           <Route path="/schedule" element={<TrainSchedule />} />

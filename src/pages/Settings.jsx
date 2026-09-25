@@ -1,51 +1,104 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, User, ShieldCheck, FileText, 
   AlertTriangle, Moon, Bell, ChevronRight,
-  Info, Share2, Star, MessageCircle, Heart, Sun
+  Info, Share2, Star, MessageCircle, Heart, Sun, Globe
 } from 'lucide-react';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+  
+  // Language State: 'bn' or 'en'
+  const [lang, setLang] = useState(() => {
+    return localStorage.getItem('app_lang') || 'bn';
+  });
 
+  // Dark mode effect
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
 
+  // Language toggle handler
+  const handleLanguageToggle = () => {
+    const nextLang = lang === 'bn' ? 'en' : 'bn';
+    setLang(nextLang);
+    localStorage.setItem('app_lang', nextLang);
+    
+    // Broadcast event for entire site to react immediately
+    window.dispatchEvent(new Event('languageChange'));
+  };
+
+  // UI Translation dictionary
+  const t = {
+    settings: lang === 'bn' ? 'সেটিংস' : 'Settings',
+    guestTitle: lang === 'bn' ? 'স্বাগতম, গেস্ট ইউজার!' : 'Welcome, Guest User!',
+    guestSubtitle: lang === 'bn' ? 'ট্রেনকই এর সাথে থাকার জন্য ধন্যবাদ' : 'Thank you for staying with TrainKoi',
+    accountGroup: lang === 'bn' ? 'একাউন্ট ও সাপোর্ট' : 'Account & Support',
+    profile: lang === 'bn' ? 'প্রোফাইল' : 'Profile',
+    profileDesc: lang === 'bn' ? 'লগইন ছাড়াই ব্যবহারযোগ্য' : 'Usable without login',
+    helpCenter: lang === 'bn' ? 'হেল্প সেন্টার' : 'Help Center',
+    helpDesc: lang === 'bn' ? 'সাধারণ জিজ্ঞাসা ও উত্তর' : 'Frequently Asked Questions',
+    legalGroup: lang === 'bn' ? 'আইনি ও পলিসি (অ্যাডসেন্স রেডি)' : 'Legal & Policies',
+    privacy: lang === 'bn' ? 'প্রাইভেসি পলিসি' : 'Privacy Policy',
+    privacyDesc: lang === 'bn' ? 'আপনার তথ্যের নিরাপত্তা' : 'Your data privacy & security',
+    terms: lang === 'bn' ? 'ব্যবহারের শর্তাবলী' : 'Terms & Conditions',
+    termsDesc: lang === 'bn' ? 'অ্যাপ ব্যবহারের নিয়মসমূহ' : 'Rules and app guidelines',
+    disclaimer: lang === 'bn' ? 'দায়মুক্তি নোটিশ' : 'Disclaimer',
+    disclaimerDesc: lang === 'bn' ? 'রেলওয়ের সাথে সম্পর্ক' : 'Affiliation with BR',
+    appSettingsGroup: lang === 'bn' ? 'অ্যাপ সেটিংস' : 'App Settings',
+    notification: lang === 'bn' ? 'নোটিফিকেশন' : 'Notification',
+    notifyDesc: lang === 'bn' ? 'অন করা আছে' : 'Enabled',
+    langLabel: lang === 'bn' ? 'ভাষা / Language' : 'Language / ভাষা',
+    langDesc: lang === 'bn' ? 'বাংলা (English করুন)' : 'English (বাংলায় দেখুন)',
+    theme: lang === 'bn' ? 'ডার্ক মোড' : 'Dark Mode',
+    themeDesc: isDarkMode ? (lang === 'bn' ? 'চালু আছে' : 'Enabled') : (lang === 'bn' ? 'বন্ধ আছে' : 'Disabled'),
+    madeFor: lang === 'bn' ? 'Made for Bangladesh' : 'Made for Bangladesh',
+    version: lang === 'bn' ? 'Version 2.0.4 (Stable Release)' : 'Version 2.0.4 (Stable Release)'
+  };
 
   const settingsGroups = [
     {
-      groupName: "একাউন্ট ও সাপোর্ট",
+      groupName: t.accountGroup,
       options: [
-        { id: 'login', icon: <User />, label: 'প্রোফাইল', desc: 'লগইন ছাড়াই ব্যবহারযোগ্য', color: '#006a4e' },
-        { id: 'help', icon: <MessageCircle />, label: 'হেল্প সেন্টার', desc: 'সাধারণ জিজ্ঞাসা ও উত্তর', color: '#0288d1', path: '/faq' }
+        { id: 'login', icon: <User />, label: t.profile, desc: t.profileDesc, color: '#006a4e' },
+        { id: 'help', icon: <MessageCircle />, label: t.helpCenter, desc: t.helpDesc, color: '#0288d1', path: '/faq' }
       ]
     },
     {
-      groupName: "আইনি ও পলিসি (অ্যাডসেন্স রেডি)",
+      groupName: t.legalGroup,
       options: [
-        { id: 'privacy', icon: <ShieldCheck />, label: 'প্রাইভেসি পলিসি', desc: 'আপনার তথ্যের নিরাপত্তা', color: '#43a047', path: '/privacy' },
-        { id: 'terms', icon: <FileText />, label: 'ব্যবহারের শর্তাবলী', desc: 'অ্যাপ ব্যবহারের নিয়মসমূহ', color: '#fb8c00', path: '/terms' },
-        { id: 'disclaimer', icon: <AlertTriangle />, label: 'দায়মুক্তি নোটিশ', desc: 'রেলওয়ের সাথে সম্পর্ক', color: '#e53935', path: '/disclaimer' }
+        { id: 'privacy', icon: <ShieldCheck />, label: t.privacy, desc: t.privacyDesc, color: '#43a047', path: '/privacy' },
+        { id: 'terms', icon: <FileText />, label: t.terms, desc: t.termsDesc, color: '#fb8c00', path: '/terms' },
+        { id: 'disclaimer', icon: <AlertTriangle />, label: t.disclaimer, desc: t.disclaimerDesc, color: '#e53935', path: '/disclaimer' }
       ]
     },
     {
-      groupName: "অ্যাপ সেটিংস",
+      groupName: t.appSettingsGroup,
       options: [
-        { id: 'notify', icon: <Bell />, label: 'নোটিফিকেশন', desc: 'অন করা আছে', color: '#8e24aa' },
+        { 
+          id: 'language', 
+          icon: <Globe />, 
+          label: t.langLabel, 
+          desc: t.langDesc, 
+          color: '#e91e63',
+          action: handleLanguageToggle
+        },
+        { id: 'notify', icon: <Bell />, label: t.notification, desc: t.notifyDesc, color: '#8e24aa' },
         { 
           id: 'theme', 
           icon: isDarkMode ? <Sun /> : <Moon />, 
-          label: 'ডার্ক মোড', 
-          desc: isDarkMode ? 'চালু আছে' : 'বন্ধ আছে', 
+          label: t.theme, 
+          desc: t.themeDesc, 
           color: '#546e7a',
           action: () => setIsDarkMode(!isDarkMode)
         }
@@ -75,7 +128,7 @@ const Settings = () => {
           <div onClick={() => navigate(-1)} style={{ cursor: 'pointer', padding: '5px' }}>
             <ChevronLeft size={28} />
           </div>
-          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>Settings</h2>
+          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '800' }}>{t.settings}</h2>
         </div>
       </div>
 
@@ -97,8 +150,8 @@ const Settings = () => {
             <User size={35} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '20px' }}>স্বাগতম, গেস্ট ইউজার!</h3>
-            <p style={{ margin: '5px 0 0', opacity: 0.8, fontSize: '13px' }}>ট্রেনকই এর সাথে থাকার জন্য ধন্যবাদ</p>
+            <h3 style={{ margin: 0, fontSize: '20px' }}>{t.guestTitle}</h3>
+            <p style={{ margin: '5px 0 0', opacity: 0.8, fontSize: '13px' }}>{t.guestSubtitle}</p>
           </div>
         </div>
 
@@ -123,7 +176,7 @@ const Settings = () => {
                     padding: '18px 20px', 
                     display: 'flex', 
                     alignItems: 'center', 
-                    justifyContent: 'space-between',
+                    justifyContent: 'space-between', 
                     cursor: (option.path || option.action) ? 'pointer' : 'default',
                     borderBottom: oIdx !== group.options.length - 1 ? (isDarkMode ? '1px solid #333' : '1px solid #f8f8f8') : 'none',
                     opacity: (option.path || option.action) ? 1 : 0.7
@@ -132,7 +185,7 @@ const Settings = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div style={{ 
                       color: option.color, 
-                      backgroundColor: `${option.color}10`, 
+                      backgroundColor: `${option.color}15`, 
                       padding: '10px', 
                       borderRadius: '12px' 
                     }}>
@@ -143,7 +196,9 @@ const Settings = () => {
                       <div style={{ fontSize: '12px', color: isDarkMode ? '#777' : '#999' }}>{option.desc}</div>
                     </div>
                   </div>
-                  {(option.path || option.id === 'theme') && <ChevronRight size={18} color={isDarkMode ? "#444" : "#ddd"} />}
+                  {(option.path || option.id === 'theme' || option.id === 'language') && (
+                    <ChevronRight size={18} color={isDarkMode ? "#444" : "#ddd"} />
+                  )}
                 </div>
               ))}
             </div>
@@ -153,9 +208,9 @@ const Settings = () => {
         {/* App Info & Socials */}
         <div style={{ textAlign: 'center', marginTop: '40px', paddingBottom: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center', color: '#006a4e', marginBottom: '10px', fontWeight: 'bold' }}>
-            <Heart size={16} fill="#006a4e" /> Made for Bangladesh
+            <Heart size={16} fill="#006a4e" /> {t.madeFor}
           </div>
-          <p style={{ color: '#bbb', fontSize: '12px', margin: 0 }}>Version 2.0.4 (Stable Release)</p>
+          <p style={{ color: '#bbb', fontSize: '12px', margin: 0 }}>{t.version}</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '15px' }}>
              <Share2 size={20} color="#006a4e" />
              <Star size={20} color="#006a4e" />

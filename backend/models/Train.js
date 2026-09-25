@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const TrainSchema = new mongoose.Schema({
   trainId: { type: Number, required: true, unique: true },
@@ -14,5 +14,6 @@ const TrainSchema = new mongoose.Schema({
   }
 });
 
-// নিশ্চিত করুন এখানে module.exports = mongoose.model আছে
-module.exports = mongoose.model('Train', TrainSchema);
+const Train = mongoose.model('Train', TrainSchema);
+
+export default Train;
