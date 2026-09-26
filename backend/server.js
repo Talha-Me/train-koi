@@ -6219,10 +6219,13 @@ const ALL_ACTIVE_TRAIN_IDS = [
 // ==========================================
 const trackCache = new Map();
 
+// ফ্রেশ ভ্যালিড কুকি স্ট্রিং
+let activeCookie = 'tk_s=1790434689.bacd3b595d18488a9a7bf71dcff6f3d5.nOiCOHzTNuD6dMFAuF45x9xIlOrpCSv7ozhwo96FJ0E; tt_consent=granted; _ga=GA1.1.1578882046.1790264121; tt_lang=en; tt_dark=0; tt_sidebar_collapsed=1;';
+
 const matchStationIndex = (stations, targetName, defaultIndex, delayMinutes = 0) => {
   if (!stations || stations.length === 0) return 0;
 
-  // ১. নাম দিয়ে নিখুঁত ও আংশিক স্ট্রিং ম্যাচিং
+  // ১. নাম দিয়ে নিখুঁত ও আংশিক স্ট্রিং ম্যাচিং
   if (targetName) {
     const cleanTarget = targetName.toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -6243,7 +6246,7 @@ const matchStationIndex = (stations, targetName, defaultIndex, delayMinutes = 0)
   const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
   const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
 
-  // বিলম্ব সমন্বয় করে কার্যকর ট্রেন সময় হিসাব করা
+  // বিলম্ব সমন্বয় করে কার্যকর ট্রেন সময় হিসাব করা
   const effectiveCurrentTime = currentTotalMin - (Number(delayMinutes) || 0);
 
   for (let i = 0; i < stations.length; i++) {
@@ -6255,35 +6258,67 @@ const matchStationIndex = (stations, targetName, defaultIndex, delayMinutes = 0)
     }
   }
 
-  // ৩. রানিং ট্রেন যেন কখনোই সরাসরি শেষ স্টেশনে পুশ না হয়
+  // ৩. রানিং ট্রেন যেন কখনোই সরাসরি শেষ স্টেশনে পুশ না হয়
   const safeMax = Math.max(0, stations.length - 2);
   return safeMax;
 };
 
-// Single train live fetch helper with "Actually Running" filter
+// Single train live fetch helper with "Actually Running" filter and Browser Signatures
 const fetchExternalTrain = async (tid) => {
   try {
     const pageRes = await axios.get(`https://trainkothai.com/track/${tid}`, {
       headers: { 
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Mobile Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,bn;q=0.8',
+        'sec-ch-ua': '"Google Chrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"',
+        'sec-ch-ua-mobile': '?1',
+        'sec-ch-ua-platform': '"Android"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none'
       },
-      timeout: 3500
+      timeout: 5000
     });
 
     if (pageRes.status === 200 && pageRes.data) {
+      // যদি সার্ভার থেকে কোনো সেট-কুকি আপডেট আসে
+      const rawCookies = pageRes.headers['set-cookie'];
+      if (rawCookies && rawCookies.length > 0) {
+        const newCookie = Array.isArray(rawCookies) ? rawCookies.join('; ') : rawCookies;
+        if (newCookie.includes('tk_s=')) {
+          activeCookie = newCookie;
+        }
+      }
+
       const match = pageRes.data.match(/"runId":\s*(\d+)/) || pageRes.data.match(/\\?"runId\\?":\s*(\d+)/);
       if (match && match[1]) {
         const liveRes = await axios.get(`https://trainkothai.com/api/v1/live/track/${match[1]}`, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Mobile Safari/537.36',
             'Referer': `https://trainkothai.com/track/${tid}`,
-            'Accept': 'application/json'
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9,bn;q=0.8',
+            'sec-ch-ua': '"Google Chrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"',
+            'sec-ch-ua-mobile': '?1',
+            'sec-ch-ua-platform': '"Android"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'Cookie': activeCookie
           },
-          timeout: 3500
+          timeout: 5000
         });
 
         if (liveRes.status === 200 && liveRes.data) {
+          if (liveRes.data.error) {
+            console.log(`[EXTERNAL API REJECTED - ${tid}]:`, liveRes.data);
+          } else {
+            console.log(`[EXTERNAL LIVE SUCCESS - ${tid}]: Speed: ${liveRes.data.speed_kmh} Delay: ${liveRes.data.current_delay_minutes}`);
+          }
+        }
+
+        if (liveRes.status === 200 && liveRes.data && !liveRes.data.error) {
           const ext = liveRes.data;
           const extSpeed = Math.round(ext.speed_kmh || 0);
           const stopsCleared = ext.stops_cleared || 0;
@@ -6327,7 +6362,7 @@ const fetchExternalTrain = async (tid) => {
       }
     }
   } catch (err) {
-    // Fail silently
+    console.log(`[EXTERNAL FETCH FAILED - ${tid}]:`, err.response?.status || err.message);
   }
   return null;
 };
@@ -6336,28 +6371,29 @@ const fetchExternalTrain = async (tid) => {
 const syncActiveTrainsRapidly = async () => {
   const activeIds = Array.from(trackCache.keys()).map(id => Number(id));
   if (activeIds.length > 0) {
-    const chunkSize = 6;
+    const chunkSize = 3;
     for (let i = 0; i < activeIds.length; i += chunkSize) {
       const chunk = activeIds.slice(i, i + chunkSize);
       await Promise.allSettled(chunk.map(id => fetchExternalTrain(id)));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 };
 
 // Full background sync: Shob master train list background-e scan kore running train khuje ber kora
 const syncAllTrainsInBackground = async () => {
-  const chunkSize = 8;
+  const chunkSize = 4;
   for (let i = 0; i < ALL_ACTIVE_TRAIN_IDS.length; i += chunkSize) {
     const chunk = ALL_ACTIVE_TRAIN_IDS.slice(i, i + chunkSize);
     await Promise.allSettled(chunk.map(id => fetchExternalTrain(id)));
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 800));
   }
 };
 
 // Worker initialization
-syncAllTrainsInBackground();
+setTimeout(syncAllTrainsInBackground, 3000);
 setInterval(syncActiveTrainsRapidly, 15000);   // Running train prottek 15 sec por por fresh hobe
-setInterval(syncAllTrainsInBackground, 60000); // Full scan prottek 1 min por por
+setInterval(syncAllTrainsInBackground, 180000); // Full scan prottek 3 min por por (Safe for Rate Limits)
 
 // ==========================================
 // ১. API Routes
