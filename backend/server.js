@@ -3164,6 +3164,8 @@ import axios from 'axios';
 import connectDB from './config/db.js';
 import Train from './models/Train.js';
 import contentRoutes from './routes/contentRoutes.js';
+import Blog from './models/Blog.js';
+import News from './models/News.js';
 
 dotenv.config();
 connectDB();
@@ -6189,213 +6191,6 @@ const formatDelay = (min) => {
 };
 
 // ==========================================
-// Bangladesh Railway Master Train List
-// ==========================================
-const ALL_ACTIVE_TRAIN_IDS = [
-  1, 3, 4, 5, 6, 7, 8, 11, 12, 13,
-  14, 15, 16, 19, 20, 25, 26, 31, 32, 33,
-  34, 37, 38, 39, 40, 41, 42, 43, 44, 47,
-  48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
-  58, 59, 60, 61, 62, 63, 64, 65, 66, 67,
-  68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
-  78, 81, 82, 87, 88, 91, 92, 93, 94, 95,
-  96, 97, 105, 106, 113, 114, 121, 125, 126, 127,
-  128, 201,
-
-  701, 702, 703, 704, 705, 706, 707, 708, 709, 710,
-  711, 712, 713, 714, 715, 716, 717, 718, 719, 720,
-  721, 722, 723, 724, 725, 726, 727, 728, 729, 730,
-  731, 732, 733, 734, 735, 736, 738, 739, 740, 741,
-  742, 743, 744, 745, 746, 747, 748, 749, 750, 751,
-  752, 753, 754, 755, 756, 757, 758, 759, 760, 761,
-  762, 763, 764, 765, 766, 767, 768, 769, 770, 771,
-  772, 773, 774, 775, 776, 777, 778, 781, 782, 783,
-  784, 785, 786, 791, 792, 793, 794, 797, 798, 799,
-  800, 801, 802, 805, 806, 809, 810, 813, 814
-];
-
-// ==========================================
-// Cache & Helper Methods
-// ==========================================
-const trackCache = new Map();
-
-// ফ্রেশ ভ্যালিড কুকি স্ট্রিং
-let activeCookie = 'tk_s=1790434689.bacd3b595d18488a9a7bf71dcff6f3d5.nOiCOHzTNuD6dMFAuF45x9xIlOrpCSv7ozhwo96FJ0E; tt_consent=granted; _ga=GA1.1.1578882046.1790264121; tt_lang=en; tt_dark=0; tt_sidebar_collapsed=1;';
-
-const matchStationIndex = (stations, targetName, defaultIndex, delayMinutes = 0) => {
-  if (!stations || stations.length === 0) return 0;
-
-  // ১. নাম দিয়ে নিখুঁত ও আংশিক স্ট্রিং ম্যাচিং
-  if (targetName) {
-    const cleanTarget = targetName.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-    for (let i = 0; i < stations.length; i++) {
-      const rawName = stations[i].name || '';
-      const englishMatch = rawName.match(/\(([^)]+)\)/);
-      const nameToCheck = englishMatch ? englishMatch[1] : rawName;
-      const cleanName = nameToCheck.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-      if (cleanName && (cleanName.includes(cleanTarget) || cleanTarget.includes(cleanName))) {
-        return i;
-      }
-    }
-  }
-
-  // ২. স্মার্ট টাইম ও ডিলে ভিত্তিক ফলব্যাক (স্টপ কাউন্ট মিসম্যাচ সমাধান)
-  const now = new Date();
-  const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
-  const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
-
-  // বিলম্ব সমন্বয় করে কার্যকর ট্রেন সময় হিসাব করা
-  const effectiveCurrentTime = currentTotalMin - (Number(delayMinutes) || 0);
-
-  for (let i = 0; i < stations.length; i++) {
-    const timeStr = (stations[i].arrival === "START") ? stations[i].departure : stations[i].arrival;
-    const schedMin = parseToMinutes(timeStr);
-    
-    if (schedMin !== null && schedMin > effectiveCurrentTime) {
-      return Math.max(0, i - 1);
-    }
-  }
-
-  // ৩. রানিং ট্রেন যেন কখনোই সরাসরি শেষ স্টেশনে পুশ না হয়
-  const safeMax = Math.max(0, stations.length - 2);
-  return safeMax;
-};
-
-// Single train live fetch helper with "Actually Running" filter and Browser Signatures
-const fetchExternalTrain = async (tid) => {
-  try {
-    const pageRes = await axios.get(`https://trainkothai.com/track/${tid}`, {
-      headers: { 
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Mobile Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,bn;q=0.8',
-        'sec-ch-ua': '"Google Chrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"',
-        'sec-ch-ua-mobile': '?1',
-        'sec-ch-ua-platform': '"Android"',
-        'sec-fetch-dest': 'document',
-        'sec-fetch-mode': 'navigate',
-        'sec-fetch-site': 'none'
-      },
-      timeout: 5000
-    });
-
-    if (pageRes.status === 200 && pageRes.data) {
-      // যদি সার্ভার থেকে কোনো সেট-কুকি আপডেট আসে
-      const rawCookies = pageRes.headers['set-cookie'];
-      if (rawCookies && rawCookies.length > 0) {
-        const newCookie = Array.isArray(rawCookies) ? rawCookies.join('; ') : rawCookies;
-        if (newCookie.includes('tk_s=')) {
-          activeCookie = newCookie;
-        }
-      }
-
-      const match = pageRes.data.match(/"runId":\s*(\d+)/) || pageRes.data.match(/\\?"runId\\?":\s*(\d+)/);
-      if (match && match[1]) {
-        const liveRes = await axios.get(`https://trainkothai.com/api/v1/live/track/${match[1]}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Mobile Safari/537.36',
-            'Referer': `https://trainkothai.com/track/${tid}`,
-            'Accept': '*/*',
-            'Accept-Language': 'en-US,en;q=0.9,bn;q=0.8',
-            'sec-ch-ua': '"Google Chrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"',
-            'sec-ch-ua-mobile': '?1',
-            'sec-ch-ua-platform': '"Android"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-origin',
-            'Cookie': activeCookie
-          },
-          timeout: 5000
-        });
-
-        if (liveRes.status === 200 && liveRes.data) {
-          if (liveRes.data.error) {
-            console.log(`[EXTERNAL API REJECTED - ${tid}]:`, liveRes.data);
-          } else {
-            console.log(`[EXTERNAL LIVE SUCCESS - ${tid}]: Speed: ${liveRes.data.speed_kmh} Delay: ${liveRes.data.current_delay_minutes}`);
-          }
-        }
-
-        if (liveRes.status === 200 && liveRes.data && !liveRes.data.error) {
-          const ext = liveRes.data;
-          const extSpeed = Math.round(ext.speed_kmh || 0);
-          const stopsCleared = ext.stops_cleared || 0;
-          const totalStops = ext.total_stops || 999;
-
-          // FILTER 1: Train jodi starting station-e theme thake (speed 0 ebong stopsCleared 0)
-          // FILTER 2: Train jodi last station-e pouchhe theme thake
-          const isNotStarted = (stopsCleared === 0 && extSpeed === 0);
-          const isFinished = (stopsCleared >= totalStops && extSpeed === 0);
-
-          if (isNotStarted || isFinished) {
-            trackCache.delete(String(tid));
-            return null;
-          }
-
-          const extDelay = ext.current_delay_minutes || 0;
-          const extUpdated = ext.last_update_at ? new Date(ext.last_update_at).toISOString() : new Date().toISOString();
-
-          const stationsList = (typeof trainsDataMap !== 'undefined' && trainsDataMap[String(tid)]?.stations) || [];
-          const rawTargetStation = ext.nearest_station_name || ext.current_station_name;
-          const rawDefaultIndex = Math.max(0, stopsCleared - 1);
-          
-          const calculatedIndex = stationsList.length > 0 
-            ? matchStationIndex(stationsList, rawTargetStation, rawDefaultIndex, extDelay) 
-            : rawDefaultIndex;
-
-          const payload = {
-            trainId: Number(tid),
-            speed: extSpeed,
-            delay: extDelay,
-            delayText: formatDelay(extDelay),
-            index: calculatedIndex,
-            stopsCleared: stopsCleared,
-            updatedAt: extUpdated,
-            source: 'EXTERNAL'
-          };
-
-          trackCache.set(String(tid), { timestamp: Date.now(), data: payload });
-          return payload;
-        }
-      }
-    }
-  } catch (err) {
-    console.log(`[EXTERNAL FETCH FAILED - ${tid}]:`, err.response?.status || err.message);
-  }
-  return null;
-};
-
-// Priority sync: Jeigulo trackCache-e running ache shegulo high frequency-te refresh hobe
-const syncActiveTrainsRapidly = async () => {
-  const activeIds = Array.from(trackCache.keys()).map(id => Number(id));
-  if (activeIds.length > 0) {
-    const chunkSize = 3;
-    for (let i = 0; i < activeIds.length; i += chunkSize) {
-      const chunk = activeIds.slice(i, i + chunkSize);
-      await Promise.allSettled(chunk.map(id => fetchExternalTrain(id)));
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  }
-};
-
-// Full background sync: Shob master train list background-e scan kore running train khuje ber kora
-const syncAllTrainsInBackground = async () => {
-  const chunkSize = 4;
-  for (let i = 0; i < ALL_ACTIVE_TRAIN_IDS.length; i += chunkSize) {
-    const chunk = ALL_ACTIVE_TRAIN_IDS.slice(i, i + chunkSize);
-    await Promise.allSettled(chunk.map(id => fetchExternalTrain(id)));
-    await new Promise(resolve => setTimeout(resolve, 800));
-  }
-};
-
-// Worker initialization
-setTimeout(syncAllTrainsInBackground, 3000);
-setInterval(syncActiveTrainsRapidly, 15000);   // Running train prottek 15 sec por por fresh hobe
-setInterval(syncAllTrainsInBackground, 180000); // Full scan prottek 3 min por por (Safe for Rate Limits)
-
-// ==========================================
 // ১. API Routes
 // ==========================================
 
@@ -6403,14 +6198,13 @@ app.get('/', (req, res) => {
   res.send('TrainKoi Backend Server is Running...');
 });
 
-// Single train location API
+// Single train location API (Local DB Priority -> Scheduled Fallback)
 app.get('/api/train-location/:trainId', async (req, res) => {
   try {
     const trainId = parseInt(req.params.trainId);
-    const tidString = String(trainId);
     const now = Date.now();
 
-    // Level 1: Local DB Check (5 mins time-lock)
+    // Level 1: Local DB Check (ইউজার ডাটা চেক)
     const trainData = await Train.findOne({ trainId: trainId });
     const rawUpdatedTime = trainData?.lastLocation?.updatedAt || trainData?.updatedAt;
     
@@ -6430,26 +6224,18 @@ app.get('/api/train-location/:trainId', async (req, res) => {
         delayText: formatDelay(trainData.delay || 0),
         updatedAt: new Date(rawUpdatedTime).toISOString(),
         index: trainData.currentStationIndex !== undefined ? trainData.currentStationIndex : (trainData.index || 0),
+        diffMinutes: Math.floor(localDiffMinutes),
+        mode: localDiffMinutes <= 15 ? 'LIVE' : 'PREDICTED',
         source: 'LOCAL'
       };
 
-      if (localDiffMinutes >= 0 && localDiffMinutes <= 5) {
+      // শেষ ১৫ মিনিটের মধ্যে রিয়েল ইউজার ডাটা থাকলে লাইভ রিটার্ন করবে
+      if (localDiffMinutes >= 0 && localDiffMinutes <= 15) {
         return res.json(localData);
       }
     }
 
-    // Level 2: In-memory cache check (15 seconds freshness threshold)
-    const cached = trackCache.get(tidString);
-    if (cached && (now - cached.timestamp < 15 * 1000)) {
-      return res.json(cached.data);
-    }
-
-    // Direct live fetch fallback
-    const externalData = await fetchExternalTrain(trainId);
-    if (externalData) {
-      return res.json(externalData);
-    }
-
+    // Level 2: ইউজার ডাটা বাসি হলে বা না থাকলে শিডিউল মোড ফলব্যাক
     if (localData && localDiffMinutes <= 360) {
       return res.json(localData);
     }
@@ -6465,21 +6251,342 @@ app.get('/api/train-location/:trainId', async (req, res) => {
   }
 });
 
+// Blog Model import (apnar schema onujayi)
+// import Blog from './models/Blog.js';
+
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const baseUrl = 'https://www.trainkoi.com';
+
+    // ১. Apnar ager sitemap-er shob boro static list ekhane boshie din
+    const existingStaticUrls = [
+       { loc: '/', lastmod: '2026-02-26', changefreq: 'daily', priority: '1.0' },
+  { loc: '/schedule', lastmod: '2026-02-26', changefreq: 'weekly', priority: '0.9' },
+  { loc: '/travel-laws', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/blogs', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.8' },
+  { loc: '/books', lastmod: '2026-02-26', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/about', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/contact', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/privacy', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/terms', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/disclaimer', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/faq', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.7' },
+  { loc: '/settings', lastmod: '2026-02-26', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/rail-news', lastmod: '2026-09-22', changefreq: 'daily', priority: '0.9' },
+  { loc: '/metro-rail', lastmod: '2026-02-26', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/metro/schedule', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/metro/fare', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/metro/map', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/metro/rules', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+ 
+  // ===== Train schedule pages =====
+  { loc: '/schedule/lalmoni-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/drutojan-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/panchagarh-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/kurigram-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/rangpur-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/nilsagar-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/chilahati-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/dhumketu-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/sirajganj-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/banalata-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/tista-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/parabat-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/upakul-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/korotoa-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/jayentika-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/paharika-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/mohanagar-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/udayan-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/meghna-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/agnibina-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/egarosindhur-provati', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/upaban-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/turna-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/jamuna-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/egarosindhur-godhuli', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/dolonchapa-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/kalni-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/hawr-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/kishorganj-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/bijoy-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/kapotaksha-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/sundarban-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/rupsha-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/barendra-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/titumir-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/simanta-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/silkcity-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/madhumati-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/padma-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/sagardari-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/chitra-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/brahmaputra-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/mahanagar-godhuli', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/mahanagar-provati', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/coxs-bazar-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/ekota-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/suborno-express', lastmod: '2026-03-25', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/banglabandha-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/sonar-bangla', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/parjotak-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/benapole-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/schedule/burimari-express', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+ 
+  // ===== Live tracking pages =====
+  { loc: '/track/751', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/752', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/757', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/758', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/793', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/794', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/797', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/798', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/771', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/772', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/765', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/766', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/805', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/806', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/769', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/770', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/775', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/776', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/791', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/792', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/707', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/708', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/709', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/710', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/711', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/712', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/713', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/714', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/717', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/718', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/719', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/720', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/721', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/722', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/723', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/724', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/729', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/730', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/735', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/736', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/737', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/738', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/739', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/740', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/741', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/742', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/745', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/746', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/749', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/750', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/767', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/768', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/773', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/774', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/777', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/778', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/781', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/782', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/785', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/786', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/715', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/716', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/725', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/726', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/727', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/728', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/731', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/732', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/733', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/734', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/747', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/748', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/753', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/754', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/755', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/756', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/759', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/760', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/761', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/762', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/763', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/764', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/743', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/744', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/703', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/704', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/813', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/814', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/705', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/706', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/809', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/810', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/803', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/804', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/787', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/788', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/815', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/816', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/795', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/796', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/701', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/702', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/801', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/802', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/799', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/800', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/783', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/784', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/11', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/12', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/7', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/8', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/13', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/14', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/19', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/20', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/31', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/32', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/127', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/128', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/113', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/114', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/75', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/76', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/15', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/16', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/5', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/6', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/37', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/38', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/39', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/40', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/43', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/44', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/51', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/52', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/25', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/26', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/73', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/74', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/59', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/60', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/125', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/126', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/41', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/42', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/33', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/34', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/47', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/48', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/49', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/50', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/119', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/110', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/57', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/58', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/69', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/70', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/55', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/56', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/61', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/62', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/67', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/68', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/71', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/72', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/77', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/78', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/53', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/54', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/81', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/82', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/65', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/66', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/95', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/96', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/91', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/92', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/93', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/94', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/63', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/64', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/105', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/106', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/87', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/88', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/1', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/201', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/121', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/97', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/3', changefreq: 'always', priority: '1.0' },
+  { loc: '/track/4', changefreq: 'always', priority: '1.0' }
+    ];
+
+   // ২. ডেটাবেজ থেকে ব্লগ পোস্ট ফেচ করা
+    const dynamicBlogs = typeof Blog !== 'undefined' 
+      ? await Blog.find({}).select('slug updatedAt createdAt') 
+      : [];
+
+    // XML স্ট্রিং তৈরি
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+
+    // স্ট্যাটিক ইউআরএল যোগ করা
+    existingStaticUrls.forEach(item => {
+      xml += `
+  <url>
+    <loc>${baseUrl}${item.loc}</loc>
+    <lastmod>${item.lastmod}</lastmod>
+    <changefreq>${item.changefreq}</changefreq>
+    <priority>${item.priority}</priority>
+  </url>`;
+    });
+
+    // ডাইনামিক ব্লগের লিংকগুলো অটো যোগ হওয়া
+    dynamicBlogs.forEach(post => {
+      const slugOrId = post.slug || post._id;
+      const modDate = new Date(post.updatedAt || post.createdAt || Date.now()).toISOString().split('T')[0];
+
+      xml += `
+  <url>
+    <loc>${baseUrl}/blog/${slugOrId}</loc>
+    <lastmod>${modDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+    });
+
+    xml += `\n</urlset>`;
+
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+
+  } catch (error) {
+    console.error("Sitemap error:", error);
+    res.status(500).send("Error generating sitemap");
+  }
+});
+
 // ==========================================
-// All Active Live Trains API (Only Actually Running)
+// All Active Live Trains API (শুধুমাত্র এক্টিভ রানিং ট্রেন)
 // ==========================================
 app.get('/api/live-trains', async (req, res) => {
   try {
     const now = Date.now();
-    const fourHoursAgo = new Date(now - 240 * 60 * 1000);
+    const activeWindow = new Date(now - 15 * 60 * 1000); // শেষ ১৫ মিনিটের একটিভ ট্রেন
     const liveList = [];
-    const processedIds = new Set();
 
-    // ১. Local database check
+    // Local database check
     const dbTrains = await Train.find({
       $or: [
-        { "lastLocation.updatedAt": { $gte: fourHoursAgo } },
-        { updatedAt: { $gte: fourHoursAgo } }
+        { "lastLocation.updatedAt": { $gte: activeWindow } },
+        { updatedAt: { $gte: activeWindow } }
       ]
     }).sort({ updatedAt: -1 });
 
@@ -6493,9 +6600,10 @@ app.get('/api/live-trains', async (req, res) => {
         continue;
       }
 
-      processedIds.add(Number(t.trainId));
       liveList.push({
         trainId: Number(t.trainId),
+        lat: t.lastLocation?.lat || t.lat,
+        lng: t.lastLocation?.lng || t.lng,
         speed: t.speed || 0,
         delay: t.delay || 0,
         delayText: formatDelay(t.delay || 0),
@@ -6508,30 +6616,10 @@ app.get('/api/live-trains', async (req, res) => {
       });
     }
 
-    // ২. In-memory cache theke check
-    for (const [tidStr, cacheEntry] of trackCache.entries()) {
-      const tid = Number(tidStr);
-      if (processedIds.has(tid)) continue;
-
-      const diffSec = Math.max(0, Math.round((now - new Date(cacheEntry.data.updatedAt).getTime()) / 1000));
-      const diffMin = Math.floor(diffSec / 60);
-
-      if (diffMin <= 240) {
-        liveList.push({
-          ...cacheEntry.data,
-          trainId: tid,
-          diffSeconds: diffSec,
-          diffMinutes: diffMin,
-          mode: diffMin <= 10 ? 'LIVE' : 'PREDICTED'
-        });
-        processedIds.add(tid);
-      }
-    }
-
     // Sort: Speed jader beshi ebong diffSeconds jader kom tara shobar upore
     liveList.sort((a, b) => {
-      const aRunning = (a.speed > 0 || (a.index || a.stopsCleared || 0) > 0) ? 1 : 0;
-      const bRunning = (b.speed > 0 || (b.index || b.stopsCleared || 0) > 0) ? 1 : 0;
+      const aRunning = (a.speed > 0 || (a.index || 0) > 0) ? 1 : 0;
+      const bRunning = (b.speed > 0 || (b.index || 0) > 0) ? 1 : 0;
       if (bRunning !== aRunning) return bRunning - aRunning;
       return a.diffSeconds - b.diffSeconds;
     });
@@ -6571,7 +6659,7 @@ io.on("connection", (socket) => {
           const schedTimeStr = (station.arrival === "START") ? station.departure : station.arrival;
           const scheduledMin = parseToMinutes(schedTimeStr);
           
-          if (scheduledMin !== null) {
+          if (schedMin !== null) {
             let diff = currentTotalMin - scheduledMin;
 
             if (diff < -720) diff += 1440;
@@ -6614,6 +6702,7 @@ io.on("connection", (socket) => {
         delayText: formatDelay(finalDelay),
         updatedAt: updateObj["lastLocation.updatedAt"].toISOString(),
         index: updateObj.currentStationIndex,
+        mode: 'LIVE',
         source: 'LOCAL'
       });
 
@@ -6623,7 +6712,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("Client Disconnected");
+    console.log("Client Disconnected:", socket.id);
   });
 });
 

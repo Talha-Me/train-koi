@@ -10,6 +10,7 @@ import TravelLaws from './pages/TravelLaws';
 import TrainSchedule from './pages/TrainSchedule'; 
 import BlogList from './pages/BlogList';
 import BlogDetail from './pages/BlogDetail';
+import NewsDetail from './pages/NewsDetail';
 
 import Footer from "./pages/components/Footer";
 import AboutUs from './pages/AboutUs';
@@ -107,6 +108,7 @@ function AppContent() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin-upload" element={<ContentUpload />} />
+          <Route path="/news/:slug" element={<NewsDetail />} />
 
           {/* পলিসি পেজসমূহ */}
           <Route path="/privacy" element={<PrivacyPolicy />} />
