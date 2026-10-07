@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="google-adsense-account" content="ca-pub-6208607760621896" />
+    
+    <!-- Google AdSense Official Script (Eta obosshoi thakte hobe) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6208607760621896" crossorigin="anonymous"></script>
+
     <link rel="icon" type="image/svg+xml" href="/homeimg.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -29,11 +33,11 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap" rel="stylesheet" />
-    <!-- Favicon Settings for Google & Browsers -->
-<link rel="icon" type="image/png" href="/favicon.png" />
-<link rel="shortcut icon" href="/favicon.png" />
-<link rel="apple-touch-icon" href="/favicon.png" />
-<link rel="icon" type="image/png" href="/favicon.png" />
+    
+    <!-- Favicon Settings -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
 
     <style>
       body { 
@@ -49,9 +53,7 @@
     </style>
   </head>
   <body>
-    <!-- React অ্যাপ মাউন্ট হওয়ার জন্য রুট কন্টেইনার -->
     <div id="root">
-      <!-- ক্রলার এবং প্রাথমিক লোডিংয়ের জন্য কন্টেন্ট (React লোড হওয়ামাত্র স্বয়ংক্রিয়ভাবে রিপ্লেস হয়ে যাবে) -->
       <header style="background: #006a4e; color: #ffffff; padding: 22px 16px; text-align: center;">
         <h1 style="margin: 0; font-size: 22px; font-weight: 700;">ট্রেনকই - বাংলাদেশ রেলওয়ে লাইভ ট্রেন ট্র্যাকিং ও সময়সূচী</h1>
         <p style="margin: 6px 0 0; font-size: 14px; opacity: 0.9;">বাংলাদেশের সকল আন্তঃনগর ট্রেনের লাইভ লোকেশন, ভাড়ার তালিকা ও স্টেশন তথ্য</p>
@@ -61,7 +63,7 @@
         <section style="background: #ffffff; padding: 20px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
           <h2 style="color: #006a4e; font-size: 18px; margin-top: 0;">লাইভ ট্রেন ট্র্যাকিং ও ডিজিটাল সেবা</h2>
           <p style="margin-bottom: 0;">
-            ট্রেনকই (TrainKoi) প্ল্যাটফর্মে স্বাগতম। এটি বাংলাদেশ রেলওয়ের সম্মানিত যাত্রীদের ভ্রমণকে সহজ ও ঝামেলামুক্ত করতে তৈরি একটি আধুনিক লাইভ ট্র্যাকিং পোর্টাল। এখান থেকে খুব সহজেই ট্রেনের বর্তমান অবস্থান, প্ল্যাটফর্ম নম্বর, চলাচলের বিলম্ব ও ট্রেনের সাপ্তাহিক ছুটির দিন সম্পর্কিত সর্বশেষ তথ্য জানা যায়।
+            ট্রেনকই (TrainKoi) প্ল্যাটফর্মে স্বাগতম। এটি বাংলাদেশ রেলওয়ের সম্মানিত যাত্রীদের ভ্রমণকে সহজ ও ঝামেলামুক্ত করতে তৈরি একটি আধুনিক লাইভ ট্র্যাকিং পোর্টাল। এখান থেকে খুব সহজেই ট্রেনের বর্তমান অবস্থান, প্ল্যাটফর্ম নম্বর, চলাচলের বিলম্ব ও ট্রেনের সাপ্তাহিক ছুটির দিন সম্পর্কিত সর্বশেষ তথ্য জানা যায়।
           </p>
         </section>
 
@@ -71,7 +73,7 @@
             <li style="margin-bottom: 10px;"><strong>লাইভ লোকেশন ট্র্যাকিং:</strong> ট্রেনের জিপিএস ও স্টেশনভিত্তিক অবস্থান রিয়েল-টাইমে পর্যবেক্ষণ।</li>
             <li style="margin-bottom: 10px;"><strong>সময়সূচী ও রুট ম্যাপ:</strong> ঢাকা, চট্টগ্রাম, রাজশাহী, সিলেটসহ সকল রুটের নির্ভুল ট্রেনের সময়সূচী।</li>
             <li style="margin-bottom: 10px;"><strong>রেল বার্তা ও লাইভ নোটিশ:</strong> ট্রেনের টিকিট রিফান্ড, ইঞ্জিন বিকল বা শিডিউল পরিবর্তনের জরুরি আপডেট।</li>
-            <li style="margin-bottom: 10px;"><strong>ঢাকা মেট্রোরেল গাইড:</strong> এমআরটি লাইন-৬ এর সময়, ভাড়ার তালিকা ও কার্ড ব্যবহারের নিয়ম।</li>
+            <li style="margin-bottom: 10px;"><strong>ঢাকা মেট্রোরেল গাইড:</strong> এমআরটি লাইন-৬ এর সময়, ভাড়ার তালিকা ও কার্ড ব্যবহারের নিয়ম।</li>
             <li style="margin-bottom: 0;"><strong>যাত্রী গাইড ও ব্লগ:</strong> নিরাপদ ট্রেন ভ্রমণের জন্য রেলওয়ের অফিসিয়াল নীতিমালা ও টিকিট বুকিং নির্দেশিকা।</li>
           </ul>
         </section>
@@ -85,7 +87,6 @@
       </main>
     </div>
 
-    <!-- গুগল সার্চ ইঞ্জিনের নো-স্ক্রিপ্ট ফলব্যাক -->
     <noscript>
       <div style="padding: 20px; text-align: center; color: #4b5563;">
         <p>ওয়েবসাইটটির সমস্ত ফিচার ও লাইভ ট্র্যাকিং ব্যবহারের জন্য দয়া করে আপনার ব্রাউজারে জাভাস্ক্রিপ্ট সক্রিয় করুন।</p>
