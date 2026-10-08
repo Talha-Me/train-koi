@@ -6528,29 +6528,34 @@ app.get('/sitemap.xml', async (req, res) => {
   { loc: '/track/4', changefreq: 'always', priority: '1.0' }
     ];
 
-   // ২. ডেটাবেজ থেকে ব্লগ পোস্ট ফেচ করা
+   // ২. Database theke blog post fetch kora
     const dynamicBlogs = typeof Blog !== 'undefined' 
       ? await Blog.find({}).select('slug updatedAt createdAt') 
       : [];
 
-    // XML স্ট্রিং তৈরি
+    // XML string toiri shuru
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
 
-    // স্ট্যাটিক ইউআরএল যোগ করা
+    // >>> EKHANE FIX KORA HOYECHE (Ajker date default set kora holo) <<<
+    const today = new Date().toISOString().split('T')[0];
+
+    // Static URL loop (item.lastmod na thakle auto 'today' boshbe)
     existingStaticUrls.forEach(item => {
+      const validDate = item.lastmod || today;
+
       xml += `
   <url>
     <loc>${baseUrl}${item.loc}</loc>
-    <lastmod>${item.lastmod}</lastmod>
-    <changefreq>${item.changefreq}</changefreq>
-    <priority>${item.priority}</priority>
+    <lastmod>${validDate}</lastmod>
+    <changefreq>${item.changefreq || 'always'}</changefreq>
+    <priority>${item.priority || '0.8'}</priority>
   </url>`;
     });
 
-    // ডাইনামিক ব্লগের লিংকগুলো অটো যোগ হওয়া
+    // Dynamic blog links loop (safe encode shoho)
     dynamicBlogs.forEach(post => {
-      const slugOrId = post.slug || post._id;
+      const slugOrId = encodeURI(post.slug || post._id);
       const modDate = new Date(post.updatedAt || post.createdAt || Date.now()).toISOString().split('T')[0];
 
       xml += `
@@ -6564,7 +6569,7 @@ app.get('/sitemap.xml', async (req, res) => {
 
     xml += `\n</urlset>`;
 
-    res.header('Content-Type', 'application/xml');
+    res.header('Content-Type', 'application/xml; charset=utf-8');
     res.send(xml);
 
   } catch (error) {
