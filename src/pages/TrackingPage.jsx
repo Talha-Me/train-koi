@@ -1,5 +1,5 @@
 
-// import React, { useState, useMemo, useEffect } from 'react';
+// import React, { useState, useMemo, useEffect, useRef } from 'react';
 // import { useParams, Link } from 'react-router-dom';
 // import { MapContainer, TileLayer, Marker, Tooltip, useMap, GeoJSON } from 'react-leaflet';
 // import L from 'leaflet';
@@ -588,7 +588,7 @@
 // testing
 
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Tooltip, useMap, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
@@ -645,12 +645,12 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
 };
 
-const getSnappedPoint = (lat, lng, geojson) => {
-  if (!geojson || !geojson.features) return [lat, lng];
+const getTrackSnapAndDistance = (lat, lng, geojson) => {
+  if (!geojson || !geojson.features) return { point: [lat, lng], distance: 0 };
   let minDistance = Infinity;
   let snapped = [lat, lng];
   geojson.features.forEach(feature => {
-    if (feature.geometry.type === 'LineString') {
+    if (feature.geometry?.type === 'LineString') {
       feature.geometry.coordinates.forEach(coord => {
         const d = calculateDistance(lat, lng, coord[1], coord[0]);
         if (d < minDistance) {
@@ -658,9 +658,23 @@ const getSnappedPoint = (lat, lng, geojson) => {
           snapped = [coord[1], coord[0]];
         }
       });
+    } else if (feature.geometry?.type === 'MultiLineString') {
+      feature.geometry.coordinates.forEach(line => {
+        line.forEach(coord => {
+          const d = calculateDistance(lat, lng, coord[1], coord[0]);
+          if (d < minDistance) {
+            minDistance = d;
+            snapped = [coord[1], coord[0]];
+          }
+        });
+      });
     }
   });
-  return snapped;
+  return { point: snapped, distance: minDistance };
+};
+
+const getSnappedPoint = (lat, lng, geojson) => {
+  return getTrackSnapAndDistance(lat, lng, geojson).point;
 };
 
 const RecenterMap = ({ center }) => {
@@ -680,6 +694,8 @@ const TrackingPage = () => {
   const [isTraveler, setIsTraveler] = useState(null); 
   const [isSharing, setIsSharing] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [shareStatusText, setShareStatusText] = useState('');
+  const lastGpsRef = useRef(null);
 
   const train = useMemo(() => trains.find(t => t.id === parseInt(trainId)), [trainId]);
 
@@ -760,10 +776,24 @@ const TrackingPage = () => {
     if (isSharing && isTraveler && train && scheduleData.length > 0) {
       watchId = navigator.geolocation.watchPosition((pos) => {
         const { latitude, longitude, speed } = pos.coords;
-        const currentSpeed = Math.round((speed || 0) * 3.6);
-        const isMoving = currentSpeed >= 5;
-
         const now = new Date();
+        const currentTs = now.getTime();
+
+        // ১. গতি নির্ণয় (ডিভাইস স্পিড অথবা সময়-দূরত্বের ব্যবধান)
+        let currentSpeed = Math.round((speed || 0) * 3.6);
+        if ((speed === null || speed === undefined || currentSpeed === 0) && lastGpsRef.current) {
+          const elapsedSec = (currentTs - lastGpsRef.current.ts) / 1000;
+          if (elapsedSec >= 3 && elapsedSec <= 30) {
+            const distKm = calculateDistance(lastGpsRef.current.lat, lastGpsRef.current.lng, latitude, longitude);
+            const calculatedSpeed = Math.round((distKm / elapsedSec) * 3600);
+            if (calculatedSpeed >= 5 && calculatedSpeed <= 140) {
+              currentSpeed = calculatedSpeed;
+            }
+          }
+        }
+        lastGpsRef.current = { lat: latitude, lng: longitude, ts: currentTs };
+
+        // ২. ট্রেনের শিডিউল টাইম উইন্ডো চেক
         const currentMin = now.getHours() * 60 + now.getMinutes();
         const startMin = scheduleData[0].absMin;
         const endMin = scheduleData[scheduleData.length - 1].absMin;
@@ -776,38 +806,66 @@ const TrackingPage = () => {
           isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + 600));
         }
 
-        if (isMoving && isWithinTime) {
-          let matchedIdx = 0; 
-          let minD = Infinity;
-          scheduleData.forEach((st) => {
-            const coords = stationCoords[st.name.trim()];
-            if (coords) {
-              const d = calculateDistance(latitude, longitude, coords[0], coords[1]);
-              if (d < minD) { 
-                minD = d; 
-                matchedIdx = st.idx; 
-              }
-            }
-          });
-
-          const locationData = { 
-            trainId: parseInt(trainId), 
-            lat: latitude, 
-            lng: longitude, 
-            speed: currentSpeed, 
-            index: matchedIdx
-          };
-          
-          socket.emit("send_location", locationData);
-
-          fetch(`${API_URL}/train-location/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(locationData)
-          }).catch(err => console.error("Update Error:", err));
+        if (!isWithinTime) {
+          setShareStatusText('⚠️ ট্রেনের নির্ধারিত সময়সূচীর বাইরে');
+          return;
         }
+
+        // ৩. নিকটতম স্টেশন ম্যাপিং
+        let matchedIdx = 0; 
+        let minStationDist = Infinity;
+        scheduleData.forEach((st) => {
+          const coords = stationCoords[st.name.trim()];
+          if (coords) {
+            const d = calculateDistance(latitude, longitude, coords[0], coords[1]);
+            if (d < minStationDist) { 
+              minStationDist = d; 
+              matchedIdx = st.idx; 
+            }
+          }
+        });
+
+        // ৪. স্মার্ট রেলওয়ে ট্র্যাক জিও-ফেন্সিং ফিল্টার (Track Proximity Validation)
+        // ইউজার কি রেললাইন (≤ 350m) অথবা স্টেশনের (≤ 600m) সীমানার ভেতর আছেন?
+        const { point: snappedCoords, distance: trackDistance } = getTrackSnapAndDistance(latitude, longitude, railData);
+        const isOnRailTrack = trackDistance <= 0.35 || minStationDist <= 0.6;
+
+        if (!isOnRailTrack) {
+          // ইউজার যদি রেললাইনের বাইরে থাকেন (যেমন: বাসা, অফিস বা বাসে)
+          setShareStatusText('⚠️ আপনি রেললাইনের বাইরে আছেন (ফেক ডাটা সুরক্ষা সক্রিয়)');
+          return;
+        }
+
+        // ৫. ট্রেন কি গতিশীল নাকি স্টেশনে/সিগন্যালে দাঁড়ানো?
+        const isMoving = currentSpeed >= 5;
+        if (isMoving) {
+          setShareStatusText(`✓ ট্রেন চলছে (${currentSpeed} km/h) - লাইভ সিঙ্ক সক্রিয়`);
+        } else {
+          setShareStatusText(`✓ ট্রেন স্টেশনে অপেক্ষমাণ - প্ল্যাটফর্ম লোকেশন সক্রিয়`);
+        }
+
+        // রেললাইনে স্ন্যাপ করা নির্ভুল কোঅর্ডিনেট পাঠানো
+        const finalLat = snappedCoords[0] || latitude;
+        const finalLng = snappedCoords[1] || longitude;
+
+        const locationData = { 
+          trainId: parseInt(trainId), 
+          lat: finalLat, 
+          lng: finalLng, 
+          speed: currentSpeed, 
+          index: matchedIdx
+        };
+        
+        socket.emit("send_location", locationData);
+
+        fetch(`${API_URL}/train-location/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(locationData)
+        }).catch(err => console.error("Update Error:", err));
       }, (err) => {
         console.error("GPS Error:", err);
+        setShareStatusText('⚠️ জিপিএস সিগন্যাল পেতে সমস্যা হচ্ছে');
       }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
     }
     return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
@@ -1137,15 +1195,17 @@ const TrackingPage = () => {
           <div style={{ background: isSharing ? '#ecfdf5' : '#fff7ed', padding: '12px', borderRadius: '12px', border: `1px solid ${isSharing ? '#10b981' : '#f97316'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1f2937' }}>{isSharing ? '📍 আপনি লোকেশন শেয়ার করছেন' : '⏸️ শেয়ারিং বন্ধ আছে'}</div>
-              <div style={{ fontSize: '11px', color: '#6b7280' }}>আপনার অবদান অন্যদের সাহায্য করছে</div>
+              <div style={{ fontSize: '11px', color: isSharing && shareStatusText && shareStatusText.startsWith('⚠️') ? '#b45309' : '#047857', marginTop: '2px', fontWeight: '500' }}>
+                {isSharing && shareStatusText ? shareStatusText : 'আপনার অবদান অন্যদের সাহায্য করছে'}
+              </div>
             </div>
-            <button onClick={() => setIsSharing(!isSharing)} style={{ background: isSharing ? '#ef4444' : '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>{isSharing ? 'বন্ধ করুন' : 'চালু করুন'}</button>
+            <button onClick={() => setIsSharing(!isSharing)} style={{ background: isSharing ? '#ef4444' : '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{isSharing ? 'বন্ধ করুন' : 'চালু করুন'}</button>
           </div>
         ) : (
           <div style={{ background: '#f1f5f9', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
             <p style={{ fontSize: '12px', color: '#475569', margin: '0 0 8px 0' }}>আপনি কি এই মুহূর্তে এই ট্রেনে ভ্রমণ করছেন?</p>
-            <button onClick={() => {setIsTraveler(true); setIsSharing(true); setShowModal(false);}} style={{ background: '#006a4e', color: 'white', border: 'none', padding: '5px 15px', borderRadius: '6px', marginRight: '10px', fontSize: '12px' }}>হ্যাঁ, আমি আছি</button>
-            <button onClick={() => {setIsTraveler(false); setShowModal(false);}} style={{ background: '#e2e8f0', color: '#475569', border: 'none', padding: '5px 15px', borderRadius: '6px', fontSize: '12px' }}>না</button>
+            <button onClick={() => {setIsTraveler(true); setIsSharing(true); setShowModal(false);}} style={{ background: '#006a4e', color: 'white', border: 'none', padding: '5px 15px', borderRadius: '6px', marginRight: '10px', fontSize: '12px', cursor: 'pointer' }}>হ্যাঁ, আমি আছি</button>
+            <button onClick={() => {setIsTraveler(false); setShowModal(false);}} style={{ background: '#e2e8f0', color: '#475569', border: 'none', padding: '5px 15px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>না</button>
           </div>
         )}
       </div>

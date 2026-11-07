@@ -591,11 +591,11 @@
 //               <HelpCircle size={22} style={{ transform: 'rotate(180deg)' }} />
 //             </div>
 //             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-//               <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>Official App</span>
-//               <span style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800', lineHeight: '1.4' }}>সব ধরনের আপডেট পেতে এখনই TrainKoi অ্যাপটি ডাউনলোড করে নিন!</span>
+//               <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>স্মার্ট ভ্রমণ সেবা</span>
+//               <span style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800', lineHeight: '1.4' }}>ট্রেনের লাইভ লোকেশন, টিকিট নিয়ম ও শিডিউল আপডেট পেতে চোখ রাখুন ট্রেনকই-তে!</span>
 //             </div>
 //           </div>
-//           <a href="https://drive.google.com/file/d/1jZ76l2WU60VgupVeUm7p6U4oyAJCn9R5/view?usp=sharing" target="_blank" rel="noopener noreferrer" style={{ backgroundColor: '#eab308', color: '#000000', fontWeight: '900', fontSize: '13px', padding: '12px 20px', borderRadius: '14px', textDecoration: 'none', whiteSpace: 'nowrap', boxShadow: '0 5px 15px rgba(234, 179, 8, 0.4)', zIndex: 1 }}>ডাউনলোড</a>
+//           <a href="/blogs" target="_blank" rel="noopener noreferrer" style={{ backgroundColor: '#eab308', color: '#000000', fontWeight: '900', fontSize: '13px', padding: '12px 20px', borderRadius: '14px', textDecoration: 'none', whiteSpace: 'nowrap', boxShadow: '0 5px 15px rgba(234, 179, 8, 0.4)', zIndex: 1 }}>গাইড পড়ুন</a>
 //         </div>
 //       )}
 // {/* Metro Rail Section */}
@@ -1434,7 +1434,7 @@ const HomePage = () => {
               <HelpCircle size={22} style={{ transform: 'rotate(180deg)' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>Official App</span>
+              <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>স্মার্ট ভ্রমণ সেবা</span>
               <span style={{ color: '#ffffff', fontSize: '14px', fontWeight: '800', lineHeight: '1.4' }}>সব ধরনের আপডেট পেতে এখনই TrainKoi অ্যাপটি ডাউনলোড করে নিন!</span>
             </div>
           </div>

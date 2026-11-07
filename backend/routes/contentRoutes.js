@@ -10,7 +10,7 @@ const makeSlug = (text) => {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/[^\p{L}\p{N}\s-]/gu, '') // বাংলা ও অন্যান্য ইউনিকোড বর্ণ অক্ষুণ্ণ রাখবে
+    .replace(/[^\p{L}\p{M}\p{N}\s-]/gu, '') // বাংলা ও অন্যান্য ইউনিকোড বর্ণ অক্ষুণ্ণ রাখবে
     .replace(/\s+/g, '-');
   return clean || `post-${Date.now()}`;
 };

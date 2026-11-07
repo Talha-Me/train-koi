@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin-upload
 
-Sitemap: https://trainkoi.com/sitemap.xml
+Sitemap: https://www.trainkoi.com/sitemap.xml

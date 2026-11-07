@@ -6191,20 +6191,204 @@ const formatDelay = (min) => {
 };
 
 // ==========================================
-// ১. API Routes
+// ১. সেশন কুকি স্টোরেজ ও এক্সটার্নাল ট্র্যাকার
+// ==========================================
+let activeCookie = process.env.EXTERNAL_COOKIE || '';
+let activeUserAgent = process.env.EXTERNAL_USER_AGENT || 'Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36';
+let cookieExpiryTs = 0;
+
+// ট্রেনের ইন-মেমোরি ক্যাশ (২৫ সেকেন্ড ফ্রেশ থাকবে যাতে থার্ড-পার্টি রেট-লিমিট বা ব্লকিং না খায়)
+const trainCache = new Map();
+
+const parseCookieExpiry = (cookieStr) => {
+  if (!cookieStr) return 0;
+  const match = cookieStr.match(/tk_s=(\d+)\./);
+  if (match && match[1]) {
+    return parseInt(match[1], 10) * 1000;
+  }
+  return Date.now() + 14 * 60 * 1000;
+};
+
+// স্টপেজ ইনডেক্স ম্যাচিং হেল্পার
+const matchStationIndex = (stations, targetName, defaultIndex, delayMinutes = 0) => {
+  if (!stations || stations.length === 0) return 0;
+
+  // ১. নাম দিয়ে আংশিক ও নিখুঁত ম্যাচিং
+  if (targetName) {
+    const cleanTarget = targetName.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    for (let i = 0; i < stations.length; i++) {
+      const rawName = stations[i].name || '';
+      const englishMatch = rawName.match(/\(([^)]+)\)/);
+      const nameToCheck = englishMatch ? englishMatch[1] : rawName;
+      const cleanName = nameToCheck.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      if (cleanName && (cleanName.includes(cleanTarget) || cleanTarget.includes(cleanName))) {
+        return i;
+      }
+    }
+  }
+
+  // ২. টাইম ও ডিলে ভিত্তিক স্মার্ট ফলব্যাক
+  const now = new Date();
+  const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+  const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
+  const effectiveCurrentTime = currentTotalMin - (Number(delayMinutes) || 0);
+
+  for (let i = 0; i < stations.length; i++) {
+    const timeStr = (stations[i].arrival === "START") ? stations[i].departure : stations[i].arrival;
+    const schedMin = parseToMinutes(timeStr);
+    
+    if (schedMin !== null && schedMin > effectiveCurrentTime) {
+      return Math.max(0, i - 1);
+    }
+  }
+
+  return Math.max(0, stations.length - 2);
+};
+
+// অন-ডিমান্ড এক্সটার্নাল ট্রেন ফেচার (সেফ টাইমআউট ও মেমোরি ক্যাশ সহ)
+const fetchExternalTrain = async (tid) => {
+  try {
+    if (!activeCookie) return null;
+    if (cookieExpiryTs && Date.now() >= cookieExpiryTs) {
+      return null;
+    }
+
+    // ক্যাশ চেক (২৫ সেকেন্ড ফ্রেশ)
+    const cached = trainCache.get(String(tid));
+    if (cached && (Date.now() - cached.timestamp < 25 * 1000)) {
+      return cached.data;
+    }
+
+    const pageRes = await axios.get(`https://trainkothai.com/track/${tid}`, {
+      headers: { 
+        'User-Agent': activeUserAgent,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,bn;q=0.8'
+      },
+      timeout: 5000
+    });
+
+    if (pageRes.status === 200 && pageRes.data) {
+      const match = pageRes.data.match(/\\?"runId\\?":\s*(\d+)/) || pageRes.data.match(/"runId":\s*(\d+)/);
+      if (match && match[1]) {
+        const runId = match[1];
+        const liveRes = await axios.get(`https://trainkothai.com/api/v1/live/track/${runId}`, {
+          headers: {
+            'User-Agent': activeUserAgent,
+            'Referer': `https://trainkothai.com/track/${tid}`,
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9,bn;q=0.8',
+            'Cookie': activeCookie
+          },
+          timeout: 5000
+        });
+
+        if (liveRes.status === 200 && liveRes.data && !liveRes.data.error) {
+          const ext = liveRes.data;
+          const extSpeed = Math.round(ext.speed_kmh || 0);
+          const stopsCleared = ext.stops_cleared || 0;
+          const totalStops = ext.total_stops || 999;
+
+          if ((stopsCleared === 0 && extSpeed === 0) || (stopsCleared >= totalStops && extSpeed === 0)) {
+            trainCache.delete(String(tid));
+            return null;
+          }
+
+          const extDelay = ext.current_delay_minutes || 0;
+          const extUpdated = ext.last_update_at ? new Date(ext.last_update_at).toISOString() : new Date().toISOString();
+
+          const stationsList = (typeof trainsDataMap !== 'undefined' && trainsDataMap[String(tid)]?.stations) || [];
+          const rawTargetStation = ext.nearest_station_name || ext.current_station_name;
+          const rawDefaultIndex = Math.max(0, stopsCleared - 1);
+          
+          const calculatedIndex = stationsList.length > 0 
+            ? matchStationIndex(stationsList, rawTargetStation, rawDefaultIndex, extDelay) 
+            : rawDefaultIndex;
+
+          const payload = {
+            trainId: Number(tid),
+            speed: extSpeed,
+            delay: extDelay,
+            delayText: formatDelay(extDelay),
+            index: calculatedIndex,
+            stopsCleared: stopsCleared,
+            updatedAt: extUpdated,
+            mode: 'LIVE',
+            source: 'EXTERNAL'
+          };
+
+          trainCache.set(String(tid), { timestamp: Date.now(), data: payload });
+          return payload;
+        } else if (liveRes.data?.error === 'pass_required') {
+          cookieExpiryTs = 0; // সেশন এক্সপায়ার্ড
+        }
+      }
+    }
+  } catch (err) {
+    if (err.response?.status === 401) {
+      cookieExpiryTs = 0;
+    }
+  }
+  return null;
+};
+
+// ==========================================
+// ২. API Routes
 // ==========================================
 
 app.get('/', (req, res) => {
   res.send('TrainKoi Backend Server is Running...');
 });
 
-// Single train location API (Local DB Priority -> Scheduled Fallback)
+// কুকি সিঙ্ক অ্যান্ডপয়েন্ট (ক্লাউড রোবট বা অ্যাডমিন থেকে ফ্রেশ কুকি রিসিভ করার জন্য)
+app.post('/api/cookie/sync', (req, res) => {
+  try {
+    const { cookie, userAgent, token } = req.body;
+    const secret = (process.env.ADMIN_SECRET_TOKEN || 'trainkoi_super_secret_token_2026').trim();
+
+    if (token !== secret) {
+      return res.status(403).json({ success: false, error: 'Unauthorized token' });
+    }
+
+    if (!cookie) {
+      return res.status(400).json({ success: false, error: 'Cookie is required' });
+    }
+
+    activeCookie = cookie.trim();
+    if (userAgent) activeUserAgent = userAgent.trim();
+    cookieExpiryTs = parseCookieExpiry(activeCookie);
+
+    console.log(`[COOKIE SYNCED] Active until: ${new Date(cookieExpiryTs).toISOString()}`);
+    return res.json({ 
+      success: true, 
+      message: 'Cookie successfully synced',
+      expiresAt: new Date(cookieExpiryTs).toISOString(),
+      expiresInMinutes: Math.max(0, Math.round((cookieExpiryTs - Date.now()) / 60000))
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// কুকি স্ট্যাটাস চেক
+app.get('/api/cookie/status', (req, res) => {
+  const isAlive = activeCookie && Date.now() < cookieExpiryTs;
+  res.json({
+    active: !!isAlive,
+    expiresAt: cookieExpiryTs ? new Date(cookieExpiryTs).toISOString() : null,
+    expiresInSeconds: cookieExpiryTs ? Math.max(0, Math.round((cookieExpiryTs - Date.now()) / 1000)) : 0
+  });
+});
+
+// Single train location API (Tier 1 Local -> Tier 2 External -> Tier 3 Scheduled)
 app.get('/api/train-location/:trainId', async (req, res) => {
   try {
     const trainId = parseInt(req.params.trainId);
     const now = Date.now();
 
-    // Level 1: Local DB Check (ইউজার ডাটা চেক)
+    // Tier 1: Local DB Check (ইউজার ডাটা চেক - ১৫ মিনিট)
     const trainData = await Train.findOne({ trainId: trainId });
     const rawUpdatedTime = trainData?.lastLocation?.updatedAt || trainData?.updatedAt;
     
@@ -6229,13 +6413,19 @@ app.get('/api/train-location/:trainId', async (req, res) => {
         source: 'LOCAL'
       };
 
-      // শেষ ১৫ মিনিটের মধ্যে রিয়েল ইউজার ডাটা থাকলে লাইভ রিটার্ন করবে
+      // শেষ ১৫ মিনিটের মধ্যে রিয়েল ইউজার ডাটা থাকলে লাইভ রিটার্ন করবে (Tier 1 Priority)
       if (localDiffMinutes >= 0 && localDiffMinutes <= 15) {
         return res.json(localData);
       }
     }
 
-    // Level 2: ইউজার ডাটা বাসি হলে বা না থাকলে শিডিউল মোড ফলব্যাক
+    // Tier 2: External Live Fallback
+    const externalData = await fetchExternalTrain(trainId);
+    if (externalData) {
+      return res.json(externalData);
+    }
+
+    // Tier 3: লোকাল ডাটা বাসি হলে তা অথবা শিডিউল মোড ফলব্যাক
     if (localData && localDiffMinutes <= 360) {
       return res.json(localData);
     }
@@ -6528,9 +6718,13 @@ app.get('/sitemap.xml', async (req, res) => {
   { loc: '/track/4', changefreq: 'always', priority: '1.0' }
     ];
 
-   // ২. Database theke blog post fetch kora
+   // ২. Database theke blog ও news post fetch kora
     const dynamicBlogs = typeof Blog !== 'undefined' 
       ? await Blog.find({}).select('slug updatedAt createdAt') 
+      : [];
+
+    const dynamicNews = typeof News !== 'undefined'
+      ? await News.find({}).select('slug updatedAt createdAt')
       : [];
 
     // XML string toiri shuru
@@ -6564,6 +6758,20 @@ app.get('/sitemap.xml', async (req, res) => {
     <lastmod>${modDate}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>`;
+    });
+
+    // Dynamic news links loop
+    dynamicNews.forEach(item => {
+      const slugOrId = encodeURI(item.slug || item._id);
+      const modDate = new Date(item.updatedAt || item.createdAt || Date.now()).toISOString().split('T')[0];
+
+      xml += `
+  <url>
+    <loc>${baseUrl}/news/${slugOrId}</loc>
+    <lastmod>${modDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>`;
     });
 
@@ -6621,6 +6829,15 @@ app.get('/api/live-trains', async (req, res) => {
       });
     }
 
+    // ২. External Cached trains check
+    for (const [tIdStr, cacheEntry] of trainCache.entries()) {
+      const tId = Number(tIdStr);
+      if (liveList.some(item => item.trainId === tId)) continue;
+      if (Date.now() - cacheEntry.timestamp < 35 * 1000 && cacheEntry.data) {
+        liveList.push(cacheEntry.data);
+      }
+    }
+
     // Sort: Speed jader beshi ebong diffSeconds jader kom tara shobar upore
     liveList.sort((a, b) => {
       const aRunning = (a.speed > 0 || (a.index || 0) > 0) ? 1 : 0;
@@ -6643,74 +6860,94 @@ app.get('/api/live-trains', async (req, res) => {
 app.get('/ping', (req, res) => res.send('pong'));
 
 // ==========================================
-// ২. Socket logic
+// ২. ট্রেন লোকেশন প্রসেসিং ও ব্রডকাস্ট হেল্পার
+// ==========================================
+const processTrainLocationUpdate = async (data) => {
+  const { trainId, lat, lng, speed, index, manualDelay } = data;
+  let calculatedDelayMinutes = 0;
+  const tidString = String(trainId);
+
+  const now = new Date();
+  const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
+  const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
+
+  if (typeof trainsDataMap !== 'undefined' && trainsDataMap[tidString]) {
+    const station = trainsDataMap[tidString].stations[parseInt(index) || 0];
+    if (station) {
+      const schedTimeStr = (station.arrival === "START") ? station.departure : station.arrival;
+      const scheduledMin = parseToMinutes(schedTimeStr);
+      
+      if (scheduledMin !== null) {
+        let diff = currentTotalMin - scheduledMin;
+
+        if (diff < -720) diff += 1440;
+        if (diff > 720) diff -= 1440;
+
+        if (diff > 0 && speed > 50) {
+          const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
+          diff = diff - recoveryFactor;
+        }
+
+        calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
+      }
+    }
+  }
+
+  const finalDelay = (manualDelay !== undefined && manualDelay !== null && manualDelay !== "") 
+                     ? parseInt(manualDelay) : calculatedDelayMinutes;
+
+  const updateObj = {
+    "lastLocation.lat": parseFloat(lat) || 0,
+    "lastLocation.lng": parseFloat(lng) || 0,
+    "lastLocation.updatedAt": new Date(),
+    delay: finalDelay,
+    currentStationIndex: parseInt(index) || 0,
+    speed: parseFloat(speed) || 0
+  };
+
+  await Train.findOneAndUpdate(
+    { trainId: parseInt(trainId) },
+    { $set: updateObj },
+    { upsert: true, new: true }
+  );
+
+  const payload = {
+    trainId: parseInt(trainId),
+    lat: updateObj["lastLocation.lat"],
+    lng: updateObj["lastLocation.lng"],
+    speed: updateObj.speed,
+    delay: finalDelay,
+    delayText: formatDelay(finalDelay),
+    updatedAt: updateObj["lastLocation.updatedAt"].toISOString(),
+    index: updateObj.currentStationIndex,
+    mode: 'LIVE',
+    source: 'LOCAL'
+  };
+
+  io.emit("receive_location", payload);
+  return payload;
+};
+
+// HTTP রুট: যদি সকেট ডিসকানেক্টেড থাকে বা ফলব্যাক হিসেবে কল হয়
+app.post('/api/train-location/update', async (req, res) => {
+  try {
+    const result = await processTrainLocationUpdate(req.body);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error("HTTP Location Update Error:", err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// ৩. Socket logic
 // ==========================================
 io.on("connection", (socket) => {
   console.log("New Client Connected:", socket.id);
 
   socket.on("send_location", async (data) => {
     try {
-      const { trainId, lat, lng, speed, index, manualDelay } = data;
-      let calculatedDelayMinutes = 0;
-      const tidString = String(trainId);
-
-      const now = new Date();
-      const bdtTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Dhaka" }));
-      const currentTotalMin = (bdtTime.getHours() * 60) + bdtTime.getMinutes();
-
-      if (typeof trainsDataMap !== 'undefined' && trainsDataMap[tidString]) {
-        const station = trainsDataMap[tidString].stations[parseInt(index) || 0];
-        if (station) {
-          const schedTimeStr = (station.arrival === "START") ? station.departure : station.arrival;
-          const scheduledMin = parseToMinutes(schedTimeStr);
-          
-          if (schedMin !== null) {
-            let diff = currentTotalMin - scheduledMin;
-
-            if (diff < -720) diff += 1440;
-            if (diff > 720) diff -= 1440;
-
-            if (diff > 0 && speed > 50) {
-              const recoveryFactor = Math.floor((speed - 50) / 5) * 2;
-              diff = diff - recoveryFactor;
-            }
-
-            calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
-          }
-        }
-      }
-
-      const finalDelay = (manualDelay !== undefined && manualDelay !== null && manualDelay !== "") 
-                         ? parseInt(manualDelay) : calculatedDelayMinutes;
-
-      const updateObj = {
-        "lastLocation.lat": parseFloat(lat) || 0,
-        "lastLocation.lng": parseFloat(lng) || 0,
-        "lastLocation.updatedAt": new Date(),
-        delay: finalDelay,
-        currentStationIndex: parseInt(index) || 0,
-        speed: parseFloat(speed) || 0
-      };
-
-      await Train.findOneAndUpdate(
-        { trainId: parseInt(trainId) },
-        { $set: updateObj },
-        { upsert: true, new: true }
-      );
-
-      io.emit("receive_location", {
-        trainId: parseInt(trainId),
-        lat: updateObj["lastLocation.lat"],
-        lng: updateObj["lastLocation.lng"],
-        speed: updateObj.speed,
-        delay: finalDelay,
-        delayText: formatDelay(finalDelay),
-        updatedAt: updateObj["lastLocation.updatedAt"].toISOString(),
-        index: updateObj.currentStationIndex,
-        mode: 'LIVE',
-        source: 'LOCAL'
-      });
-
+      await processTrainLocationUpdate(data);
     } catch (err) {
       console.error("Socket Error:", err.message);
     }

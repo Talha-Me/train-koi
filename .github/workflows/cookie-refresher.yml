@@ -1,0 +1,30 @@
+name: Auto Cookie Refresher
+
+on:
+  schedule:
+    # প্রতি ১০ মিনিট পর পর ক্লাউড থেকে ফ্রেশ কুকি সংগ্রহ করবে
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # গিটহাব থেকে ম্যানুয়ালি ১-ক্লিকে চালানোর সুবিধা
+
+jobs:
+  refresh-cookie:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Puppeteer Dependencies
+        run: |
+          npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
+
+      - name: Run Cloud Cookie Refresher
+        env:
+          SYNC_API_URL: 'https://train-koi.onrender.com/api/cookie/sync'
+          ADMIN_SECRET_TOKEN: 'trainkoi_super_secret_token_2026'
+        run: |
+          node scripts/cookie-refresher.js
