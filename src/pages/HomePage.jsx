@@ -1512,6 +1512,210 @@ const HomePage = () => {
         </div>
       </div>
 
+      {/* ================= FEATURED BLOGS SECTION (AdSense & User Guides) ================= */}
+      <div style={{ padding: '10px 20px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <span style={{ fontSize: '11px', color: '#006a4e', fontWeight: '800', letterSpacing: '0.5px' }}>ভ্রমণ গাইড ও টিপস</span>
+            <h3 style={{ margin: '2px 0 0', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+              সর্বশেষ ট্রেন ভ্রমণ গাইড ও ফিচার
+            </h3>
+          </div>
+          <button
+            onClick={() => navigate('/blogs')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '8px 14px',
+              borderRadius: '999px',
+              border: '1px solid #d1fae5',
+              backgroundColor: '#ecfdf5',
+              color: '#006a4e',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            সবগুলো পড়ুন (৪৫টি) <ChevronRight size={14} />
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+          {[
+            {
+              title: "পদ্মা সেতু রেল সংযোগে ঢাকা-খুলনা ও বেনাপোল ট্রেন ভ্রমণ গাইড ২০২৬: জাহানাবাদ, রূপসী বাংলা ও সুন্দরবন এক্সপ্রেস",
+              slug: "padma-bridge-rail-link-dhaka-khulna-benapole-train-travel-guide-2026",
+              category: "রুট গাইড",
+              desc: "মাত্র পৌনে চার ঘণ্টায় পদ্মা সেতু হয়ে খুলনা ও বেনাপোল পৌঁছানোর আধুনিক ট্রেন শিডিউল, টিকিট ভাড়া ও সেরা ভ্রমণ গাইড...",
+              time: "৬ মিনিট"
+            },
+            {
+              title: "ট্রেনে মোটরসাইকেল, বাইসাইকেল ও পার্সেল পরিবহনের পূর্ণাঙ্গ নিয়ম ২০২৬: বুকিং প্রক্রিয়া, ভাড়ার তালিকা ও কাগজপত্র",
+              slug: "bangladesh-railway-motorcycle-parcel-luggage-booking-rules-charges-2026",
+              category: "যাত্রীসেবা ও পার্সেল",
+              desc: "সরকারি নিয়মে অল্প খরচে ট্রেনে কীভাবে নিজের বাইক বা লাগেজ বুক করবেন? জেনে নিন প্রয়োজনীয় কাগজপত্র ও ভাড়ার তালিকা...",
+              time: "৭ মিনিট"
+            },
+            {
+              title: "ঢাকা থেকে রংপুর ও পঞ্চগড় ট্রেন ভ্রমণ গাইড ২০২৬: একতা, দ্রুতযান, পঞ্চগড় ও রংপুর এক্সপ্রেসের পূর্ণাঙ্গ বিশ্লেষণ",
+              slug: "dhaka-to-rangpur-panchagarh-long-distance-train-travel-guide-2026",
+              category: "ভ্রমণ গাইড",
+              desc: "বাংলাদেশের দীর্ঘতম রেল রুটে স্বস্তিদায়ক ভ্রমণের জন্য কোন ট্রেন ও কোন সিট সবচেয়ে সেরা? সময়সূচি ও ভাড়ার বিস্তারিত রিভিউ...",
+              time: "৬ মিনিট"
+            },
+            {
+              title: "ঢাকা মেট্রোরেল (MRT Line-6) ব্যবহারের পূর্ণাঙ্গ নির্দেশিকা ২০২৬: সময়সূচি, ভাড়া, এমআরটি ও র‌্যাপিড পাস গাইড",
+              slug: "dhaka-metro-rail-mrt-line-6-schedule-fare-mrt-pass-guide-2026",
+              category: "মেট্রোরেল গাইড",
+              desc: "উত্তরার দিয়াবাড়ি থেকে মতিঝিল পর্যন্ত ১৬টি স্টেশনের পূর্ণাঙ্গ ভাড়া তালিকা ও ১০% ডিসকাউন্টে কার্ড ব্যবহারের নিয়ম...",
+              time: "৫ মিনিট"
+            }
+          ].map((item, idx) => (
+            <article
+              key={idx}
+              onClick={() => navigate(`/blog/${item.slug}`)}
+              style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '18px',
+                padding: '16px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: '800', color: '#006a4e', backgroundColor: '#e8f5e9', padding: '3px 8px', borderRadius: '6px' }}>
+                    {item.category}
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <Clock size={12} /> {item.time}
+                  </span>
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '14px', fontWeight: '800', color: '#1e293b', lineHeight: '1.45' }}>
+                  {item.title}
+                </h4>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: '1.6' }}>
+                  {item.desc}
+                </p>
+              </div>
+              <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#006a4e', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  সম্পূর্ণ পড়ুন <ChevronRight size={14} />
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {/* ================= LATEST RAILWAY NEWS SECTION (AdSense & Trust) ================= */}
+      <div style={{ padding: '0 20px 20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <span style={{ fontSize: '11px', color: '#e67e22', fontWeight: '800', letterSpacing: '0.5px' }}>তাজা খবর ও আপডেট</span>
+            <h3 style={{ margin: '2px 0 0', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+              বাংলাদেশ রেলওয়ে সংবাদ ও নোটিশ
+            </h3>
+          </div>
+          <button
+            onClick={() => navigate('/rail-news')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '8px 14px',
+              borderRadius: '999px',
+              border: '1px solid #fed7aa',
+              backgroundColor: '#fff7ed',
+              color: '#c2410c',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            সব খবর (৪৪টি) <ChevronRight size={14} />
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+          {[
+            {
+              title: "শীতকালীন ঘন কুয়াশা মোকাবিলায় রেলওয়েতে ফগ-সেফটি ও অটোমেটিক সিগন্যালিং আপগ্রেড চালু",
+              slug: "bangladesh-railway-winter-fog-safety-signaling-schedule-action-plan-2026",
+              source: "সিগন্যালিং ও নিরাপত্তা সেল",
+              desc: "কুয়াশার রাতে সময়সূচি ও নিরাপত্তা নিশ্চিতে লোকোমোটিভে ফগ-পাস ডিভাইস ও ১২০টি স্টেশনে উচ্চক্ষমতার এলইডি সিগন্যাল...",
+              date: "নভেম্বর ২০২৬"
+            },
+            {
+              title: "পদ্মা সেতু হয়ে ঢাকা-যশোর-খুলনা ও বেনাপোল রুটে দৈনিক নতুন ট্রেন বাড়ানোর সিদ্ধান্ত",
+              slug: "padma-bridge-rail-corridor-dhaka-khulna-benapole-additional-trains-2026",
+              source: "পশ্চিমাঞ্চলীয় অপারেশন",
+              desc: "যাত্রী চাহিদায় রেকর্ড প্রবৃদ্ধি বিবেচনায় ঢাকা-ভাঙ্গা-নড়াইল-খুলনা রুটে অতিরিক্ত কমিউটার ও নতুন কোচ যুক্ত করার উদ্যোগ...",
+              date: "নভেম্বর ২০২৬"
+            },
+            {
+              title: "বাংলাদেশ রেলওয়ের প্রধান স্টেশনগুলোতে ফ্রি হাই-স্পিড ওয়াই-ফাই ও ডিজিটাল কিয়স্কের দ্বিতীয় ধাপ শুরু",
+              slug: "bangladesh-railway-smart-station-free-wifi-digital-kiosk-phase-two-2026",
+              source: "ডিজিটাল রূপান্তর উইং",
+              desc: "দেশের ৩৫টি গুরুত্বপূর্ণ জংশন স্টেশনে সেলফ-সার্ভিস টিকিট কিয়স্ক, ডিজিটাল এলইডি বোর্ড ও ফ্রি পাবলিক ওয়াই-ফাই স্থাপন...",
+              date: "নভেম্বর ২০২৬"
+            },
+            {
+              title: "টিকিট কালোবাজারি শূন্যে নামাতে রেলওয়েতে চালু হলো কৃত্রিম বুদ্ধিমত্তা ও ফেস রিকগনিশন নিরাপত্তা বলয়",
+              slug: "bangladesh-railway-ai-face-recognition-ticket-black-market-prevention-2026",
+              source: "আইসিটি ও নিরাপত্তা বিভাগ",
+              desc: "প্ল্যাটফর্ম প্রবেশপথে থ্রিডি ফেস স্ক্যানার ও এনআইডি ভেরিফিকেশন গেট চালুর মাধ্যমে দালাল ও ভুয়া টিকিট চক্র প্রতিরোধে যুগান্তকারী পদক্ষেপ...",
+              date: "নভেম্বর ২০২৬"
+            }
+          ].map((item, idx) => (
+            <article
+              key={idx}
+              onClick={() => navigate(`/news/${item.slug}`)}
+              style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '18px',
+                padding: '16px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: '800', color: '#c2410c', backgroundColor: '#fff7ed', padding: '3px 8px', borderRadius: '6px' }}>
+                    {item.source}
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                    {item.date}
+                  </span>
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '14px', fontWeight: '800', color: '#1e293b', lineHeight: '1.45' }}>
+                  {item.title}
+                </h4>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: '1.6' }}>
+                  {item.desc}
+                </p>
+              </div>
+              <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#ea580c', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  বিস্তারিত দেখুন <ChevronRight size={14} />
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
       {/* ================= SEO & AdSense Content Section ================= */}
 <div style={{ padding: '10px 20px 20px' }}>
   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
