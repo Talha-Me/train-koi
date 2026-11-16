@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const newsSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -9,4 +9,5 @@ const newsSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('News', newsSchema);
+const News = mongoose.models.News || mongoose.model('News', newsSchema);
+export default News;

@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Blog = require('../models/Blog');
-const News = require('../models/News');
+import Blog from '../models/Blog.js';
+import News from '../models/News.js';
 
 // বাংলা ও ইংরেজি সমর্থনকারী নিরাপদ Slug জেনারেটর
 const makeSlug = (text) => {
@@ -191,4 +191,4 @@ router.delete('/news/:id', verifyAdmin, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

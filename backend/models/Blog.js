@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const blogSchema = new mongoose.Schema(
   {
@@ -43,4 +43,5 @@ const blogSchema = new mongoose.Schema(
 );
 
 // যদি মডেলটি আগে কম্পাইল হয়ে থাকে তবে সেটি ব্যবহার করবে, নয়তো নতুন তৈরি করবে
-module.exports = mongoose.models.Blog || mongoose.model('Blog', blogSchema);
+const Blog = mongoose.models.Blog || mongoose.model('Blog', blogSchema);
+export default Blog;

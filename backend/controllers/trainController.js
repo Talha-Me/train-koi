@@ -1,7 +1,7 @@
-const Train = require('../models/Train');
+import Train from '../models/Train.js';
 
 // ১. লোকেশন আপডেট করার ফাংশন
-exports.updateTrainLocation = async (req, res) => {
+export const updateTrainLocation = async (req, res) => {
     try {
         const { trainId, name, lat, lng, delay, speed, currentStationIndex, progress } = req.body;
 
@@ -30,7 +30,7 @@ exports.updateTrainLocation = async (req, res) => {
 };
 
 // ২. সব ট্রেনের ডাটা দেখার ফাংশন
-exports.getAllTrains = async (req, res) => {
+export const getAllTrains = async (req, res) => {
     try {
         const trains = await Train.find();
         res.status(200).json({ success: true, data: trains });
@@ -40,7 +40,7 @@ exports.getAllTrains = async (req, res) => {
 };
 
 // ৩. নির্দিষ্ট একটি ট্রেনের ডাটা দেখার ফাংশন
-exports.getTrainById = async (req, res) => {
+export const getTrainById = async (req, res) => {
     try {
         const train = await Train.findOne({ trainId: req.params.trainId });
         if (!train) return res.status(404).json({ success: false, message: 'Train not found' });
