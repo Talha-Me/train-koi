@@ -1103,22 +1103,60 @@ const HomePage = () => {
         @media (max-width: 640px) {
           .hp-metro-btn { width: 100%; justify-content: center; }
         }
+        @media (min-width: 769px) {
+          .hp-desktop-nav {
+            display: flex !important;
+          }
+          .hp-main-wrapper {
+            max-width: 1080px;
+            margin: 0 auto;
+          }
+          .hp-search-container {
+            margin: -50px auto 0 !important;
+            max-width: 1080px !important;
+          }
+        }
       `}</style>
 
       {/* Header Section */}
       <div style={{ 
         background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
-        padding: '30px 20px 70px', 
+        padding: '24px 20px 70px', 
         color: 'white', 
         borderBottomLeftRadius: '40px', 
         borderBottomRightRadius: '40px', 
         boxShadow: '0 10px 25px rgba(0, 77, 57, 0.2)'
       }}>
+        {/* Desktop Navigation Bar */}
+        <nav className="hp-desktop-nav" style={{ 
+          display: 'none', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          maxWidth: '1080px', 
+          margin: '0 auto 18px', 
+          paddingBottom: '16px', 
+          borderBottom: '1px solid rgba(255,255,255,0.18)' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+            <Train size={24} color="#fef08a" />
+            <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>TrainKoi</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
+            <span onClick={() => navigate('/')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#ffffff' }}>হোম</span>
+            <span onClick={() => navigate('/live-trains')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>লাইভ ট্রেন</span>
+            <span onClick={() => navigate('/schedule')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>সময়সূচী</span>
+            <span onClick={() => navigate('/blogs')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>ভ্রমণ গাইড</span>
+            <span onClick={() => navigate('/rail-news')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>রেল সংবাদ</span>
+            <span onClick={() => navigate('/metro-rail')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>মেট্রোরেল</span>
+            <span onClick={() => navigate('/about')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>আমাদের সম্পর্কে</span>
+          </div>
+        </nav>
+
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          maxWidth: '1200px', 
+          maxWidth: '1080px', 
           margin: '0 auto' 
         }}>
           <div 
@@ -1197,7 +1235,7 @@ const HomePage = () => {
       </div>
 
       {/* Search Container */}
-      <div style={{ margin: '-50px 20px 0', backgroundColor: 'white', borderRadius: '30px', padding: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', position: 'relative', zIndex: 10 }}>
+      <div className="hp-search-container" style={{ margin: '-50px 20px 0', backgroundColor: 'white', borderRadius: '30px', padding: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', backgroundColor: '#f0f0f0', borderRadius: 15, padding: 5, marginBottom: 15 }}>
           <button onClick={() => {setSearchMode('name'); setSearchTerm('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'name' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'name' ? '#006a4e' : '#888', cursor: 'pointer' }}>নামে সার্চ</button>
           <button onClick={() => {setSearchMode('route'); setFromCity(''); setToCity('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'route' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'route' ? '#006a4e' : '#888', cursor: 'pointer' }}>রুট সার্চ</button>
@@ -1241,7 +1279,73 @@ const HomePage = () => {
             </div>
           </div>
         )}
+
+        {/* এক-ক্লিক জনপ্রিয় রুট বাটন (TrainKothai এর মতো দ্রুত সার্চ) */}
+        <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px' }}>
+            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', whiteSpace: 'nowrap' }}>জনপ্রিয় রুট:</span>
+            {[
+              { label: 'ঢাকা ⇄ চট্টগ্রাম', from: 'ঢাকা', to: 'চট্টগ্রাম' },
+              { label: 'ঢাকা ⇄ কক্সবাজার', from: 'ঢাকা', to: 'কক্সবাজার' },
+              { label: 'ঢাকা ⇄ সিলেট', from: 'ঢাকা', to: 'সিলেট' },
+              { label: 'ঢাকা ⇄ রাজশাহী', from: 'ঢাকা', to: 'রাজশাহী' },
+              { label: 'ঢাকা ⇄ খুলনা', from: 'ঢাকা', to: 'খুলনা' }
+            ].map((r, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => {
+                  setSearchMode('route');
+                  setFromCity(r.from);
+                  setToCity(r.to);
+                }}
+                style={{
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  color: '#166534',
+                  borderRadius: '20px',
+                  padding: '5px 12px',
+                  fontSize: '11.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'background 0.15s ease'
+                }}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* ================= অফিশিয়াল বিজ্ঞাপন প্লেসহোল্ডার ফ্রেম (TrainKothai এর মতো) ================= */}
+      <div style={{ maxWidth: '1080px', margin: '16px auto 0', padding: '0 20px', textAlign: 'center' }}>
+        <div style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '16px',
+          padding: '12px 16px',
+          border: '1px dashed #cbd5e1',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+        }}>
+          <span style={{ fontSize: '9.5px', textTransform: 'uppercase', color: '#94a3b8', fontWeight: '800', letterSpacing: '0.6px', display: 'block', marginBottom: '6px' }}>
+            বিজ্ঞাপন • ADVERTISEMENT
+          </span>
+          <div style={{ minHeight: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ins 
+              className="adsbygoogle"
+              style={{ display: 'block', width: '100%', minHeight: '50px' }}
+              data-ad-client="ca-pub-6208607760621896"
+              data-ad-slot="default"
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Responsive Wrapper */}
+      <div className="hp-main-wrapper">
 
       {/* Features Grid */}
       <div style={{ padding: '30px 20px 10px' }}>
@@ -1965,6 +2069,8 @@ const HomePage = () => {
     </div>
   </div>
 </div>
+
+      </div> {/* End hp-main-wrapper */}
 
       {/* Stoppage Modal */}
       {selectedTrainGroup && (

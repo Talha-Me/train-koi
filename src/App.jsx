@@ -13,6 +13,7 @@ import BlogDetail from './pages/BlogDetail';
 import NewsDetail from './pages/NewsDetail';
 
 import Footer from "./pages/components/Footer";
+import BottomNav from "./pages/components/BottomNav";
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
@@ -126,6 +127,7 @@ function AppContent() {
       </div>
       
       <Footer /> 
+      <BottomNav />
       <Analytics /> 
     </div>
   );
