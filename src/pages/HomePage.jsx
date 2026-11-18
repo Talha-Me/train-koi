@@ -1108,12 +1108,49 @@ const HomePage = () => {
             display: flex !important;
           }
           .hp-main-wrapper {
-            max-width: 1080px;
+            max-width: 1520px;
+            width: 95%;
             margin: 0 auto;
+            padding: 0 16px;
+            box-sizing: border-box;
           }
           .hp-search-container {
             margin: -50px auto 0 !important;
-            max-width: 1080px !important;
+            max-width: 1520px !important;
+            width: 95% !important;
+            padding: 24px 30px !important;
+            box-sizing: border-box;
+          }
+          .hp-search-tabs {
+            max-width: 380px !important;
+            margin: 0 auto 18px !important;
+          }
+          .hp-route-inputs {
+            flex-direction: row !important;
+            gap: 16px !important;
+          }
+          .hp-route-inputs > div {
+            flex: 1 !important;
+          }
+          .hp-popular-routes {
+            justify-content: center !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+          }
+          .hp-ad-container {
+            max-width: 1520px !important;
+            width: 95% !important;
+            margin: 16px auto 0 !important;
+            box-sizing: border-box;
+          }
+          .hp-features-grid {
+            grid-template-columns: repeat(8, 1fr) !important;
+            gap: 16px !important;
+          }
+          .hp-trains-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 18px !important;
           }
         }
       `}</style>
@@ -1132,7 +1169,8 @@ const HomePage = () => {
           display: 'none', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          maxWidth: '1080px', 
+          maxWidth: '1520px', 
+          width: '95%',
           margin: '0 auto 18px', 
           paddingBottom: '16px', 
           borderBottom: '1px solid rgba(255,255,255,0.18)' 
@@ -1156,7 +1194,8 @@ const HomePage = () => {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          maxWidth: '1080px', 
+          maxWidth: '1520px', 
+          width: '95%',
           margin: '0 auto' 
         }}>
           <div 
@@ -1236,7 +1275,7 @@ const HomePage = () => {
 
       {/* Search Container */}
       <div className="hp-search-container" style={{ margin: '-50px 20px 0', backgroundColor: 'white', borderRadius: '30px', padding: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', position: 'relative', zIndex: 10 }}>
-        <div style={{ display: 'flex', backgroundColor: '#f0f0f0', borderRadius: 15, padding: 5, marginBottom: 15 }}>
+        <div className="hp-search-tabs" style={{ display: 'flex', backgroundColor: '#f0f0f0', borderRadius: 15, padding: 5, marginBottom: 15 }}>
           <button onClick={() => {setSearchMode('name'); setSearchTerm('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'name' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'name' ? '#006a4e' : '#888', cursor: 'pointer' }}>নামে সার্চ</button>
           <button onClick={() => {setSearchMode('route'); setFromCity(''); setToCity('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'route' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'route' ? '#006a4e' : '#888', cursor: 'pointer' }}>রুট সার্চ</button>
         </div>
@@ -1254,7 +1293,7 @@ const HomePage = () => {
             )}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="hp-route-inputs" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, backgroundColor: '#f9f9f9', padding: 12, borderRadius: 16, border: '1px solid #eee' }}>
                   <MapPin size={18} color="#006a4e" />
@@ -1282,7 +1321,7 @@ const HomePage = () => {
 
         {/* এক-ক্লিক জনপ্রিয় রুট বাটন (TrainKothai এর মতো দ্রুত সার্চ) */}
         <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px' }}>
+          <div className="hp-popular-routes" style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px' }}>
             <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 'bold', whiteSpace: 'nowrap' }}>জনপ্রিয় রুট:</span>
             {[
               { label: 'ঢাকা ⇄ চট্টগ্রাম', from: 'ঢাকা', to: 'চট্টগ্রাম' },
@@ -1320,7 +1359,7 @@ const HomePage = () => {
       </div>
 
       {/* ================= অফিশিয়াল বিজ্ঞাপন প্লেসহোল্ডার ফ্রেম (TrainKothai এর মতো) ================= */}
-      <div style={{ maxWidth: '1080px', margin: '16px auto 0', padding: '0 20px', textAlign: 'center' }}>
+      <div className="hp-ad-container" style={{ margin: '16px auto 0', padding: '0 20px', textAlign: 'center' }}>
         <div style={{
           backgroundColor: '#ffffff',
           borderRadius: '16px',
@@ -1349,7 +1388,7 @@ const HomePage = () => {
 
       {/* Features Grid */}
       <div style={{ padding: '30px 20px 10px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+        <div className="hp-features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
           {features.map((f, i) => (
             <div key={i} onClick={() => f.external ? window.open(f.external, '_blank') : f.path && navigate(f.path)} 
                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -1388,7 +1427,7 @@ const HomePage = () => {
             কোনো ট্রেন খুঁজে পাওয়া যায়নি।
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <div className="hp-trains-grid" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {displayTrains.map((group, idx) => {
               // গ্রুপের সব ডিরেকশনের লাইভ ডেটা বের করা
               const groupIds = group.map(t => Number(t.id));
