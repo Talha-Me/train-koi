@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { trains } from '../data/trainData'; 
 import { 
   ChevronLeft, Search, Clock, Navigation, ChevronDown, MapPin, 
-  Info, Send, ArrowRightLeft, Locate, Radio, AlertCircle, Zap, ShieldCheck
+  Info, Send, ArrowRightLeft, Locate, Radio, AlertCircle, Zap, ShieldCheck, Train
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const getCleanSlug = (trainName) => {
   if (!trainName) return "";
@@ -27,7 +28,7 @@ const TrainSchedule = () => {
   // লাইভ ট্র্যাকিং স্টেট (রিয়েল-টাইম লাইভ ট্রেন ডেটার জন্য)
   const [liveTrainsMap, setLiveTrainsMap] = useState({});
 
-  // ব্যাকএন্ড API থেকে লাইভ ট্রেনসমূহের স্ট্যাটাস সিঙ্ক (Native Fetch API)
+  // ব্যাকএন্ড API থেকে লাইভ ট্রেনসমূহের স্ট্যাটাস সিঙ্ক
   useEffect(() => {
     let isMounted = true;
     const fetchLiveStatus = async () => {
@@ -49,7 +50,7 @@ const TrainSchedule = () => {
     };
 
     fetchLiveStatus();
-    const interval = setInterval(fetchLiveStatus, 15000); // প্রতি ১৫ সেকেন্ড পর পর লাইভ রিফ্রেশ
+    const interval = setInterval(fetchLiveStatus, 15000);
     return () => {
       isMounted = false;
       clearInterval(interval);
@@ -68,7 +69,7 @@ const TrainSchedule = () => {
   // SEO ফ্রেন্ডলি ডায়নামিক মেটা টাইটেল
   useEffect(() => {
     const originalTitle = "Train Live Location | Train Tracking - TrainKoi";
-    let currentTitle = "Train Schedule & Time Table 2026 | TrainKoi";
+    let currentTitle = "বাংলাদেশ রেলওয়ে ট্রেন সময়সূচী ২০২৬ | TrainKoi";
     if (selectedTrain) {
       currentTitle = `${selectedTrain.name} Schedule & Time Table 2026 | TrainKoi - ফ্রি লাইভ ট্র্যাকিং`;
     }
@@ -92,7 +93,8 @@ const TrainSchedule = () => {
   // ফিল্টারিং লজিক (নাম ও রুট ভিত্তিক)
   const filteredTrains = trains.filter(t => {
     if (searchMode === 'name') {
-      return t.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const q = searchTerm.toLowerCase();
+      return t.name.toLowerCase().includes(q) || String(t.id).includes(q);
     } else {
       const hasSource = source === "" || t.stations.some(st => st.name.toLowerCase().includes(source.toLowerCase()));
       const hasDest = destination === "" || t.stations.some(st => st.name.toLowerCase().includes(destination.toLowerCase()));
@@ -104,12 +106,13 @@ const TrainSchedule = () => {
       }
       return hasSource && hasDest;
     }
-  }).slice(0, 20);
+  }).slice(0, 36);
 
   const handleTrainSelect = (train) => {
     const slug = getCleanSlug(train.name);
     navigate(`/schedule/${slug}`);
     setSelectedTrain(train);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // SEO ফ্রেন্ডলি এবং ট্রেনকই ব্র্যান্ডেড বিস্তারিত ডেসক্রিপশন
@@ -126,7 +129,7 @@ const TrainSchedule = () => {
     const styleVariation = hash % 4;
     const middleStationsList = train.stations.slice(1, -1).slice(0, 4).map(s => s.name).join(', ');
 
-    let summaryText = `${train.name} (ট্রেন নং: ${trainCode}) বাংলাদেশ রেলওয়ের নিয়মিত ট্রেন। এটি ${train.from || startStation.name} থেকে ${train.to || endStation.name} রুটে যাতায়াত করে।`;
+    let summaryText = `${train.name} (ট্রেন নং: ${trainCode}) বাংলাদেশ রেলওয়ের নিয়মিত আন্তঃনগর ট্রেন। এটি ${train.from || startStation.name} থেকে ${train.to || endStation.name} রুটে যাতায়াত করে।`;
     let detailsText = "";
 
     if (styleVariation === 0) {
@@ -178,82 +181,203 @@ const TrainSchedule = () => {
   const selectedTrainLiveData = selectedTrain ? liveTrainsMap[Number(selectedTrain.id)] : null;
 
   return (
-    <div style={{ backgroundColor: '#f0f4f2', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '70px' }}>
-      
-      {/* হেডার সেকশন */}
-      <header style={{ 
-        background: 'linear-gradient(135deg, #005a43 0%, #003d2d 100%)', 
-        padding: '16px 20px', 
-        color: 'white', 
-        display: 'flex', 
-        alignItems: 'center', 
-        position: 'sticky', 
-        top: 0, 
-        zIndex: 100, 
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)' 
-      }}>
-        <div style={{ maxWidth: '1000px', width: '100%', margin: '0 auto', display: 'flex', alignItems: 'center' }}>
-          <button 
-            onClick={() => {
-              if (selectedTrain) {
-                setSelectedTrain(null);
-                navigate('/schedule');
-              } else {
-                navigate(-1);
-              }
-            }} 
-            style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '6px', marginRight: '12px', display: 'flex', alignItems: 'center' }}
-            aria-label="Back"
-          >
-            <ChevronLeft size={26} />
-          </button>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {selectedTrain ? selectedTrain.name : 'বাংলাদেশ রেলওয়ে ট্রেন শিডিউল'}
-            </h1>
-            <p style={{ margin: 0, fontSize: '11px', opacity: 0.85 }}>ট্রেনকই • ফ্রি লাইভ ট্রেন ট্র্যাকিং প্ল্যাটফর্ম</p>
-          </div>
+    <div className="ts-page">
+      <style>{`
+        .ts-page {
+          background-color: #f0f4f2;
+          min-height: 100vh;
+          font-family: 'Hind Siliguri', sans-serif;
+          padding-bottom: 70px;
+        }
+        .ts-page *, .ts-page *::before, .ts-page *::after {
+          box-sizing: border-box;
+        }
+
+        /* Mobile Header */
+        .ts-mobile-header {
+          background: linear-gradient(135deg, #005a43 0%, #003d2d 100%);
+          padding: 16px 20px;
+          color: white;
+          display: flex;
+          align-items: center;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+        }
+        @media (min-width: 769px) {
+          .ts-mobile-header {
+            display: none;
+          }
+        }
+
+        /* Container */
+        .ts-main-container {
+          max-width: 1520px;
+          width: 95%;
+          margin: 0 auto;
+          padding: 24px 16px 40px;
+        }
+
+        /* Trains Grid (Desktop 2-3 cols) */
+        .ts-trains-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+        @media (min-width: 640px) {
+          .ts-trains-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (min-width: 1100px) {
+          .ts-trains-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        /* Train Card */
+        .ts-train-card {
+          background-color: white;
+          padding: 20px;
+          border-radius: 22px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+          border: 1px solid #eef2f0;
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        .ts-train-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 24px -10px rgba(0, 106, 78, 0.2);
+          border-color: #006a4e;
+        }
+        .ts-train-card.is-live {
+          border-color: #ff4d4f;
+          box-shadow: 0 4px 18px rgba(255, 77, 79, 0.12);
+        }
+
+        /* Selected Train 2-Column Desktop Layout */
+        .ts-detail-layout {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        @media (min-width: 992px) {
+          .ts-detail-layout {
+            grid-template-columns: 420px minmax(0, 1fr);
+            align-items: start;
+          }
+        }
+
+        /* Animation Keyframes */
+        @keyframes ts-fade {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes ts-pulse {
+          0% { transform: scale(0.95); opacity: 0.7; }
+          50% { transform: scale(1.18); opacity: 1; }
+          100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        .ts-pulse-red {
+          animation: ts-pulse 1.4s infinite ease-in-out;
+        }
+        .ts-pulse-white {
+          animation: ts-pulse 1.2s infinite ease-in-out;
+        }
+        .ts-live-dot {
+          width: 9px;
+          height: 9px;
+          background-color: #ff4d4f;
+          border-radius: 50%;
+          display: inline-block;
+          animation: ts-pulse 1.2s infinite ease-in-out;
+          box-shadow: 0 0 8px rgba(255, 77, 79, 0.8);
+        }
+      `}</style>
+
+      {/* Desktop Top Navbar */}
+      <Navbar activePage="/schedule" />
+
+      {/* Mobile Header */}
+      <header className="ts-mobile-header">
+        <button 
+          onClick={() => {
+            if (selectedTrain) {
+              setSelectedTrain(null);
+              navigate('/schedule');
+            } else {
+              navigate(-1);
+            }
+          }} 
+          style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '6px', marginRight: '12px', display: 'flex', alignItems: 'center' }}
+          aria-label="Back"
+        >
+          <ChevronLeft size={26} />
+        </button>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '17px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {selectedTrain ? selectedTrain.name : 'বাংলাদেশ রেলওয়ে ট্রেন শিডিউল'}
+          </h1>
+          <p style={{ margin: 0, fontSize: '11px', opacity: 0.85 }}>ট্রেনকই • ফ্রি লাইভ ট্রেন ট্র্যাকিং প্ল্যাটফর্ম</p>
         </div>
       </header>
 
-      {/* কনটেইনার */}
-      <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px 16px' }}>
+      {/* Container */}
+      <main className="ts-main-container">
         
+        {/* Mode Switcher */}
         {!selectedTrain && (
-          <div style={{ display: 'flex', backgroundColor: '#e2ece6', borderRadius: '16px', padding: '5px', marginBottom: '22px', border: '1px solid #d4e5dc' }}>
+          <div style={{ display: 'flex', backgroundColor: '#e2ece6', borderRadius: '16px', padding: '5px', marginBottom: '22px', border: '1px solid #d4e5dc', maxWidth: '600px', marginInline: 'auto' }}>
             <button 
               onClick={() => setSearchMode('name')}
               style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '12px', cursor: 'pointer', backgroundColor: searchMode === 'name' ? 'white' : 'transparent', color: searchMode === 'name' ? '#006a4e' : '#555', fontWeight: '800', fontSize: '14px', transition: 'all 0.2s ease', boxShadow: searchMode === 'name' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none' }}
-            >নাম দিয়ে খুঁজুন</button>
+            >
+              নাম দিয়ে খুঁজুন
+            </button>
             <button 
               onClick={() => setSearchMode('route')}
               style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '12px', cursor: 'pointer', backgroundColor: searchMode === 'route' ? 'white' : 'transparent', color: searchMode === 'route' ? '#006a4e' : '#555', fontWeight: '800', fontSize: '14px', transition: 'all 0.2s ease', boxShadow: searchMode === 'route' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none' }}
-            >রুট দিয়ে খুঁজুন</button>
+            >
+              রুট দিয়ে খুঁজুন
+            </button>
           </div>
         )}
 
+        {/* Search Inputs Card */}
         {!selectedTrain && (
-          <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', marginBottom: '25px', position: 'relative', border: '1px solid #eef2f0' }}>
+          <div style={{ backgroundColor: 'white', padding: '22px', borderRadius: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', marginBottom: '25px', position: 'relative', border: '1px solid #eef2f0' }}>
             {searchMode === 'name' ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <Search size={22} color="#006a4e" />
                 <input 
                   type="text" 
-                  placeholder="ট্রেনের নাম বা নম্বর লিখুন (যেমন: লালমণি, চিলাহাটি, 751)..." 
-                  style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px', fontWeight: '500' }}
+                  placeholder="ট্রেনের নাম বা নম্বর লিখুন (যেমন: লালমণি, চিলাহাটি, সুবর্ণ, 751)..." 
+                  style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px', fontWeight: '600', fontFamily: 'inherit' }}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm('')} 
+                    style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
                 <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8faf9', padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2ebe7' }}>
                     <Locate size={20} color="#006a4e" />
                     <input 
                       type="text" 
-                      placeholder="যাত্রার প্রারম্ভিক স্টেশন লিখুন..." 
-                      style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px' }}
+                      placeholder="যাত্রার প্রারম্ভিক স্টেশন..." 
+                      style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14.5px', background: 'transparent', fontFamily: 'inherit' }}
                       value={source}
                       onFocus={() => setShowSourceSuggestions(true)}
                       onChange={(e) => setSource(e.target.value)}
@@ -270,12 +394,12 @@ const TrainSchedule = () => {
                 </div>
 
                 <div style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8faf9', padding: '12px 16px', borderRadius: '14px', border: '1px solid #e2ebe7' }}>
                     <MapPin size={20} color="#e67e22" />
                     <input 
                       type="text" 
-                      placeholder="গন্তব্য স্টেশন লিখুন..." 
-                      style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px' }}
+                      placeholder="গন্তব্য স্টেশন..." 
+                      style={{ border: 'none', outline: 'none', width: '100%', fontSize: '14.5px', background: 'transparent', fontFamily: 'inherit' }}
                       value={destination}
                       onFocus={() => setShowDestSuggestions(true)}
                       onChange={(e) => setDestination(e.target.value)}
@@ -295,37 +419,26 @@ const TrainSchedule = () => {
           </div>
         )}
 
-        {/* লিস্ট ভিউ */}
+        {/* লিস্ট ভিউ (লিস্টের ট্রেনের কার্ডসমূহ) */}
         {!selectedTrain ? (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-               <h2 style={{ color: '#555', margin: 0, fontSize: '15px', fontWeight: '800' }}>উপলব্ধ ট্রেনের সময়সূচী ({filteredTrains.length})</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+               <h2 style={{ color: '#1e293b', margin: 0, fontSize: '17px', fontWeight: '800' }}>
+                 উপলব্ধ ট্রেনের সময়সূচী ({filteredTrains.length}টি)
+               </h2>
                {(searchTerm || source || destination) && (
                  <button onClick={() => {setSearchTerm(''); setSource(''); setDestination('');}} style={{background: 'none', border: 'none', color: '#006a4e', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer'}}>ক্লিয়ার করুন</button>
                )}
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '14px' }}>
+            <div className="ts-trains-grid">
               {filteredTrains.length > 0 ? filteredTrains.map((train, idx) => {
                 const isLive = !!liveTrainsMap[Number(train.id)];
                 return (
                   <div 
                     key={idx} 
                     onClick={() => handleTrainSelect(train)} 
-                    style={{ 
-                      backgroundColor: 'white', 
-                      padding: '18px', 
-                      borderRadius: '20px', 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      cursor: 'pointer', 
-                      boxShadow: '0 3px 12px rgba(0,0,0,0.03)',
-                      border: isLive ? '1.5px solid #ff4d4f' : '1px solid #eef2f0',
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    className={`ts-train-card ${isLive ? 'is-live' : ''}`}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                       <div style={{ 
@@ -337,52 +450,52 @@ const TrainSchedule = () => {
                         justifyContent: 'center'
                       }}>
                         {isLive ? (
-                          <Radio size={22} className="pulse-red" color="#ff4d4f" />
+                          <Radio size={22} className="ts-pulse-red" color="#ff4d4f" />
                         ) : (
                           <Clock size={22} color="#006a4e" />
                         )}
                       </div>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#222' }}>{train.name}</span>
+                          <span style={{ fontWeight: '800', fontSize: '15.5px', color: '#1e293b' }}>{train.name}</span>
                           {isLive && (
-                            <span style={{ backgroundColor: '#ff4d4f', color: 'white', fontSize: '10px', fontWeight: '900', padding: '2px 7px', borderRadius: '6px', letterSpacing: '0.5px' }}>
+                            <span style={{ backgroundColor: '#ff4d4f', color: 'white', fontSize: '10px', fontWeight: '900', padding: '2px 7px', borderRadius: '6px' }}>
                               LIVE
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '13px', color: '#777', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                        <div style={{ fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                           <span>{train.from}</span> <ArrowRightLeft size={11} /> <span>{train.to}</span>
                         </div>
                       </div>
                     </div>
-                    <ChevronDown size={18} color="#bbb" />
+                    <ChevronDown size={18} color="#94a3b8" />
                   </div>
                 );
               }) : (
-                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px 20px', color: '#888', backgroundColor: 'white', borderRadius: '22px' }}>
-                  <AlertCircle size={40} color="#bbb" style={{ marginBottom: '12px' }} />
-                  <p style={{ margin: 0, fontSize: '15px' }}>কোন ট্রেন খুঁজে পাওয়া যায়নি। নাম বা স্টেশন পরিবর্তন করে পুনরায় চেষ্টা করুন।</p>
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', color: '#888', backgroundColor: 'white', borderRadius: '24px' }}>
+                  <AlertCircle size={40} color="#f59e0b" style={{ margin: '0 auto 12px' }} />
+                  <p style={{ margin: 0, fontSize: '15px', fontWeight: '600' }}>কোনো ট্রেন খুঁজে পাওয়া যায়নি। নাম বা স্টেশন পরিবর্তন করে পুনরায় চেষ্টা করুন।</p>
                 </div>
               )}
             </div>
 
             {/* এসইও ব্র্যান্ডিং সেকশন */}
-            <div style={{ marginTop: '40px', backgroundColor: 'white', padding: '24px', borderRadius: '22px', border: '1px solid #e5ece8', textAlign: 'center' }}>
+            <div style={{ marginTop: '40px', backgroundColor: 'white', padding: '28px', borderRadius: '24px', border: '1px solid #e5ece8', textAlign: 'center' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#e8f5ef', color: '#006a4e', padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold', marginBottom: '10px' }}>
                 <Zap size={16} fill="#006a4e" /> ট্রেনকই (TrainKoi) এর প্রতিশ্রুতি
               </div>
-              <h3 style={{ margin: '6px 0 10px 0', fontSize: '18px', color: '#111', fontWeight: '800' }}>
+              <h3 style={{ margin: '6px 0 10px 0', fontSize: '19px', color: '#111', fontWeight: '900' }}>
                 বাংলাদেশের একমাত্র প্ল্যাটফর্ম যেখানে ট্রেনের লাইভ লোকেশন দেখা যায় সম্পূর্ণ ফ্রিতে!
               </h3>
-              <p style={{ margin: 0, fontSize: '14px', color: '#666', lineHeight: '1.7', maxWidth: '750px', marginInline: 'auto' }}>
+              <p style={{ margin: 0, fontSize: '14.5px', color: '#555', lineHeight: '1.8', maxWidth: '800px', marginInline: 'auto' }}>
                 কোনো হিডেন চার্জ বা সাবস্ক্রিপশন ছাড়াই দেশের যেকোনো প্রান্ত থেকে আন্তঃনগর, মেইল ও কমিউটার ট্রেনের সঠিক সময়সূচী, বর্তমান অবস্থান এবং প্ল্যাটফর্ম তথ্য জেনে নিন নিমেষেই।
               </p>
             </div>
           </div>
         ) : (
-          /* ডিটেইলড শিডিউল ও লাইভ ট্র্যাকিং ইন্টারফেস */
-          <div style={{ animation: 'fadeIn 0.3s ease' }}>
+          /* ডিটেইলড শিডিউল ও লাইভ ট্র্যাকিং ইন্টারফেস (2-Column Desktop Layout) */
+          <div style={{ animation: 'ts-fade 0.3s ease' }}>
             <button 
               onClick={() => { setSelectedTrain(null); navigate('/schedule'); }} 
               style={{ background: '#e2ede7', color: '#006a4e', border: 'none', padding: '10px 18px', borderRadius: '12px', marginBottom: '18px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
@@ -390,171 +503,175 @@ const TrainSchedule = () => {
               ← সময়সূচী তালিকায় ফিরে যান
             </button>
             
-            <div style={{ backgroundColor: 'white', borderRadius: '28px', padding: '28px', boxShadow: '0 10px 30px rgba(0,0,0,0.04)', border: '1px solid #edf2ef' }}>
-              
-              {/* ট্রেনের নাম ও লাইভ ব্যাজ */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', marginBottom: '15px' }}>
-                <div>
-                  <div style={{ fontSize: '13px', color: '#888', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div className="ts-detail-layout">
+              {/* Left Column (Train Info, Actions, SMS) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                
+                {/* Train Card Header */}
+                <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                  <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     TRAIN #{selectedTrain.id} • বন্ধের দিন: {selectedTrain.offDay || 'কোন সাপ্তাহিক বন্ধ নেই'}
                   </div>
-                  <h1 style={{ fontSize: '26px', color: '#111', margin: '6px 0 0 0', fontWeight: '900' }}>{selectedTrain.name}</h1>
+                  <h1 style={{ fontSize: '24px', color: '#0f1f1a', margin: '8px 0 14px', fontWeight: '900' }}>
+                    {selectedTrain.name}
+                  </h1>
+
+                  {isSelectedTrainLive ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fff1f0', border: '1.5px solid #ff4d4f', color: '#cf1322', padding: '7px 14px', borderRadius: '30px', fontSize: '12.5px', fontWeight: '800' }}>
+                      <span className="ts-live-dot"></span> ট্রেনটি এখন লাইভ চলছে
+                    </div>
+                  ) : (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#f0f9f4', border: '1px solid #b7eb8f', color: '#006a4e', padding: '6px 14px', borderRadius: '30px', fontSize: '12px', fontWeight: 'bold' }}>
+                      <Clock size={15} /> নির্ধারিত সময়সূচী মোড
+                    </div>
+                  )}
+
+                  {/* লাইভ ট্র্যাকিং বাটন */}
+                  <div style={{ marginTop: '20px' }}>
+                    <button 
+                      onClick={() => navigate(`/track/${selectedTrain.id}`)}
+                      style={{ 
+                        width: '100%', 
+                        background: isSelectedTrainLive 
+                          ? 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)' 
+                          : 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
+                        color: 'white', 
+                        border: 'none', 
+                        padding: '16px 20px', 
+                        borderRadius: '16px', 
+                        fontWeight: '900', 
+                        fontSize: '15px',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        gap: '10px', 
+                        cursor: 'pointer',
+                        boxShadow: isSelectedTrainLive 
+                          ? '0 8px 25px rgba(229,57,53,0.35)' 
+                          : '0 8px 22px rgba(0,106,78,0.25)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      {isSelectedTrainLive ? (
+                        <>
+                          <Radio size={20} className="ts-pulse-white" />
+                          <span>লাইভ লোকেশন ও ম্যাপ দেখুন</span>
+                        </>
+                      ) : (
+                        <>
+                          <Navigation size={20} />
+                          <span>লাইভ লোকেশন ট্র্যাকিং</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* লাইভ স্পিড ও বিলম্ব */}
+                  {isSelectedTrainLive && selectedTrainLiveData && (
+                    <div style={{ backgroundColor: '#fff2f0', padding: '12px 16px', borderRadius: '14px', borderLeft: '4px solid #ff4d4f', marginTop: '14px', fontSize: '13.5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#444' }}>স্পিড: <b>{selectedTrainLiveData.speed || 0} KM/H</b></span>
+                      <span style={{ color: '#cf1322', fontWeight: 'bold' }}>{selectedTrainLiveData.delayText || 'সময়মতো'}</span>
+                    </div>
+                  )}
                 </div>
 
-                {isSelectedTrainLive ? (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fff1f0', border: '1.5px solid #ff4d4f', color: '#cf1322', padding: '8px 16px', borderRadius: '30px', fontSize: '13px', fontWeight: '800' }}>
-                    <span className="live-dot-pulse"></span> ট্রেনটি এখন লাইভ চলছে
-                  </div>
-                ) : (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#f0f9f4', border: '1px solid #b7eb8f', color: '#006a4e', padding: '6px 14px', borderRadius: '30px', fontSize: '12px', fontWeight: 'bold' }}>
-                    <Clock size={15} /> নির্ধারিত সময়সূচী মোড
-                  </div>
-                )}
-              </div>
-
-              {/* ট্র্যাকিং অ্যাকশন সেকশন (লাইভ থাকলে লাল পালসিং বাটন হবে) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', margin: '22px 0 30px 0' }}>
-                
-                <button 
-                  onClick={() => navigate(`/track/${selectedTrain.id}`)}
-                  style={{ 
-                    width: '100%', 
-                    background: isSelectedTrainLive 
-                      ? 'linear-gradient(135deg, #e53935 0%, #b71c1c 100%)' 
-                      : 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
-                    color: 'white', 
-                    border: 'none', 
-                    padding: '18px 24px', 
-                    borderRadius: '18px', 
-                    fontWeight: '900', 
-                    fontSize: '16px',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    gap: '12px', 
-                    cursor: 'pointer',
-                    boxShadow: isSelectedTrainLive 
-                      ? '0 8px 25px rgba(229,57,53,0.4)' 
-                      : '0 8px 22px rgba(0,106,78,0.25)',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.filter = 'brightness(1.08)'}
-                  onMouseLeave={(e) => e.currentTarget.style.filter = 'brightness(1)'}
-                >
-                  {isSelectedTrainLive ? (
-                    <>
-                      <Radio size={22} className="pulse-white" />
-                      <span>লাইভ লোকেশন ও রিয়েল-টাইম ম্যাপ দেখুন</span>
-                    </>
-                  ) : (
-                    <>
-                      <Navigation size={22} />
-                      <span>লাইভ লোকেশন ও ম্যাপ ট্র্যাকিং</span>
-                    </>
-                  )}
-                </button>
-
-                {/* ট্রেন লাইভ থাকলে চলমান গতি ও বিলম্বের নোটিশ */}
-                {isSelectedTrainLive && selectedTrainLiveData && (
-                  <div style={{ backgroundColor: '#fff2f0', padding: '14px 18px', borderRadius: '16px', borderLeft: '5px solid #ff4d4f', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                    <span style={{ color: '#444' }}>বর্তমান লাইভ স্পিড: <b style={{ color: '#111' }}>{selectedTrainLiveData.speed || 0} KM/H</b></span>
-                    <span style={{ color: '#cf1322', fontWeight: 'bold' }}>বিলম্ব স্ট্যাটাস: {selectedTrainLiveData.delayText || 'সময়মতো'}</span>
-                  </div>
-                )}
-
                 {/* এসএমএস ট্র্যাকিং সুবিধা */}
-                <div style={{ backgroundColor: '#f0f7ff', padding: '16px 20px', borderRadius: '18px', borderLeft: '5px solid #007bff', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ backgroundColor: '#f0f7ff', padding: '18px 20px', borderRadius: '20px', borderLeft: '5px solid #007bff', display: 'flex', alignItems: 'center', gap: '14px' }}>
                    <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,123,255,0.1)' }}>
                      <Send size={22} color="#007bff" />
                    </div>
                    <div>
                      <h4 style={{ margin: 0, fontSize: '13px', color: '#007bff', fontWeight: 'bold' }}>অফলাইন এসএমএস ট্র্যাকিং</h4>
-                     <p style={{ margin: '3px 0 0 0', fontSize: '15px', fontWeight: '800', color: '#222' }}>
-                       TR {selectedTrain.id} লিখে পাঠিয়ে দিন ১৬৩১৮ নম্বরে
+                     <p style={{ margin: '3px 0 0 0', fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>
+                       TR {selectedTrain.id} লিখে পাঠিয়ে দিন ১৬৩১৮ নম্বরে
                      </p>
                    </div>
                 </div>
 
-              </div>
-
-              {/* স্টেশনভিত্তিক সময়সূচী টেবিল */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h3 style={{ fontSize: '18px', color: '#222', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
-                  <MapPin size={20} color="#006a4e" /> স্টেশনভিত্তিক অফিসিয়াল সময়সূচী
-                </h3>
-                <span style={{ fontSize: '12px', color: '#888' }}>মোট স্টপ: {selectedTrain.stations.length}টি</span>
-              </div>
-
-              <div style={{ overflowX: 'auto', marginBottom: '32px', borderRadius: '18px', border: '1px solid #eef2f0' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#005a43', color: 'white' }}>
-                      <th style={{ padding: '14px 18px', fontSize: '14px' }}>স্টেশনের নাম</th>
-                      <th style={{ padding: '14px 18px', fontSize: '14px', textAlign: 'center' }}>পৌঁছানোর সময়</th>
-                      <th style={{ padding: '14px 18px', fontSize: '14px', textAlign: 'center' }}>ছাড়ার সময়</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedTrain.stations.map((st, i) => (
-                      <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fbfdfc', borderBottom: '1px solid #f0f3f1' }}>
-                        <td style={{ padding: '14px 18px', fontSize: '14px', fontWeight: '700', color: '#333' }}>{st.name}</td>
-                        <td style={{ padding: '14px 18px', fontSize: '13px', textAlign: 'center', color: '#666' }}>{st.arrival || '-'}</td>
-                        <td style={{ padding: '14px 18px', fontSize: '13px', textAlign: 'center', color: '#006a4e', fontWeight: '700' }}>{st.departure || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* বিস্তারিত ভ্রমণ তথ্য ও ট্রেনকই এসইও সেকশন */}
-              <div style={{ backgroundColor: '#fffaf3', padding: '24px', borderRadius: '22px', border: '1px solid #ffe8cc' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <Info size={20} color="#d97706" />
-                  <h3 style={{ fontSize: '17px', color: '#b45309', margin: 0, fontWeight: '800' }}>
-                    ভ্রমণ গাইড ও লাইভ ট্র্যাকিং তথ্য
-                  </h3>
+                {/* কুইক ফ্যাক্টস */}
+                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', border: '1px solid #eef2f0' }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
+                    ট্রেন তথ্যের সারসংক্ষেপ
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#475569' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>মোট স্টপ:</span>
+                      <b>{selectedTrain.stations.length}টি স্টেশন</b>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>প্রারম্ভিক:</span>
+                      <b>{selectedTrain.stations[0]?.name.split('(')[0]}</b>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>গন্তব্য:</span>
+                      <b>{selectedTrain.stations[selectedTrain.stations.length - 1]?.name.split('(')[0]}</b>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>সাপ্তাহিক বন্ধ:</span>
+                      <b>{selectedTrain.offDay || 'নেই'}</b>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: '14px', lineHeight: '2', color: '#555', textAlign: 'justify', whiteSpace: 'pre-line' }}>
-                  {generateLongDescription(selectedTrain).details}
-                </div>
-                <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed #fcd34d', display: 'flex', alignItems: 'center', gap: '8px', color: '#006a4e', fontSize: '13px', fontWeight: 'bold' }}>
-                  <ShieldCheck size={18} />
-                  <span>ট্রেনকই (TrainKoi) — সম্পূর্ণ বিনামূল্যে ট্রেনের লাইভ আপডেট দেওয়ার জন্য প্রতিশ্রুতিবদ্ধ।</span>
-                </div>
+
               </div>
 
+              {/* Right Column (Timetable & Travel Guide) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                
+                {/* স্টেশনভিত্তিক সময়সূচী টেবিল */}
+                <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '18px', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
+                      <MapPin size={20} color="#006a4e" /> স্টেশনভিত্তিক অফিসিয়াল সময়সূচী
+                    </h3>
+                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>মোট {selectedTrain.stations.length}টি স্টপেজ</span>
+                  </div>
+
+                  <div style={{ overflowX: 'auto', borderRadius: '16px', border: '1px solid #eef2f0' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#005a43', color: 'white' }}>
+                          <th style={{ padding: '12px 16px', fontSize: '13.5px' }}>স্টেশনের নাম</th>
+                          <th style={{ padding: '12px 16px', fontSize: '13.5px', textAlign: 'center' }}>পৌঁছানোর সময়</th>
+                          <th style={{ padding: '12px 16px', fontSize: '13.5px', textAlign: 'center' }}>ছাড়ার সময়</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedTrain.stations.map((st, i) => (
+                          <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#fff' : '#fbfdfc', borderBottom: '1px solid #f0f3f1' }}>
+                            <td style={{ padding: '12px 16px', fontSize: '13.5px', fontWeight: '700', color: '#1e293b' }}>{st.name}</td>
+                            <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: '#64748b' }}>{st.arrival || '-'}</td>
+                            <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: '#006a4e', fontWeight: '800' }}>{st.departure || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* বিস্তারিত ভ্রমণ তথ্য ও ট্রেনকই এসইও সেকশন */}
+                <div style={{ backgroundColor: '#fffaf3', padding: '24px', borderRadius: '24px', border: '1px solid #ffe8cc' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <Info size={20} color="#d97706" />
+                    <h3 style={{ fontSize: '17px', color: '#b45309', margin: 0, fontWeight: '800' }}>
+                      ভ্রমণ গাইড ও লাইভ ট্র্যাকিং তথ্য
+                    </h3>
+                  </div>
+                  <div style={{ fontSize: '14px', lineHeight: '1.9', color: '#555', textAlign: 'justify', whiteSpace: 'pre-line' }}>
+                    {generateLongDescription(selectedTrain).details}
+                  </div>
+                  <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px dashed #fcd34d', display: 'flex', alignItems: 'center', gap: '8px', color: '#006a4e', fontSize: '13px', fontWeight: 'bold' }}>
+                    <ShieldCheck size={18} />
+                    <span>ট্রেনকই (TrainKoi) — সম্পূর্ণ বিনামূল্যে ট্রেনের লাইভ আপডেট দেওয়ার জন্য প্রতিশ্রুতিবদ্ধ।</span>
+                  </div>
+                </div>
+
+              </div>
             </div>
+
           </div>
         )}
       </main>
-
-      {/* অ্যানিমেশন ও সিএসএস স্টাইল */}
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse {
-          0% { transform: scale(0.95); opacity: 0.7; }
-          50% { transform: scale(1.18); opacity: 1; }
-          100% { transform: scale(0.95); opacity: 0.7; }
-        }
-        .pulse-red {
-          animation: pulse 1.4s infinite ease-in-out;
-        }
-        .pulse-white {
-          animation: pulse 1.2s infinite ease-in-out;
-        }
-        .live-dot-pulse {
-          width: 9px;
-          height: 9px;
-          background-color: #ff4d4f;
-          border-radius: 50%;
-          display: inline-block;
-          animation: pulse 1.2s infinite ease-in-out;
-          box-shadow: 0 0 8px rgba(255, 77, 79, 0.8);
-        }
-      `}</style>
     </div>
   );
 };

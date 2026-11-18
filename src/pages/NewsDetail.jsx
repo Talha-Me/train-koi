@@ -4,6 +4,7 @@ import {
   ChevronLeft, Calendar, Clock, Globe, Share2, Check, Type,
   ArrowUpRight, SearchX, ArrowLeft, ListOrdered
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 /* =====================================================================
    ADSENSE SETTINGS
@@ -12,7 +13,7 @@ import {
    2) নিচে নিজের publisher id ও ad unit slot id বসান।
    ফাঁকা থাকলে কোনো বিজ্ঞাপন দেখাবে না (সেফ)।
    ===================================================================== */
-const ADSENSE_CLIENT = ''; // যেমন: 'ca-pub-1234567890123456'
+const ADSENSE_CLIENT = 'ca-pub-6208607760621896'; // Official Publisher ID
 const AD_SLOTS = {
   top: '',     // প্রথম অনুচ্ছেদের পরে
   middle: '',  // লেখার মাঝখানে (বড় লেখায়)
@@ -405,6 +406,7 @@ const NewsDetail = () => {
   /* ---------- Article ---------- */
   return (
     <div className="nd-page" style={{ '--fs': `${FONT_SIZES[sizeIdx]}px` }}>
+      <Navbar activePage="/rail-news" />
       <style>{css}</style>
 
       <div className="nd-bar">
@@ -560,6 +562,10 @@ const css = `
 /* ---------- Top bar ---------- */
 .nd-bar {
   position: sticky; top: 0; z-index: 60;
+}
+@media (min-width: 769px) {
+  .nd-bar { top: 68px; }
+}
   background: rgba(255,255,255,.88);
   -webkit-backdrop-filter: saturate(160%) blur(16px); backdrop-filter: saturate(160%) blur(16px);
   border-bottom: 1px solid var(--line);

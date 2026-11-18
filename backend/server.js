@@ -6451,6 +6451,7 @@ app.get('/sitemap.xml', async (req, res) => {
     // ১. Apnar ager sitemap-er shob boro static list ekhane boshie din
     const existingStaticUrls = [
        { loc: '/', lastmod: '2026-02-26', changefreq: 'daily', priority: '1.0' },
+       { loc: '/live-trains', lastmod: '2026-03-01', changefreq: 'always', priority: '1.0' },
   { loc: '/schedule', lastmod: '2026-02-26', changefreq: 'weekly', priority: '0.9' },
   { loc: '/travel-laws', lastmod: '2026-02-26', changefreq: 'monthly', priority: '0.8' },
   { loc: '/blogs', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.8' },

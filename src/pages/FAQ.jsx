@@ -5,8 +5,9 @@ import {
   Train, MessageSquare, AlertCircle, HelpCircle, 
   MapPin, Clock, CreditCard, ShieldCheck, Zap, 
   Phone, Mail, Sparkles, ExternalLink, Ticket,
-  LocateFixed // Added for Live Tracking icon
+  LocateFixed
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const FAQ = () => {
   const navigate = useNavigate();
@@ -276,28 +277,41 @@ const FAQ = () => {
   const toggleFaq = (id) => setOpenIndex(openIndex === id ? null : id);
 
   return (
-    <div style={{ backgroundColor: '#f0f4f3', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif" }}>
-      
-      {/* Header */}
-      <div style={{ backgroundColor: '#006a4e', padding: '15px 20px', color: 'white', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
+    <div style={{ backgroundColor: '#f0f4f3', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '70px' }}>
+      <style>{`
+        @media (min-width: 769px) {
+          .faq-mobile-header {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Desktop Navbar */}
+      <Navbar activePage="/faq" />
+
+      {/* Mobile Header */}
+      <div className="faq-mobile-header" style={{ backgroundColor: '#006a4e', padding: '15px 20px', color: 'white', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1520px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div onClick={handleSmartBack} style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.1)', padding: '8px', borderRadius: '50%' }}>
               <ChevronLeft size={24} />
             </div>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Help & Center</h2>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>প্রশ্নোত্তর ও সহায়তা কেন্দ্র</h2>
           </div>
           <Sparkles size={20} />
         </div>
       </div>
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
+      <div style={{ maxWidth: '1520px', width: '95%', margin: '0 auto', padding: '24px 16px' }}>
         
         {/* Search Bar Section */}
-        <div style={{ textAlign: 'center', padding: '40px 10px' }}>
-          <h1 style={{ color: '#006a4e', fontSize: '28px', fontWeight: '900', marginBottom: '15px' }}>
-            আমরা কিভাবে সাহায্য করতে পারি?
+        <div style={{ textAlign: 'center', padding: '36px 10px 24px' }}>
+          <h1 style={{ color: '#006a4e', fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: '900', marginBottom: '14px', letterSpacing: '-0.3px' }}>
+            আমরা কীভাবে আপনাকে সাহায্য করতে পারি?
           </h1>
+          <p style={{ margin: '0 auto 24px', maxWidth: '650px', fontSize: '14.5px', color: '#475569', lineHeight: '1.7' }}>
+            বাংলাদেশ রেলওয়ের আন্তঃনগর ট্রেন, সময়সূচী, লাইভ ট্র্যাকিং, টিকিট রিফান্ড এবং প্ল্যাটফর্ম সম্পর্কিত যেকোনো প্রশ্নের উত্তর নিমেষেই খুঁজে নিন।
+          </p>
           
           <div style={{ position: 'relative', maxWidth: '750px', margin: '0 auto', padding: '0 10px' }}>
             <Search 
@@ -306,34 +320,36 @@ const FAQ = () => {
             />
             <input 
               type="text" 
-              placeholder="ট্রেন বা ভাড়া লিখে সার্চ করুন..." 
+              placeholder="ট্রেন বা ভাড়া লিখে সার্চ করুন (যেমন: লালমণি, বিলম্ব, রিফান্ড)..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ 
-                width: '100%', padding: '15px 20px 15px 55px', borderRadius: '50px', 
-                border: '1px solid #e0e0e0', outline: 'none', fontSize: '15px', 
-                boxShadow: '0 8px 25px rgba(0,106,78,0.08)', backgroundColor: 'white',
-                boxSizing: 'border-box', appearance: 'none', WebkitAppearance: 'none'
+                width: '100%', padding: '16px 20px 16px 55px', borderRadius: '50px', 
+                border: '1.5px solid #d1e3d9', outline: 'none', fontSize: '15px', 
+                boxShadow: '0 8px 25px rgba(0,106,78,0.06)', backgroundColor: 'white',
+                boxSizing: 'border-box', appearance: 'none', WebkitAppearance: 'none',
+                fontFamily: 'inherit'
               }} 
             />
           </div>
         </div>
 
         {/* Categories */}
-        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '20px', marginBottom: '20px', scrollbarWidth: 'none' }}>
+        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '24px', scrollbarWidth: 'none' }}>
           {["All", ...faqData.map(d => d.category)].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: '10px 20px', borderRadius: '50px', border: 'none',
+                padding: '10px 22px', borderRadius: '50px', border: '1px solid #e2ede7',
                 backgroundColor: activeTab === tab ? '#006a4e' : 'white',
-                color: activeTab === tab ? 'white' : '#555',
-                fontWeight: 'bold', whiteSpace: 'nowrap', cursor: 'pointer',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.05)', transition: '0.3s'
+                color: activeTab === tab ? 'white' : '#475569',
+                fontWeight: '800', whiteSpace: 'nowrap', cursor: 'pointer',
+                boxShadow: activeTab === tab ? '0 4px 14px rgba(0,106,78,0.25)' : '0 2px 5px rgba(0,0,0,0.03)',
+                transition: '0.2s', fontSize: '13.5px'
               }}
             >
-              {tab}
+              {tab === 'All' ? 'সকল প্রশ্ন' : tab}
             </button>
           ))}
         </div>
@@ -343,12 +359,12 @@ const FAQ = () => {
           {filteredData.length > 0 ? (
             filteredData.map((section, sIndex) => (
               <div key={sIndex}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', color: '#006a4e' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: '#006a4e' }}>
                   {section.icon}
-                  <h3 style={{ margin: 0, fontSize: '19px', fontWeight: '800' }}>{section.category}</h3>
+                  <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800' }}>{section.category}</h3>
                 </div>
                 
-                <div style={{ display: 'grid', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '14px' }}>
                   {section.questions.map((item, qIndex) => {
                     const id = `${sIndex}-${qIndex}`;
                     const isOpen = openIndex === id;
@@ -357,23 +373,24 @@ const FAQ = () => {
                         key={qIndex} 
                         style={{ 
                           backgroundColor: 'white', borderRadius: '20px', 
-                          border: isOpen ? '2px solid #006a4e' : '1px solid #e0e0e0',
-                          transition: 'all 0.3s ease'
+                          border: isOpen ? '1.5px solid #006a4e' : '1px solid #eef2f0',
+                          boxShadow: '0 4px 14px rgba(0,0,0,0.025)',
+                          transition: 'all 0.25s ease'
                         }}
                       >
                         <div 
                           onClick={() => toggleFaq(id)}
                           style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                         >
-                          <span style={{ fontWeight: '700', color: isOpen ? '#006a4e' : '#333', fontSize: '15px', lineHeight: '1.4' }}>
+                          <span style={{ fontWeight: '700', color: isOpen ? '#006a4e' : '#1e293b', fontSize: '15px', lineHeight: '1.45' }}>
                             {item.q}
                           </span>
-                          <div style={{ backgroundColor: isOpen ? '#e8f5e9' : '#f5f5f5', padding: '5px', borderRadius: '50%', color: isOpen ? '#006a4e' : '#888' }}>
+                          <div style={{ backgroundColor: isOpen ? '#e8f5e9' : '#f5f5f5', padding: '6px', borderRadius: '50%', color: isOpen ? '#006a4e' : '#888', flexShrink: 0, marginLeft: 12 }}>
                             {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                           </div>
                         </div>
                         {isOpen && (
-                          <div style={{ padding: '0 20px 20px', color: '#555', fontSize: '14px', lineHeight: '1.7', borderTop: '1px solid #f5f5f5', paddingTop: '15px' }}>
+                          <div style={{ padding: '0 20px 20px', color: '#475569', fontSize: '14px', lineHeight: '1.8', borderTop: '1px solid #f8fafc', paddingTop: '14px' }}>
                             {item.a}
                           </div>
                         )}
@@ -394,27 +411,27 @@ const FAQ = () => {
 
         {/* Contact Section */}
         <div style={{ marginTop: '50px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-          <div style={{ backgroundColor: '#006a4e', padding: '30px', borderRadius: '25px', color: 'white', textAlign: 'center' }}>
-            <Phone size={30} style={{ marginBottom: '15px' }} />
-            <h4 style={{ margin: '0 0 10px' }}>জরুরী কল করুন</h4>
-            <p style={{ fontSize: '13px', opacity: 0.8, marginBottom: '15px' }}>রেলওয়ে হটলাইন ১৬১৩১</p>
-            <a href="tel:16131" style={{ display: 'block', backgroundColor: 'white', color: '#006a4e', padding: '12px', borderRadius: '12px', textDecoration: 'none', fontWeight: 'bold' }}>কল করুন ১৬১৩১</a>
+          <div style={{ backgroundColor: '#006a4e', padding: '32px 24px', borderRadius: '24px', color: 'white', textAlign: 'center' }}>
+            <Phone size={30} style={{ marginBottom: '14px' }} />
+            <h4 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '800' }}>জরুরি কল করুন</h4>
+            <p style={{ fontSize: '13px', opacity: 0.85, marginBottom: '16px' }}>বাংলাদেশ রেলওয়ে হটলাইন ১৬৪৫৯</p>
+            <a href="tel:16459" style={{ display: 'inline-block', backgroundColor: 'white', color: '#006a4e', padding: '12px 28px', borderRadius: '12px', textDecoration: 'none', fontWeight: '800', fontSize: '14px' }}>১৬৪৫৯ এ কল করুন</a>
           </div>
 
-          <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '25px', border: '2px solid #006a4e', textAlign: 'center' }}>
-            <Mail size={30} color="#006a4e" style={{ marginBottom: '15px' }} />
-            <h4 style={{ margin: '0 0 10px', color: '#006a4e' }}>মেসেজ পাঠান</h4>
-            <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>সহায়তার জন্য যোগাযোগ করুন</p>
-            <button onClick={() => navigate('Contact /')} style={{ width: '100%', backgroundColor: '#006a4e', color: 'white', padding: '12px', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>যোগাযোগ ফরম</button>
+          <div style={{ backgroundColor: 'white', padding: '32px 24px', borderRadius: '24px', border: '1.5px solid #006a4e', textAlign: 'center' }}>
+            <Mail size={30} color="#006a4e" style={{ marginBottom: '14px' }} />
+            <h4 style={{ margin: '0 0 8px', color: '#006a4e', fontSize: '18px', fontWeight: '800' }}>মেসেজ পাঠান</h4>
+            <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px' }}>যেকোনো সহায়তার জন্য ফর্ম পূরণ করুন</p>
+            <button onClick={() => navigate('/contact')} style={{ display: 'inline-block', backgroundColor: '#006a4e', color: 'white', padding: '12px 28px', border: 'none', borderRadius: '12px', fontWeight: '800', cursor: 'pointer', fontSize: '14px' }}>যোগাযোগ ফরম খুলুন</button>
           </div>
         </div>
 
         {/* Links */}
         <div style={{ textAlign: 'center', marginTop: '40px', padding: '20px' }}>
-          <p style={{ color: '#888', fontSize: '14px' }}>অফিসিয়াল রিসোর্স:</p>
+          <p style={{ color: '#888', fontSize: '14px' }}>অফিসিয়াল রিসোর্স:</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <a href="https://eticket.railway.gov.bd" target="_blank" rel="noreferrer" style={{ color: '#006a4e', textDecoration: 'none', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              রেলওয়ে ই-টিকিট <ExternalLink size={14} />
+            <a href="https://eticket.railway.gov.bd" target="_blank" rel="noreferrer" style={{ color: '#006a4e', textDecoration: 'none', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '700' }}>
+              রেলওয়ে ই-টিকিট পোর্টাল <ExternalLink size={14} />
             </a>
           </div>
         </div>

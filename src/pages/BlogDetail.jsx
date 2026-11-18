@@ -4,6 +4,7 @@ import {
   ChevronLeft, Calendar, Clock, Eye, Share2, Check, Type,
   ArrowUpRight, SearchX, ArrowLeft
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const FALLBACK_IMG = '/homeimg.png';
 const FONT_SIZES = [16.5, 18, 20];
@@ -318,6 +319,7 @@ const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onre
   /* ---------- Article ---------- */
   return (
     <div className="bd-page" style={{ '--fs': `${FONT_SIZES[sizeIdx]}px` }}>
+      <Navbar activePage="/blogs" />
       <style>{css}</style>
 
       {/* Sticky bar with reading progress */}
@@ -478,6 +480,9 @@ const css = `
 /* ---------- Top bar ---------- */
 .bd-bar {
   position: sticky; top: 0; z-index: 60;
+}
+@media (min-width: 769px) {
+  .bd-bar { top: 68px; }
   background: rgba(255, 255, 255, .86);
   -webkit-backdrop-filter: saturate(160%) blur(16px);
   backdrop-filter: saturate(160%) blur(16px);

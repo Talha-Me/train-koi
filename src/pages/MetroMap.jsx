@@ -5,6 +5,7 @@ import {
   TrainFront, Share2, Star, Zap, Search,
   ArrowRightLeft, ExternalLink, ShieldCheck, Clock 
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const MetroMap = () => {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ const MetroMap = () => {
 
   return (
     <div className="metro-map-root">
+      <Navbar activePage="/metro-rail" />
       {/* Top Navbar */}
       <nav className="m-top-nav">
         <div className="n-container">
@@ -151,12 +153,13 @@ const MetroMap = () => {
         .metro-map-root { background-color: #f6f9fc; min-height: 100vh; font-family: 'Hind Siliguri', sans-serif; color: #1e293b; }
         
         .m-top-nav { background: linear-gradient(135deg, #008352 0%, #006b43 100%); padding: 15px 0; color: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .n-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        @media (min-width: 769px) { .m-top-nav { display: none !important; } }
+        .n-container { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
         .n-logo-text { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; }
         .n-back { background: rgba(255,255,255,0.15); border: none; padding: 10px; border-radius: 12px; color: white; cursor: pointer; transition: 0.3s; }
 
         .m-main-wrapper { padding: 30px 20px; }
-        .m-container-wide { max-width: 1100px; margin: 0 auto; }
+        .m-container-wide { max-width: 1440px; margin: 0 auto; }
 
         .trainkoi-super-banner {
           background: #ffffff; border-radius: 24px; padding: 25px; margin-bottom: 30px;

@@ -5,6 +5,7 @@ import {
   ChevronRight, PhoneCall, ShieldCheck, Zap, Share2,
   Navigation, Star, TrainFront, LayoutGrid, Info
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const MetroPage = () => {
   const navigate = useNavigate();
@@ -37,7 +38,10 @@ const MetroPage = () => {
 
   return (
     <div className="metro-full-container">
-      {/* Header Section */}
+      {/* Desktop Navbar */}
+      <Navbar activePage="/metro-rail" />
+
+      {/* Header Section (Mobile) */}
       <nav className="metro-header-nav">
         <div className="nav-wrapper">
           <button onClick={() => navigate('/')} className="circle-btn">
@@ -167,10 +171,15 @@ const MetroPage = () => {
           z-index: 1000;
           border-bottom: 1px solid #e2e8f0;
         }
+        @media (min-width: 769px) {
+          .metro-header-nav {
+            display: none;
+          }
+        }
         .nav-wrapper {
-          max-width: 1200px;
+          max-width: 1520px;
           margin: 0 auto;
-          width: 100%;
+          width: 95%;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -179,8 +188,8 @@ const MetroPage = () => {
         .circle-btn { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 14px; cursor: pointer; color: #475569; }
 
         /* Hero */
-        .main-layout-wrapper { padding: 30px 20px; }
-        .content-inner { max-width: 1100px; margin: 0 auto; }
+        .main-layout-wrapper { padding: 30px 16px; }
+        .content-inner { max-width: 1520px; width: 95%; margin: 0 auto; }
         .hero-banner {
           background: linear-gradient(135deg, #008352 0%, #005a38 100%);
           border-radius: 35px;

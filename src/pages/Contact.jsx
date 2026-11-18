@@ -4,6 +4,7 @@ import {
   ChevronLeft, Mail, Phone, Send, MessageSquare, 
   Facebook, Twitter, Youtube, HelpCircle, ShieldAlert 
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -57,20 +58,31 @@ const Contact = () => {
   };
 
   return (
-    <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif" }}>
+    <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: "'Hind Siliguri', sans-serif", paddingBottom: '70px' }}>
+      <style>{`
+        @media (min-width: 769px) {
+          .contact-mobile-header {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      {/* Desktop Navbar */}
+      <Navbar activePage="/contact" />
+
       {/* Header */}
-      <div style={{ backgroundColor: '#006a4e', padding: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '15px', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div className="contact-mobile-header" style={{ backgroundColor: '#006a4e', padding: '20px', color: 'white', display: 'flex', alignItems: 'center', gap: '15px', position: 'sticky', top: 0, zIndex: 100 }}>
         <ChevronLeft onClick={handleSmartBack} style={{ cursor: 'pointer' }} size={28} />
         <h2 style={{ margin: 0, fontSize: '20px' }}>যোগাযোগ ও সাপোর্ট</h2>
       </div>
 
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '25px 15px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '35px' }}>
-          <h1 style={{ color: '#1a1d1c', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: '800' }}>আমরা আপনার কথা শুনতে আগ্রহী</h1>
-          <p style={{ color: '#666', fontSize: '15px' }}>যেকোনো জিজ্ঞাসা বা অভিযোগ আমাদের জানান</p>
+      <div style={{ maxWidth: '1440px', width: '95%', margin: '0 auto', padding: '36px 16px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ color: '#1a1d1c', fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: '900', letterSpacing: '-0.3px', margin: '0 0 10px' }}>আমরা আপনার কথা শুনতে আগ্রহী</h1>
+          <p style={{ color: '#666', fontSize: '15.5px', margin: 0 }}>যেকোনো জিজ্ঞাসা, মতামত বা অভিযোগ আমাদের নির্দ্বিধায় জানান</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '30px' }}>
           {/* Contact Methods */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>

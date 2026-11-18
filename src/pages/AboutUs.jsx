@@ -277,6 +277,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
 
 import {
   ChevronLeft,
@@ -340,9 +341,14 @@ const styles = `
   z-index: 100;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
+@media (min-width: 769px) {
+  .tk-header {
+    display: none;
+  }
+}
 .tk-header-inner {
   width: 100%;
-  max-width: 1450px;
+  max-width: 1520px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -376,7 +382,7 @@ const styles = `
 /* ---------- Main ---------- */
 .tk-main {
   width: 100%;
-  max-width: 1450px;
+  max-width: 1520px;
   margin: 0 auto;
   padding: 35px 25px;
 }
@@ -1064,6 +1070,9 @@ const AboutUs = () => {
   return (
     <div className="tk-page">
       <style>{styles}</style>
+
+      {/* Desktop Navbar */}
+      <Navbar activePage="/about" />
 
       {/* ================= HEADER ================= */}
       <header className="tk-header">

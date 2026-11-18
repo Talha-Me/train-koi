@@ -5,6 +5,7 @@ import {
   Info, ShieldAlert, PhoneCall, Trash2, CameraOff, 
   VolumeX, Star, Zap, ExternalLink 
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const MetroRules = () => {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const MetroRules = () => {
 
   return (
     <div className="rules-page-root">
+      <Navbar activePage="/metro-rail" />
       {/* Top Navbar */}
       <nav className="rules-nav">
         <div className="nav-container">
@@ -158,14 +160,15 @@ const MetroRules = () => {
         
         /* Navbar */
         .rules-nav { background: linear-gradient(135deg, #008352 0%, #005a38 100%); padding: 15px 0; color: white; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        @media (min-width: 769px) { .rules-nav { display: none !important; } }
+        .nav-container { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
         .nav-brand-group { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; }
         .back-btn-circle { background: rgba(255,255,255,0.2); border: none; padding: 8px; border-radius: 50%; color: white; cursor: pointer; transition: 0.3s; }
         .live-tag { font-size: 10px; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); }
 
         /* Hero */
         .rules-main-content { padding: 30px 20px; }
-        .content-wrapper-wide { max-width: 1100px; margin: 0 auto; }
+        .content-wrapper-wide { max-width: 1440px; margin: 0 auto; }
         .rules-hero { background: white; border-radius: 30px; padding: 40px; margin-bottom: 30px; position: relative; overflow: hidden; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .hero-info h1 { margin: 0; font-size: 32px; color: #1e293b; font-weight: 900; }
         .hero-info p { margin: 10px 0 0; color: #64748b; font-size: 16px; max-width: 500px; }

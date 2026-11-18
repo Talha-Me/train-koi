@@ -4,6 +4,7 @@ import {
   ChevronLeft, Calendar, Clock, ArrowUpRight,
   BookOpen, Sparkles, RefreshCw, Compass, WifiOff, Newspaper
 } from 'lucide-react';
+import Navbar from './components/Navbar';
 
 const FALLBACK_IMG = '/homeimg.png';
 
@@ -160,6 +161,9 @@ const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onre
   return (
     <div className="bl-page">
       <style>{css}</style>
+
+      {/* Desktop Navbar */}
+      <Navbar activePage="/blogs" />
 
       {/* Masthead */}
       <div className="bl-mast">
@@ -318,7 +322,7 @@ const css = `
     linear-gradient(135deg, #005a40 0%, #002a1d 100%);
   color: #fff;
 }
-.bl-mast-inner { max-width: 1120px; margin: 0 auto; padding: 16px 18px 20px; }
+.bl-mast-inner { max-width: 1520px; width: 95%; margin: 0 auto; padding: 16px 18px 20px; }
 .bl-mast-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .bl-icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center;
@@ -362,7 +366,7 @@ const css = `
   border-bottom: 1px solid var(--line);
 }
 .bl-cats {
-  max-width: 1120px; margin: 0 auto; padding: 11px 18px;
+  max-width: 1520px; width: 95%; margin: 0 auto; padding: 11px 18px;
   display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
 }
 .bl-cats::-webkit-scrollbar { display: none; }
@@ -376,7 +380,7 @@ const css = `
 .bl-pill.is-active { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
 
 /* ---------- Main ---------- */
-.bl-main { max-width: 1120px; margin: 0 auto; padding: 20px 16px; }
+.bl-main { max-width: 1520px; width: 95%; margin: 0 auto; padding: 24px 16px; }
 .bl-top { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
 
 /* ---------- Featured ---------- */
