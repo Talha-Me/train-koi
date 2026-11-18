@@ -806,9 +806,9 @@ import { trains } from '../data/trainData';
 import {
   Search, MapPin, Settings, Bell, Navigation, ArrowRightLeft, X,
   Train, BookOpen, User, Info, MessageSquare, ShieldAlert,
-  Ticket, Mail, LayoutGrid, Map as MapIcon, Clock, ChevronRight, Activity,
+  Ticket, Mail, LayoutGrid, Map as MapIcon, Clock, ChevronRight, ChevronDown, Activity,
   HelpCircle, Radio, Newspaper,
-  TrainFront, CreditCard, Gavel
+  TrainFront, CreditCard, Gavel, Phone, ShieldCheck
 } from 'lucide-react';
 
 const BACKEND_URL = window.location.hostname === "localhost" 
@@ -823,6 +823,7 @@ const HomePage = () => {
   const [fromCity, setFromCity] = useState('');
   const [toCity, setToCity] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const navigate = useNavigate();
 
   // লাইভ ট্রেন ও কাউন্টার স্টেট
@@ -2124,6 +2125,317 @@ const HomePage = () => {
               </div>
             </article>
           ))}
+        </div>
+      </div>
+
+      {/* ================= POPULAR TRAIN ROUTES DIRECTORY ================= */}
+      <div style={{ padding: '10px 20px 25px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <span style={{ fontSize: '11px', color: '#006a4e', fontWeight: '800', letterSpacing: '0.5px' }}>রেল রুট ডিরেক্টরি</span>
+            <h3 style={{ margin: '2px 0 0', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+              বাংলাদেশের প্রধান আন্তঃনগর রেল করিডোর ও ট্রেন
+            </h3>
+          </div>
+          <button
+            onClick={() => navigate('/schedule')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              padding: '8px 14px',
+              borderRadius: '999px',
+              border: '1px solid #d1fae5',
+              backgroundColor: '#ecfdf5',
+              color: '#006a4e',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            সম্পূর্ণ সময়সূচী তালিকা ➔
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+          {[
+            {
+              corridor: "ঢাকা ⇄ চট্টগ্রাম করিডোর",
+              badge: "৮টি দৈনিক আন্তঃনগর",
+              tagBg: "#ecfdf5",
+              tagColor: "#006a4e",
+              trains: "সুবর্ণ (৭০১), সোনার বাংলা (৭৮৭), তূর্ণা (৭৪১), মহানগর (৭০৩), চাট্টলা (৭৪৯)",
+              desc: "দেশের ব্যস্ততম বাণিজ্যিক রেল রুট। মাত্র ৫ থেকে ৫.৫ ঘণ্টায় দ্রুততম ও বিলাসবহুল নন-স্টপ ভ্রমণ সেবা।",
+              from: "ঢাকা",
+              to: "চট্টগ্রাম"
+            },
+            {
+              corridor: "ঢাকা ⇄ কক্সবাজার করিডোর",
+              badge: "আইকনিক ট্যুরিস্ট এক্সপ্রেস",
+              tagBg: "#eff6ff",
+              tagColor: "#1d4ed8",
+              trains: "কক্সবাজার এক্সপ্রেস (৮১৩/৮১৪), পর্যটক এক্সপ্রেস (৮১৫/৮১৬)",
+              desc: "পদ্মা ও কর্ণফুলী রেল করিডোর হয়ে সরাসরি বিশ্বের দীর্ঘতম সমুদ্র সৈকত পর্যন্ত আধুনিক কোরিয়ান কোচের যাত্রা।",
+              from: "ঢাকা",
+              to: "কক্সবাজার"
+            },
+            {
+              corridor: "ঢাকা ⇄ রাজশাহী করিডোর",
+              badge: "পদ্মা ও সিল্কসিটি এক্সপ্রেস",
+              tagBg: "#fef3c7",
+              tagColor: "#b45309",
+              trains: "বনলতা (৭৯১), সিল্কসিটি (৭৫৩), পদ্মা (৭৫৯), ধূমকেতু (৭৬৯)",
+              desc: "যমুনা সেতু হয়ে উত্তরবঙ্গের শিক্ষা ও রেশম নগরী রাজশাহীর সাথে দ্রুত ও আরামদায়ক সংযোগ।",
+              from: "ঢাকা",
+              to: "রাজশাহী"
+            },
+            {
+              corridor: "ঢাকা ⇄ সিলেট করিডোর",
+              badge: "চা বাগান ও পর্যটন রুট",
+              tagBg: "#f0fdf4",
+              tagColor: "#15803d",
+              trains: "পারাবত (৭০৯), জয়ন্তিকা (৭১৭), উপবন (৭৩৯), কালনী (৭৭৩)",
+              desc: "শ্রীমঙ্গল ও সিলেটের পাহাড়ি মনোরম প্রাকৃতিক সৌন্দর্যের ভেতর দিয়ে নির্ভরযোগ্য ডে ও নাইট ট্রেন।",
+              from: "ঢাকা",
+              to: "সিলেট"
+            },
+            {
+              corridor: "ঢাকা ⇄ খুলনা ও বেনাপোল",
+              badge: "পদ্মা সেতু সরাসরি রুট",
+              tagBg: "#faf5ff",
+              tagColor: "#7e22ce",
+              trains: "সুন্দরবন (৭২৫), চিত্রা (৭৬৩), বেনাপোল (৭৯৫), জাহানাবাদ",
+              desc: "পদ্মা সেতু হয়ে দক্ষিণাঞ্চলের খুলনা ও ভারতগামী বেনাপোল স্থলবন্দরের সময় সাশ্রয়ী নতুন করিডোর।",
+              from: "ঢাকা",
+              to: "খুলনা"
+            },
+            {
+              corridor: "ঢাকা ⇄ রংপুর ও পঞ্চগড়",
+              badge: "দীর্ঘতম উত্তরবঙ্গ রুট",
+              tagBg: "#fff7ed",
+              tagColor: "#c2410c",
+              trains: "একতা (৭০৫), দ্রুতযান (৭৫৭), পঞ্চগড় (৭৯৩), রংপুর (৭৭১)",
+              desc: "দেশের উত্তর প্রান্তের তেঁতুলিয়া-পঞ্চগড় ও রংপুর পর্যন্ত দীর্ঘ দূরত্বের সবচেয়ে বিশ্বস্ত আন্তঃনগর পরিবহন।",
+              from: "ঢাকা",
+              to: "পঞ্চগড়"
+            }
+          ].map((c, i) => (
+            <div
+              key={i}
+              className="hp-editorial-card"
+              style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '20px',
+                padding: '18px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>
+                    {c.corridor}
+                  </h4>
+                  <span style={{ fontSize: '10px', fontWeight: '800', color: c.tagColor, backgroundColor: c.tagBg, padding: '3px 8px', borderRadius: '6px' }}>
+                    {c.badge}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#006a4e', marginBottom: '6px' }}>
+                  {c.trains}
+                </div>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: '1.65' }}>
+                  {c.desc}
+                </p>
+              </div>
+              <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchMode('route');
+                    setFromCity(c.from);
+                    setToCity(c.to);
+                    window.scrollTo({ top: 180, behavior: 'smooth' });
+                  }}
+                  style={{
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    color: '#166534',
+                    borderRadius: '8px',
+                    padding: '5px 10px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  এই রুটে ট্রেন খুঁজুন
+                </button>
+                <span
+                  onClick={() => navigate('/schedule')}
+                  style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  সময়সূচী দেখুন ➔
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ================= PASSENGER FAQ SECTION (Interactive Accordion) ================= */}
+      <div style={{ padding: '10px 20px 25px' }}>
+        <div style={{ marginBottom: '16px' }}>
+          <span style={{ fontSize: '11px', color: '#006a4e', fontWeight: '800', letterSpacing: '0.5px' }}>সহায়তা ও প্রশ্নোত্তর</span>
+          <h3 style={{ margin: '2px 0 4px', fontSize: '18px', fontWeight: '800', color: '#1e293b' }}>
+            বাংলাদেশ রেলওয়ে ও ট্রেন ট্র্যাকিং সম্পর্কিত সাধারণ জিজ্ঞাসা (FAQ)
+          </h3>
+          <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b' }}>
+            ট্রেনের লাইভ অবস্থান, বিলম্ব হিসাব, সময়সূচী ও নিরাপদ ভ্রমণের প্রয়োজনীয় নির্দেশিকা।
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {[
+            {
+              q: "ট্রেনকই-তে ট্রেনের লাইভ লোকেশন ও সম্ভাব্য বিলম্ব (Delay) কীভাবে দেখা যায়?",
+              a: "ট্রেনকই প্ল্যাটফর্মের সার্চ বারে ট্রেনের নাম বা কোড লিখুন (যেমন: 'সুবর্ণ এক্সপ্রেস' বা '৭০১') অথবা 'রুট সার্চ' অপশন থেকে প্রারম্ভিক ও গন্তব্য স্টেশন নির্বাচন করুন। প্রদর্শিত ফলাফল থেকে আপনার ট্রেনে ক্লিক করলেই ট্রেনটির বর্তমান লাইভ জিপিএস লোকেশন, ট্রেনটি বর্তমানে কোন স্টেশন পার হয়েছে, পরবর্তী স্টেশন কোনটি এবং নির্ধারিত সময়ের তুলনায় সম্ভাব্য কত মিনিট বিলম্ব রয়েছে তা রিয়েল-টাইমে দেখতে পাবেন।"
+            },
+            {
+              q: "বাংলাদেশ রেলওয়ের ট্রেনের সাপ্তাহিক ছুটির দিন (Off Day) কীভাবে নিশ্চিত হব?",
+              a: "বাংলাদেশ রেলওয়ের প্রতিটি আন্তঃনগর ট্রেনের রক্ষণাবেক্ষণের জন্য সপ্তাহে একটি নির্দিষ্ট বন্ধের দিন থাকে। ট্রেনকই প্ল্যাটফর্মে প্রতিটি ট্রেনের নামের নিচে 'ছুটি:' সেকশনে সংশ্লিষ্ট ট্রেনের অফ-ডে স্পষ্টভাবে উল্লেখ থাকে। যেমন: সুবর্ণ এক্সপ্রেস সোমবার বন্ধ থাকে এবং সোনার বাংলা এক্সপ্রেস মঙ্গলবার বন্ধ থাকে। ভ্রমণের দিন নির্ধারণের আগে ট্রেনের সাপ্তাহিক ছুটি দেখে নেওয়া বুদ্ধিমানের কাজ।"
+            },
+            {
+              q: "ট্রেনের লাইভ জিপিএস লোকেশন আপডেট না হলে কী করণীয়?",
+              a: "কোনো প্রত্যন্ত অঞ্চলে জিপিএস স্যাটেলাইট নেটওয়ার্কের সাময়িক দুর্বলতা অথবা লোকোমোটিভের ট্র্যাকার আপডেট বিলম্বের কারণে তাৎক্ষণিক অবস্থান না দেখালে ট্রেনকই-এর 'সময়সূচী' অপশন থেকে ওই ট্রেনের প্রতিটি স্টেশনে পৌঁছানোর নির্ধারিত সময় দেখে নিতে পারেন। এ ছাড়া বাংলাদেশ রেলওয়ের অফিশিয়াল এসএমএস ট্র্যাকিং গেটওয়ে (মোবাইলের মেসেজে TR <ট্রেন কোড> লিখে ১৬৩১৮ নম্বরে পাঠিয়ে) বিকল্প হিসেবে যাচাই করতে পারেন।"
+            },
+            {
+              q: "বাংলাদেশ রেলওয়ের অনলাইন টিকিট কাটার সঠিক নিয়ম ও সময়সূচী কী?",
+              a: "বাংলাদেশ রেলওয়ের অফিশিয়াল ই-টিকিটিং ওয়েবসাইট (eticket.railway.gov.bd) অথবা 'রেলসেবা' মোবাইল অ্যাপের মাধ্যমে যাত্রার ১০ দিন আগে থেকে টিকিট বুকিং করা যায়। পশ্চিমাঞ্চলীয় ট্রেনের টিকিট প্রতিদিন সকাল ৮:০০ টায় এবং পূর্বাঞ্চলীয় ট্রেনের টিকিট দুপুর ২:০০ টায় অনলাইনে উন্মুক্ত হয়। ট্রেনকই কোনো টিকিট বিক্রি করে না, বরং সঠিক তথ্য উপস্থাপনের মাধ্যমে সাধারণ যাত্রীদের ভ্রমণকে সহজ ও ঝামেলামুক্ত করতে সহায়তা করে।"
+            },
+            {
+              q: "ঢাকা মেট্রোরেল (MRT Line-6) ব্যবহারের সময়সূচি এবং কার্ড রিচার্জের নিয়ম কী?",
+              a: "ঢাকা মেট্রোরেল বর্তমানে উত্তরা উত্তর (দিয়াবাড়ি) থেকে মতিঝিল পর্যন্ত ১৬টি আধুনিক স্টেশনে প্রতিদিন নিয়মিত বিরতিতে চলাচল করে। যাত্রীরা একক যাত্রার জন্য স্টেশন ভেন্ডিং মেশিন (TVM) থেকে টিকিট টোকেন সংগ্রহ করতে পারেন অথবা ১০% ভাড়ায় সাশ্রয়ী 'এমআরটি পাস' বা 'র‌্যাপিড পাস' ব্যবহার করতে পারেন। প্রতিটি স্টেশনের কিয়স্ক ও টিকিট বুথে নগদ অর্থে বা কার্ডে রিচার্জ সুবিধা রয়েছে।"
+            },
+            {
+              q: "ট্রেনে লাগেজ, পার্সেল এবং মোটরসাইকেল পরিবহনের সরকারি নীতিমালা কী?",
+              a: "বাংলাদেশ রেলওয়েতে একজন সাধারণ যাত্রী নির্দিষ্ট ওজনের ব্যক্তিগত লাগেজ (২০ থেকে ৪০ কেজি) বিনামূল্যে নিজের বগিতে বহন করতে পারেন। অতিরিক্ত বাণিজ্যিক পণ্য, বাইসাইকেল বা মোটরসাইকেল পরিবহনের জন্য স্টেশনের সরকারি পার্সেল কাউন্টারে নির্ধারিত মাশুল প্রদান করে অফিশিয়াল রশিদ সংগ্রহ করতে হয়। নিষিদ্ধ, দাহ্য বা বিপজ্জনক কোনো বস্তু ট্রেনে পরিবহন আইনত দণ্ডনীয় অপরাধ।"
+            }
+          ].map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: '16px',
+                  border: isOpen ? '1px solid #006a4e' : '1px solid #e2e8f0',
+                  boxShadow: isOpen ? '0 4px 14px rgba(0, 106, 78, 0.08)' : '0 2px 6px rgba(0,0,0,0.02)',
+                  overflow: 'hidden',
+                  transition: 'all 0.25s ease'
+                }}
+              >
+                <div
+                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  style={{
+                    padding: '16px 20px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    backgroundColor: isOpen ? '#f0fdf4' : 'transparent'
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontWeight: '800', color: isOpen ? '#006a4e' : '#1e293b', lineHeight: '1.45', paddingRight: '12px' }}>
+                    {faq.q}
+                  </span>
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    backgroundColor: isOpen ? '#006a4e' : '#f1f5f9',
+                    color: isOpen ? '#ffffff' : '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.25s ease'
+                  }}>
+                    <ChevronDown size={16} />
+                  </div>
+                </div>
+                {isOpen && (
+                  <div style={{ padding: '0 20px 18px', borderTop: '1px solid #dcfce7', backgroundColor: '#f0fdf4' }}>
+                    <p style={{ margin: '12px 0 0', fontSize: '13px', lineHeight: '1.8', color: '#334155' }}>
+                      {faq.a}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ================= EMERGENCY RAILWAY HELPLINE & SAFETY ================= */}
+      <div style={{ padding: '10px 20px 25px' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          borderRadius: '24px',
+          padding: '24px 20px',
+          color: '#ffffff',
+          boxShadow: '0 10px 25px rgba(15, 23, 42, 0.15)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+            <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', padding: '10px', borderRadius: '14px', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ShieldCheck size={24} />
+            </div>
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: '800', color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                জরুরি যাত্রী সহায়তা ও সুরক্ষা
+              </span>
+              <h3 style={{ margin: '2px 0 0', fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                বাংলাদেশ রেলওয়ে জরুরি হেল্পলাইন ও কুইক ইনফো
+              </h3>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.06)', borderRadius: '16px', padding: '14px 16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold' }}>রেলওয়ে সেবা ও তথ্য হেল্পলাইন</div>
+              <div style={{ fontSize: '18px', fontWeight: '900', color: '#38bdf8', margin: '4px 0' }}>১৬৪৫৯</div>
+              <p style={{ margin: 0, fontSize: '11.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                ট্রেন সময়সূচী, প্ল্যাটফর্ম তথ্য ও সাধারণ অনুসন্ধান (সকাল ৬টা – রাত ১২টা)।
+              </p>
+            </div>
+
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.06)', borderRadius: '16px', padding: '14px 16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold' }}>সরকারি এসএমএস ট্র্যাকিং</div>
+              <div style={{ fontSize: '18px', fontWeight: '900', color: '#4ade80', margin: '4px 0' }}>১৬৩১৮</div>
+              <p style={{ margin: 0, fontSize: '11.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                মেসেজে <code style={{ color: '#fef08a' }}>TR &lt;কোড&gt;</code> লিখে ১৬৩১৮ নম্বরে পাঠালে ফিরতি অবস্থান বার্তা।
+              </p>
+            </div>
+
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.06)', borderRadius: '16px', padding: '14px 16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold' }}>জাতীয় জরুরি সেবা (টোল-ফ্রি)</div>
+              <div style={{ fontSize: '18px', fontWeight: '900', color: '#f87171', margin: '4px 0' }}>৯৯৯</div>
+              <p style={{ margin: 0, fontSize: '11.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                রেলওয়ে পুলিশ (GRP), জরুরি স্বাস্থ্যসেবা ও অগ্নিনির্বাপণ তাৎক্ষণিক সহায়তা।
+              </p>
+            </div>
+
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.06)', borderRadius: '16px', padding: '14px 16px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 'bold' }}>রেলওয়ে নিরাপত্তা বাহিনী (RNB)</div>
+              <div style={{ fontSize: '18px', fontWeight: '900', color: '#fbbf24', margin: '4px 0' }}>২৪/৭ সক্রিয়</div>
+              <p style={{ margin: 0, fontSize: '11.5px', color: '#cbd5e1', lineHeight: '1.5' }}>
+                দেশের প্রধান স্টেশনগুলোতে যাত্রী নিরাপত্তা, দালাল চক্র দমন ও মালামাল সুরক্ষা।
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
