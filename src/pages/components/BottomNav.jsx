@@ -55,6 +55,12 @@ const BottomNav = () => {
           border-radius: 50%;
           animation: nav-pulse-dot 1.5s infinite;
         }
+        .trainkoi-nav-btn {
+          transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease !important;
+        }
+        .trainkoi-nav-btn:active {
+          transform: scale(0.9);
+        }
       `}</style>
 
       <div className="trainkoi-bottom-nav">
@@ -68,6 +74,7 @@ const BottomNav = () => {
             <button
               key={idx}
               type="button"
+              className="trainkoi-nav-btn"
               onClick={() => navigate(item.path)}
               style={{
                 flex: 1,
@@ -81,17 +88,28 @@ const BottomNav = () => {
                 cursor: 'pointer',
                 padding: '6px 0',
                 color: isActive ? '#006a4e' : '#64748b',
-                transition: 'color 0.15s ease',
                 position: 'relative'
               }}
             >
               {item.isLive && (
                 <span className="nav-live-dot" />
               )}
+              {isActive && (
+                <span style={{
+                  position: 'absolute',
+                  top: '0',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '24px',
+                  height: '3px',
+                  backgroundColor: '#006a4e',
+                  borderRadius: '0 0 4px 4px'
+                }} />
+              )}
               <div style={{
                 color: isActive ? '#006a4e' : '#64748b',
-                transform: isActive ? 'scale(1.08)' : 'scale(1)',
-                transition: 'transform 0.15s ease'
+                transform: isActive ? 'scale(1.12)' : 'scale(1)',
+                transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
               }}>
                 {item.icon}
               </div>

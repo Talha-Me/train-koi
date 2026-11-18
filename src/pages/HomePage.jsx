@@ -1062,11 +1062,124 @@ const HomePage = () => {
       pointerEvents: 'auto'
     }}>
       <style>{`
+        /* ================= CINEMATIC KEYFRAMES ================= */
+        @keyframes header-aurora {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes orb-float-1 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.22; }
+          50% { transform: translate(25px, -15px) scale(1.15); opacity: 0.38; }
+        }
+        @keyframes orb-float-2 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.18; }
+          50% { transform: translate(-25px, 15px) scale(1.2); opacity: 0.32; }
+        }
         @keyframes pulse-live {
           0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
           70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
           100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+        @keyframes icon-blink {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.12); opacity: 0.7; filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8)); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes button-glow {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65), 0 4px 10px rgba(239, 68, 68, 0.25); }
+          50% { transform: scale(1.03); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0), 0 8px 18px rgba(239, 68, 68, 0.45); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65), 0 4px 10px rgba(239, 68, 68, 0.25); }
+        }
+        @keyframes metro-sweep {
+          0% { left: -100%; }
+          32%, 100% { left: 160%; }
+        }
+        @keyframes live-counter-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+
+        /* ================= CINEMATIC HEADER ================= */
+        .hp-header-cinematic {
+          background-size: 200% 200% !important;
+          animation: header-aurora 14s ease infinite;
+          position: relative;
+          overflow: hidden;
+        }
+        .hp-ambient-orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(50px);
+          pointer-events: none;
+          z-index: 0;
+        }
+        .hp-ambient-orb-1 {
+          top: -40px;
+          left: 12%;
+          width: 220px;
+          height: 220px;
+          background: radial-gradient(circle, #86efac 0%, rgba(134, 239, 172, 0) 70%);
+          animation: orb-float-1 9s ease-in-out infinite;
+        }
+        .hp-ambient-orb-2 {
+          bottom: -30px;
+          right: 10%;
+          width: 260px;
+          height: 260px;
+          background: radial-gradient(circle, #fef08a 0%, rgba(254, 240, 138, 0) 70%);
+          animation: orb-float-2 11s ease-in-out infinite;
+        }
+
+        .hp-nav-link {
+          position: relative;
+          cursor: pointer;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #d1fae5;
+          transition: color 0.2s ease, transform 0.2s ease;
+          padding: 4px 2px;
+        }
+        .hp-nav-link:hover {
+          color: #ffffff;
+          transform: translateY(-1px);
+        }
+        .hp-nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 50%;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, #fef08a, #86efac);
+          border-radius: 99px;
+          transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hp-nav-link:hover::after {
+          width: 100%;
+          left: 0;
+        }
+
+        .hp-header-btn {
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+        }
+        .hp-header-btn:hover {
+          transform: scale(1.08);
+          background-color: rgba(255, 255, 255, 0.25) !important;
+        }
+        .hp-header-btn:active {
+          transform: scale(0.94);
+        }
+
+        .hp-live-counter-badge {
+          animation: live-counter-float 4s ease-in-out infinite;
+          transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .hp-live-counter-badge:hover {
+          transform: translateY(-2px) scale(1.03) !important;
+          border-color: rgba(254, 240, 138, 0.6) !important;
+        }
+
         .live-badge-dot {
           width: 8px;
           height: 8px;
@@ -1075,34 +1188,164 @@ const HomePage = () => {
           animation: pulse-live 1.6s infinite;
         }
 
-        @keyframes icon-blink {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.12); opacity: 0.7; filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8)); }
-          100% { transform: scale(1); opacity: 1; }
-        }
         .blinking-feature-icon {
           animation: icon-blink 1.4s ease-in-out infinite;
         }
 
-        @keyframes button-glow {
-          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
-          50% { transform: scale(1.04); box-shadow: 0 0 14px rgba(239, 68, 68, 0.8); }
-          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+        /* ================= SEARCH & INTERACTIVE CONTROLS ================= */
+        .hp-search-container {
+          box-shadow: 0 16px 40px -8px rgba(0, 77, 57, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease !important;
         }
-        .tracking-btn-live {
-          animation: button-glow 1.8s ease-in-out infinite;
-          background-color: #ef4444 !important;
+        .hp-search-tab-btn {
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .hp-search-tab-btn:hover {
+          filter: brightness(1.04);
+        }
+        .hp-search-tab-btn:active {
+          transform: scale(0.97);
+        }
+        .hp-search-input-box {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease !important;
+        }
+        .hp-search-input-box:focus-within {
+          border-color: #006a4e !important;
+          box-shadow: 0 0 0 4px rgba(0, 106, 78, 0.12), 0 4px 12px rgba(0, 106, 78, 0.08) !important;
+          background-color: #ffffff !important;
+          transform: translateY(-1px);
+        }
+        .hp-route-chip {
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+        }
+        .hp-route-chip:hover {
+          background-color: #dcfce7 !important;
+          border-color: #86efac !important;
+          color: #14532d !important;
+          transform: translateY(-2px) scale(1.03);
+          box-shadow: 0 6px 14px -3px rgba(22, 101, 52, 0.22);
+        }
+        .hp-route-chip:active {
+          transform: scale(0.96);
         }
 
-        /* মেট্রো ও তথ্য সেকশন */
-        .hp-metro-card { transition: transform .2s ease, box-shadow .2s ease; }
-        .hp-metro-card:hover { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(0,131,82,0.28) !important; }
-        .hp-metro-card:active { transform: scale(0.99); }
-        .hp-service-card { transition: border-color .2s ease, box-shadow .2s ease; }
-        .hp-service-card:hover { border-color: #b7e4d0 !important; box-shadow: 0 10px 22px -16px rgba(0,106,78,0.45); }
+        /* ================= FEATURES GRID ================= */
+        .hp-feature-card {
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .hp-feature-card:hover {
+          transform: translateY(-6px);
+        }
+        .hp-feature-icon-tile {
+          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.25s ease !important;
+        }
+        .hp-feature-card:hover .hp-feature-icon-tile {
+          transform: scale(1.1) rotate(3deg);
+          box-shadow: 0 12px 24px -4px rgba(0, 106, 78, 0.22), 0 4px 8px rgba(0, 0, 0, 0.04) !important;
+          border-color: rgba(0, 106, 78, 0.25) !important;
+        }
+        .hp-feature-card:hover .hp-feature-title {
+          color: #006a4e !important;
+        }
+        .hp-feature-title {
+          transition: color 0.2s ease;
+        }
+
+        /* ================= TRAIN CARDS ================= */
+        .hp-train-card {
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.2s ease !important;
+        }
+        .hp-train-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -120%;
+          width: 60%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+          transform: skewX(-22deg);
+          transition: left 0.75s ease;
+          pointer-events: none;
+        }
+        .hp-train-card:hover::before {
+          left: 140%;
+        }
+        .hp-train-card:hover {
+          transform: translateY(-4px) scale(1.008);
+          box-shadow: 0 18px 36px -10px rgba(0, 0, 0, 0.09), 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+          border-color: #cbd5e1 !important;
+        }
+        .hp-train-card:hover .hp-train-img {
+          transform: scale(1.09);
+        }
+        .hp-train-img {
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hp-track-btn {
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, filter 0.2s ease !important;
+        }
+        .hp-track-btn:hover {
+          transform: translateY(-2px) scale(1.05);
+          filter: brightness(1.08);
+        }
+        .hp-track-btn:active {
+          transform: scale(0.95);
+        }
+        .hp-track-btn-live {
+          animation: button-glow 1.8s ease-in-out infinite !important;
+        }
+
+        /* ================= METRO CARD ================= */
+        .hp-metro-card {
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease !important;
+        }
+        .hp-metro-card::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -100%;
+          width: 45%;
+          height: 200%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+          transform: rotate(25deg);
+          animation: metro-sweep 7s infinite ease-in-out;
+          pointer-events: none;
+        }
+        .hp-metro-card:hover {
+          transform: translateY(-4px) scale(1.008);
+          box-shadow: 0 20px 45px -8px rgba(0, 131, 82, 0.42) !important;
+        }
+        .hp-metro-card:hover .hp-metro-icon {
+          transform: scale(1.1) rotate(-4deg);
+        }
+        .hp-metro-icon {
+          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
         @media (max-width: 640px) {
           .hp-metro-btn { width: 100%; justify-content: center; }
         }
+
+        /* ================= EDITORIAL CARDS (BLOG & NEWS) ================= */
+        .hp-editorial-card {
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.25s ease !important;
+        }
+        .hp-editorial-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+          border-color: #cbd5e1 !important;
+        }
+        .hp-editorial-card:hover .hp-editorial-arrow {
+          transform: translateX(5px);
+        }
+        .hp-editorial-arrow {
+          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ================= RESPONSIVE DESKTOP LAYOUT ================= */
         @media (min-width: 769px) {
           .hp-desktop-nav {
             display: flex !important;
@@ -1153,17 +1396,33 @@ const HomePage = () => {
             gap: 18px !important;
           }
         }
+
+        /* ================= A11Y PREFERS-REDUCED-MOTION ================= */
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
       `}</style>
 
       {/* Header Section */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, #006a4e 0%, #004d39 100%)', 
+      <div className="hp-header-cinematic" style={{ 
+        background: 'linear-gradient(135deg, #005a38 0%, #006a4e 50%, #004d39 100%)', 
         padding: '24px 20px 70px', 
         color: 'white', 
         borderBottomLeftRadius: '40px', 
         borderBottomRightRadius: '40px', 
-        boxShadow: '0 10px 25px rgba(0, 77, 57, 0.2)'
+        boxShadow: '0 10px 25px rgba(0, 77, 57, 0.2)',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
+        {/* Cinematic Ambient Glow Orbs */}
+        <div className="hp-ambient-orb hp-ambient-orb-1" />
+        <div className="hp-ambient-orb hp-ambient-orb-2" />
+
         {/* Desktop Navigation Bar */}
         <nav className="hp-desktop-nav" style={{ 
           display: 'none', 
@@ -1173,20 +1432,22 @@ const HomePage = () => {
           width: '95%',
           margin: '0 auto 18px', 
           paddingBottom: '16px', 
-          borderBottom: '1px solid rgba(255,255,255,0.18)' 
+          borderBottom: '1px solid rgba(255,255,255,0.18)',
+          position: 'relative',
+          zIndex: 1
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
             <Train size={24} color="#fef08a" />
-            <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>TrainKoi</span>
+            <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.3px' }}>TrainKoi</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
-            <span onClick={() => navigate('/')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#ffffff' }}>হোম</span>
-            <span onClick={() => navigate('/live-trains')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>লাইভ ট্রেন</span>
-            <span onClick={() => navigate('/schedule')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>সময়সূচী</span>
-            <span onClick={() => navigate('/blogs')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>ভ্রমণ গাইড</span>
-            <span onClick={() => navigate('/rail-news')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>রেল সংবাদ</span>
-            <span onClick={() => navigate('/metro-rail')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>মেট্রোরেল</span>
-            <span onClick={() => navigate('/about')} style={{ cursor: 'pointer', fontSize: '13.5px', fontWeight: 'bold', color: '#d1fae5' }}>আমাদের সম্পর্কে</span>
+            <span className="hp-nav-link" onClick={() => navigate('/')}>হোম</span>
+            <span className="hp-nav-link" onClick={() => navigate('/live-trains')}>লাইভ ট্রেন</span>
+            <span className="hp-nav-link" onClick={() => navigate('/schedule')}>সময়সূচী</span>
+            <span className="hp-nav-link" onClick={() => navigate('/blogs')}>ভ্রমণ গাইড</span>
+            <span className="hp-nav-link" onClick={() => navigate('/rail-news')}>রেল সংবাদ</span>
+            <span className="hp-nav-link" onClick={() => navigate('/metro-rail')}>মেট্রোরেল</span>
+            <span className="hp-nav-link" onClick={() => navigate('/about')}>আমাদের সম্পর্কে</span>
           </div>
         </nav>
 
@@ -1196,9 +1457,12 @@ const HomePage = () => {
           alignItems: 'center', 
           maxWidth: '1520px', 
           width: '95%',
-          margin: '0 auto' 
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 1
         }}>
           <div 
+            className="hp-header-btn"
             onClick={() => navigate('/settings')} 
             style={{ 
               cursor: 'pointer', 
@@ -1218,25 +1482,28 @@ const HomePage = () => {
               margin: 0, 
               fontWeight: 900, 
               fontSize: '28px', 
-              background: 'linear-gradient(to right, #ffffff, #e0e0e0)', 
+              background: 'linear-gradient(to right, #ffffff, #fef08a, #ffffff)', 
               WebkitBackgroundClip: 'text', 
               WebkitTextFillColor: 'transparent', 
+              letterSpacing: '-0.5px'
             }}>
               ট্রেনকই
             </h2>
             {/* লাইভ ট্র্যাকিং কাউন্টার ব্যাজ */}
             <div 
+              className="hp-live-counter-badge"
               onClick={() => navigate('/live-trains')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: 'rgba(0, 0, 0, 0.25)',
+                background: 'rgba(0, 0, 0, 0.28)',
                 padding: '4px 12px',
                 borderRadius: '20px',
                 marginTop: '6px',
                 cursor: 'pointer',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(6px)'
               }}
             >
               <span className="live-badge-dot"></span>
@@ -1247,6 +1514,7 @@ const HomePage = () => {
           </div>
 
           <div 
+            className="hp-header-btn"
             style={{ 
               cursor: 'pointer', 
               background: 'rgba(255, 255, 255, 0.15)', 
@@ -1274,15 +1542,15 @@ const HomePage = () => {
       </div>
 
       {/* Search Container */}
-      <div className="hp-search-container" style={{ margin: '-50px 20px 0', backgroundColor: 'white', borderRadius: '30px', padding: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', position: 'relative', zIndex: 10 }}>
+      <div className="hp-search-container" style={{ margin: '-50px 20px 0', backgroundColor: 'white', borderRadius: '30px', padding: '20px', position: 'relative', zIndex: 10 }}>
         <div className="hp-search-tabs" style={{ display: 'flex', backgroundColor: '#f0f0f0', borderRadius: 15, padding: 5, marginBottom: 15 }}>
-          <button onClick={() => {setSearchMode('name'); setSearchTerm('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'name' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'name' ? '#006a4e' : '#888', cursor: 'pointer' }}>নামে সার্চ</button>
-          <button onClick={() => {setSearchMode('route'); setFromCity(''); setToCity('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'route' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'route' ? '#006a4e' : '#888', cursor: 'pointer' }}>রুট সার্চ</button>
+          <button className="hp-search-tab-btn" onClick={() => {setSearchMode('name'); setSearchTerm('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'name' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'name' ? '#006a4e' : '#888', cursor: 'pointer', boxShadow: searchMode === 'name' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none' }}>নামে সার্চ</button>
+          <button className="hp-search-tab-btn" onClick={() => {setSearchMode('route'); setFromCity(''); setToCity('');}} style={{ flex: 1, padding: 12, border: 'none', borderRadius: 10, backgroundColor: searchMode === 'route' ? 'white' : 'transparent', fontWeight: 'bold', color: searchMode === 'route' ? '#006a4e' : '#888', cursor: 'pointer', boxShadow: searchMode === 'route' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none' }}>রুট সার্চ</button>
         </div>
         
         {searchMode === 'name' ? (
           <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, backgroundColor: '#f9f9f9', padding: 14, borderRadius: 16, border: '1px solid #eee' }}>
+            <div className="hp-search-input-box" style={{ display: 'flex', alignItems: 'center', gap: 10, backgroundColor: '#f9f9f9', padding: 14, borderRadius: 16, border: '1px solid #eee' }}>
               <Search size={20} color="#006a4e" />
               <input type="text" placeholder="ট্রেনের নাম বা কোড লিখুন..." style={{ border: 'none', background: 'transparent', width: '100%', outline: 'none' }} value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setShowSuggestions(true); setActiveInput('name');}} onFocus={() => setActiveInput('name')} />
             </div>
@@ -1295,7 +1563,7 @@ const HomePage = () => {
         ) : (
           <div className="hp-route-inputs" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, backgroundColor: '#f9f9f9', padding: 12, borderRadius: 16, border: '1px solid #eee' }}>
+                <div className="hp-search-input-box" style={{ display: 'flex', alignItems: 'center', gap: 10, backgroundColor: '#f9f9f9', padding: 12, borderRadius: 16, border: '1px solid #eee' }}>
                   <MapPin size={18} color="#006a4e" />
                   <input type="text" placeholder="কোথা থেকে..." style={{ border: 'none', background: 'transparent', width: '100%', outline: 'none' }} value={fromCity} onChange={(e) => {setFromCity(e.target.value); setShowSuggestions(true); setActiveInput('from');}} onFocus={() => setActiveInput('from')} />
                 </div>
@@ -1306,7 +1574,7 @@ const HomePage = () => {
                 )}
             </div>
             <div style={{ position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, backgroundColor: '#f9f9f9', padding: 12, borderRadius: 16, border: '1px solid #eee' }}>
+                <div className="hp-search-input-box" style={{ display: 'flex', alignItems: 'center', gap: 10, backgroundColor: '#f9f9f9', padding: 12, borderRadius: 16, border: '1px solid #eee' }}>
                   <ArrowRightLeft size={18} color="#006a4e" />
                   <input type="text" placeholder="কোথায় যাবেন..." style={{ border: 'none', background: 'transparent', width: '100%', outline: 'none' }} value={toCity} onChange={(e) => {setToCity(e.target.value); setShowSuggestions(true); setActiveInput('to');}} onFocus={() => setActiveInput('to')} />
                 </div>
@@ -1333,6 +1601,7 @@ const HomePage = () => {
               <button
                 key={i}
                 type="button"
+                className="hp-route-chip"
                 onClick={() => {
                   setSearchMode('route');
                   setFromCity(r.from);
@@ -1347,8 +1616,7 @@ const HomePage = () => {
                   fontSize: '11.5px',
                   fontWeight: '700',
                   cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'background 0.15s ease'
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {r.label}
@@ -1390,15 +1658,15 @@ const HomePage = () => {
       <div style={{ padding: '30px 20px 10px' }}>
         <div className="hp-features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
           {features.map((f, i) => (
-            <div key={i} onClick={() => f.external ? window.open(f.external, '_blank') : f.path && navigate(f.path)} 
+            <div key={i} className="hp-feature-card" onClick={() => f.external ? window.open(f.external, '_blank') : f.path && navigate(f.path)} 
                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <div className={f.isBlinking ? 'blinking-feature-icon' : ''} style={{ width: '50px', height: '50px', backgroundColor: 'white', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: f.color, boxShadow: '0 4px 10px rgba(0,0,0,0.05)', position: 'relative' }}>
+              <div className={`hp-feature-icon-tile ${f.isBlinking ? 'blinking-feature-icon' : ''}`} style={{ width: '50px', height: '50px', backgroundColor: 'white', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: f.color, boxShadow: '0 4px 10px rgba(0,0,0,0.05)', position: 'relative' }}>
                 {f.icon}
                 {f.isBlinking && (
                   <span style={{ position: 'absolute', top: '6px', right: '6px', width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%' }}></span>
                 )}
               </div>
-              <span style={{ fontSize: '10px', textAlign: 'center', fontWeight: 'bold' }}>{f.title}</span>
+              <span className="hp-feature-title" style={{ fontSize: '10px', textAlign: 'center', fontWeight: 'bold' }}>{f.title}</span>
             </div>
           ))}
         </div>
@@ -1485,6 +1753,7 @@ const HomePage = () => {
               return (
                 <div 
                   key={idx} 
+                  className="hp-train-card"
                   onClick={() => {
                     setSelectedTrainGroup(group); 
                     setActiveDirectionIndex(initialIndex); 
@@ -1506,7 +1775,7 @@ const HomePage = () => {
                   }}
                 >
                   <div style={{ width: '70px', height: '70px', borderRadius: '15px', overflow: 'hidden', backgroundColor: '#f8f9fa', flexShrink: 0 }}>
-                    <img src="/homeimg.png" alt={group[0].name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img className="hp-train-img" src="/homeimg.png" alt={group[0].name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   </div>
                   <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -1540,7 +1809,7 @@ const HomePage = () => {
                           sessionStorage.setItem('lastSelectedTrain', JSON.stringify(group));
                         }
                       }} 
-                      className={isActuallyLive ? 'tracking-btn-live' : ''}
+                      className={`hp-track-btn ${isActuallyLive ? 'hp-track-btn-live' : ''}`}
                       style={{ 
                         backgroundColor: isActuallyLive ? '#ef4444' : (isPredicted ? '#f59e0b' : '#006a4e'), 
                         color: 'white', 
@@ -1552,8 +1821,7 @@ const HomePage = () => {
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: '5px', 
-                        cursor: 'pointer', 
-                        transition: 'all 0.3s ease' 
+                        cursor: 'pointer' 
                       }}
                     >
                       <Activity size={14} /> Tracking
@@ -1619,7 +1887,7 @@ const HomePage = () => {
           <TrainFront size={130} style={{ position: 'absolute', right: '-18px', bottom: '-28px', opacity: 0.08, transform: 'rotate(-15deg)', pointerEvents: 'none' }} />
 
           {/* আইকন টাইল (উপরের ট্রেন কার্ডের ছবির মতো) */}
-          <div style={{ width: '70px', height: '70px', borderRadius: '15px', backgroundColor: 'rgba(255,255,255,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', zIndex: 1 }}>
+          <div className="hp-metro-icon" style={{ width: '70px', height: '70px', borderRadius: '15px', backgroundColor: 'rgba(255,255,255,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative', zIndex: 1 }}>
             <TrainFront size={34} />
           </div>
 
@@ -1717,6 +1985,7 @@ const HomePage = () => {
           ].map((item, idx) => (
             <article
               key={idx}
+              className="hp-editorial-card"
               onClick={() => navigate(`/blog/${item.slug}`)}
               style={{
                 backgroundColor: '#ffffff',
@@ -1727,8 +1996,7 @@ const HomePage = () => {
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between',
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                justifyContent: 'space-between'
               }}
             >
               <div>
@@ -1749,7 +2017,7 @@ const HomePage = () => {
               </div>
               <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
                 <span style={{ fontSize: '12px', fontWeight: '700', color: '#006a4e', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                  সম্পূর্ণ পড়ুন <ChevronRight size={14} />
+                  সম্পূর্ণ পড়ুন <ChevronRight size={14} className="hp-editorial-arrow" />
                 </span>
               </div>
             </article>
@@ -1819,6 +2087,7 @@ const HomePage = () => {
           ].map((item, idx) => (
             <article
               key={idx}
+              className="hp-editorial-card"
               onClick={() => navigate(`/news/${item.slug}`)}
               style={{
                 backgroundColor: '#ffffff',
@@ -1829,8 +2098,7 @@ const HomePage = () => {
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between',
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                justifyContent: 'space-between'
               }}
             >
               <div>
@@ -1851,7 +2119,7 @@ const HomePage = () => {
               </div>
               <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end' }}>
                 <span style={{ fontSize: '12px', fontWeight: '700', color: '#ea580c', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                  বিস্তারিত দেখুন <ChevronRight size={14} />
+                  বিস্তারিত দেখুন <ChevronRight size={14} className="hp-editorial-arrow" />
                 </span>
               </div>
             </article>
