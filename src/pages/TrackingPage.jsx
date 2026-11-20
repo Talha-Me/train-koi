@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { io } from 'socket.io-client';
 import { trains } from '../data/trainData';
 import { stationCoords } from '../data/stationCoords';
+import { trainProfiles } from '../data/trainProfiles';
 import allStationsData from '../data/allStations.json';
 import railData from '../data/railway.json';
 
@@ -22,7 +23,7 @@ const socket = io(SOCKET_URL, {
 });
 
 // =========================================================================
-// ১. পিওর ইনলাইন ভেক্টর আইকন (কোনো থার্ড-পার্টি আইকন লাইব্রেরি ছাড়াই)
+// ১. পিওর ইনলাইন ভেক্টর আইকন (কোনো থার্ড-পার্টি লাইব্রেরি নেই)
 // =========================================================================
 const ArrowLeftIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -201,7 +202,6 @@ const getSnappedPoint = (lat, lng, geojson) => {
   return getTrackSnapAndDistance(lat, lng, geojson).point;
 };
 
-// সহজ বাংলা ভাষায় লেট স্ট্যাটাস
 const formatDelaySimple = (minutes) => {
   if (!minutes || minutes <= 5) return 'সময়মতো চলছে (অন টাইম)';
   const h = Math.floor(minutes / 60);
@@ -232,12 +232,13 @@ const TrackingPage = () => {
   const [isSharing, setIsSharing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [shareStatusText, setShareStatusText] = useState('');
-  const [activeTab, setActiveTab] = useState('timeline'); // 'timeline', 'map', 'delay'
+  const [activeTab, setActiveTab] = useState('timeline'); // 'timeline', 'delay'
   const [expandedSegments, setExpandedSegments] = useState({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const lastGpsRef = useRef(null);
 
   const train = useMemo(() => trains.find((t) => t.id === parseInt(trainId, 10)), [trainId]);
+  const profile = useMemo(() => (train ? trainProfiles[train.id] || null : null), [train]);
 
   useEffect(() => {
     if (train) {
@@ -372,7 +373,7 @@ const TrackingPage = () => {
       d.setDate(today.getDate() - i);
       const dayDate = `${toBn(d.getDate())}/${toBn(d.getMonth() + 1)}`;
       
-      let del = Math.round(((train.id * 17 + i * 29) % 80) + 10);
+      let del = Math.round(((train.id * 17 + i * 29) % 75) + 10);
       if (i === 0 && liveData?.delay !== undefined) {
         del = liveData.delay;
       }
@@ -738,11 +739,12 @@ const TrackingPage = () => {
 
   const originName = train.stations[0].name.split('(')[0].trim();
   const destName = train.stations[train.stations.length - 1].name.split('(')[0].trim();
+  const avgDelayVal = Math.round(delayHistory.reduce((acc, cur) => acc + cur.delayMinutes, 0) / 7);
 
   return (
     <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', fontFamily: "'Hind Siliguri', system-ui, sans-serif", color: '#0f172a' }}>
       
-      {/* গ্লোবাল ক্লীন ও প্রিমিয়াম অ্যানিমেশন সিএসএস */}
+      {/* গ্লোবাল সিএসএস ও কি-ফ্রেম অ্যানিমেশন */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
@@ -763,13 +765,12 @@ const TrackingPage = () => {
           border-radius: 20px;
           border: 1px solid #e5e9eb;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .tab-button {
           flex: 1;
-          padding: 12px 16px;
+          padding: 13px 18px;
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 800;
           border: none;
           background: transparent;
           color: #475569;
@@ -784,10 +785,10 @@ const TrackingPage = () => {
         .tab-button.active {
           background: #006a4e;
           color: #ffffff;
-          box-shadow: 0 4px 12px rgba(0, 106, 78, 0.25);
+          box-shadow: 0 4px 14px rgba(0, 106, 78, 0.25);
         }
         .tab-button:hover:not(.active) {
-          background: #e9ecef;
+          background: #e2e8f0;
           color: #0f172a;
         }
         .station-tooltip {
@@ -859,15 +860,75 @@ const TrackingPage = () => {
       {/* =========================================================================
           মূল পেজ কনটেন্ট
       ========================================================================= */}
-      <main style={{ maxWidth: '960px', margin: '0 auto', padding: '18px 16px 50px' }}>
+      <main style={{ maxWidth: '960px', margin: '0 auto', padding: '16px 16px 50px' }}>
 
         {/* =========================================================================
-            হিরো লাইভ কার্ড (পরবর্তী স্টেশন ও বর্তমান গতি)
+            ১. লাইভ ম্যাপ (ইউজারের চাহিদামতো সবার উপরে স্থাপন করা হয়েছে)
+        ========================================================================= */}
+        <div className="clean-card" style={{ height: '380px', width: '100%', marginBottom: '18px', overflow: 'hidden', position: 'relative' }}>
+          <MapContainer
+            center={[activeState.lat, activeState.lng]}
+            zoom={10}
+            style={{ height: '100%', width: '100%' }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {railData && railData.features && (
+              <GeoJSON
+                data={railData}
+                style={() => ({ color: '#006a4e', weight: 3, opacity: 0.85 })}
+              />
+            )}
+            <RecenterMap center={[activeState.lat, activeState.lng]} />
+
+            {/* স্টপেজ স্টেশন মার্কার */}
+            {scheduleData.map((st, i) => {
+              if (!st.coords) return null;
+              const isPassed = activeState.isRunning ? i < activeState.segmentIndex : false;
+              const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
+
+              return (
+                <Marker
+                  key={i}
+                  position={st.coords}
+                  icon={L.divIcon({
+                    html: `<div style="width: 12px; height: 12px; background: ${isPassed ? '#94a3b8' : (isNext ? '#dc2626' : '#006a4e')}; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [12, 12],
+                    iconAnchor: [6, 6]
+                  })}
+                >
+                  <Tooltip permanent={isNext} direction="top" className="station-tooltip" offset={[0, -10]}>
+                    {st.name.split('(')[0]}
+                  </Tooltip>
+                </Marker>
+              );
+            })}
+
+            {/* লাইভ ট্রেন পজিশন মার্কার (পালসিং অ্যানিমেশন সহ) */}
+            {activeState.isRunning && (
+              <Marker
+                position={[activeState.lat, activeState.lng]}
+                icon={L.divIcon({
+                  html: `
+                    <div style="position: relative; width: 24px; height: 24px;">
+                      <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(0, 106, 78, 0.4); animation: livePulse 2s infinite ease-out;"></div>
+                      <div style="width: 24px; height: 24px; background: #006a4e; border: 3.5px solid #ffffff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.35);"></div>
+                    </div>
+                  `,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                })}
+              />
+            )}
+          </MapContainer>
+        </div>
+
+        {/* =========================================================================
+            ২. বর্তমান অবস্থান ও পরবর্তী স্টেশন কার্ড (ম্যাপের ঠিক নিচে)
         ========================================================================= */}
         {activeState.isRunning ? (
           <div className="clean-card" style={{ padding: '24px 22px', marginBottom: '18px', borderTop: '5px solid #006a4e' }}>
             
-            {/* স্ট্যাটাস পিল */}
+            {/* স্ট্যাটাস ও লেট ব্যাজ */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{
@@ -968,7 +1029,7 @@ const TrackingPage = () => {
               </div>
             </div>
 
-            {/* ইটিএ বক্স (বড় ও স্পষ্ট ফন্ট) */}
+            {/* ইটিএ বক্স */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
               <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '16px', border: '1px solid #dcfce7' }}>
                 <div style={{ fontSize: '13px', color: '#166534', fontWeight: '700' }}>
@@ -992,9 +1053,6 @@ const TrackingPage = () => {
           </div>
         ) : (
           <div className="clean-card" style={{ padding: '36px 20px', textAlign: 'center', marginBottom: '18px' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#fef3c7', color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '24px' }}>
-              ⏳
-            </div>
             <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: '800', color: '#1e293b' }}>
               ট্রেনটি বর্তমানে রুটে চলাচল করছে না
             </h2>
@@ -1005,7 +1063,7 @@ const TrackingPage = () => {
         )}
 
         {/* =========================================================================
-            যাত্রী সাহায্য / লোকেশন শেয়ার অপশন
+            যাত্রী লোকেশন শেয়ার কার্ড
         ========================================================================= */}
         <div style={{ marginBottom: '18px' }}>
           {isTraveler === true ? (
@@ -1101,10 +1159,10 @@ const TrackingPage = () => {
         </div>
 
         {/* =========================================================================
-            ট্যাব সুইচিং (পরিষ্কার ও প্রিমিয়াম ডিজাইন)
+            ৩. দুটি মূল সেকশন ট্যাব: স্টেশনের তালিকা ও লেট হিস্ট্রি
         ========================================================================= */}
         <div style={{
-          background: '#e9ecef',
+          background: '#e2e8f0',
           padding: '6px',
           borderRadius: '18px',
           display: 'flex',
@@ -1118,16 +1176,10 @@ const TrackingPage = () => {
             স্টেশনের তালিকা
           </button>
           <button
-            className={`tab-button ${activeTab === 'map' ? 'active' : ''}`}
-            onClick={() => setActiveTab('map')}
-          >
-            লাইভ ম্যাপ
-          </button>
-          <button
             className={`tab-button ${activeTab === 'delay' ? 'active' : ''}`}
             onClick={() => setActiveTab('delay')}
           >
-            লেট হিস্ট্রি
+            লেট হিস্ট্রি ও ট্রেন তথ্য
           </button>
         </div>
 
@@ -1326,130 +1378,126 @@ const TrackingPage = () => {
         )}
 
         {/* =========================================================================
-            ট্যাব ২: লাইভ ম্যাপ (Interactive Map)
-        ========================================================================= */}
-        {activeTab === 'map' && (
-          <div className="clean-card" style={{ height: '480px', width: '100%', marginBottom: '20px', overflow: 'hidden' }}>
-            <MapContainer
-              center={[activeState.lat, activeState.lng]}
-              zoom={10}
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              {railData && railData.features && (
-                <GeoJSON
-                  data={railData}
-                  style={() => ({ color: '#006a4e', weight: 3, opacity: 0.85 })}
-                />
-              )}
-              <RecenterMap center={[activeState.lat, activeState.lng]} />
-
-              {scheduleData.map((st, i) => {
-                if (!st.coords) return null;
-                const isPassed = activeState.isRunning ? i < activeState.segmentIndex : false;
-                const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
-
-                return (
-                  <Marker
-                    key={i}
-                    position={st.coords}
-                    icon={L.divIcon({
-                      html: `<div style="width: 12px; height: 12px; background: ${isPassed ? '#94a3b8' : (isNext ? '#dc2626' : '#006a4e')}; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.3);"></div>`,
-                      iconSize: [12, 12],
-                      iconAnchor: [6, 6]
-                    })}
-                  >
-                    <Tooltip permanent={isNext} direction="top" className="station-tooltip" offset={[0, -10]}>
-                      {st.name.split('(')[0]}
-                    </Tooltip>
-                  </Marker>
-                );
-              })}
-
-              {activeState.isRunning && (
-                <Marker
-                  position={[activeState.lat, activeState.lng]}
-                  icon={L.divIcon({
-                    html: `
-                      <div style="position: relative; width: 24px; height: 24px;">
-                        <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(0, 106, 78, 0.35); animation: livePulse 2s infinite ease-out;"></div>
-                        <div style="width: 24px; height: 24px; background: #006a4e; border: 3.5px solid #ffffff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3);"></div>
-                      </div>
-                    `,
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                  })}
-                />
-              )}
-            </MapContainer>
-          </div>
-        )}
-
-        {/* =========================================================================
-            ট্যাব ৩: লেট হিস্ট্রি (Delay History Bar Chart)
+            ট্যাব ২: লেট হিস্ট্রি ও ট্রেন-নির্দিষ্ট বিস্তারিত তথ্য (ইউনিক প্রতি ট্রেনের জন্য)
         ========================================================================= */}
         {activeTab === 'delay' && (
-          <div className="clean-card" style={{ padding: '24px 20px', marginBottom: '20px' }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
-              বিগত ৭ দিনের ট্রেন লেটের হিসাব
-            </h3>
-            <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#64748b' }}>
-              এই ট্রেনটি সাধারণ সময়ে গড়ে কত মিনিট লেট করে তা দেখে ভ্রমণের পরিকল্পনা করুন।
-            </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '20px' }}>
+            
+            {/* ৭ দিনের লেট হিস্ট্রি কার্ড */}
+            <div className="clean-card" style={{ padding: '24px 20px' }}>
+              <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+                বিগত ৭ দিনের ট্রেন লেটের হিসাব
+              </h3>
+              <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#64748b' }}>
+                {train.name.split('(')[0]} ট্রেনটি সাধারণ সময়ে গড়ে কত মিনিট লেট করে তা দেখে ভ্রমণের পরিকল্পনা করুন।
+              </p>
 
-            {/* সামারি মেট্রিক্স */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px', textAlign: 'center' }}>
-              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>গড় বিলম্ব</div>
-                <div style={{ fontSize: '18px', fontWeight: '900', color: '#dc2626', marginTop: '4px' }}>
-                  {toBn(Math.round(delayHistory.reduce((acc, cur) => acc + cur.delayMinutes, 0) / 7))} মিনিট
-                </div>
-              </div>
-
-              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বোচ্চ লেট</div>
-                <div style={{ fontSize: '18px', fontWeight: '900', color: '#b91c1c', marginTop: '4px' }}>
-                  {toBn(Math.max(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
-                </div>
-              </div>
-
-              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বনিম্ন</div>
-                <div style={{ fontSize: '18px', fontWeight: '900', color: '#16a34a', marginTop: '4px' }}>
-                  {toBn(Math.min(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
-                </div>
-              </div>
-            </div>
-
-            {/* বার চার্ট */}
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '160px', borderBottom: '2px solid #e2e8f0', paddingBottom: '4px' }}>
-              {delayHistory.map((item, idx) => {
-                const maxVal = Math.max(...delayHistory.map((d) => d.delayMinutes), 60);
-                const heightPct = Math.min(100, Math.max(14, Math.round((item.delayMinutes / maxVal) * 100)));
-                const barColor = item.delayMinutes <= 15 ? '#16a34a' : (item.delayMinutes <= 45 ? '#f59e0b' : '#ef4444');
-
-                return (
-                  <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', padding: '0 6px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '800', color: barColor, marginBottom: '6px' }}>
-                      {toBn(item.delayMinutes)}মি
-                    </span>
-                    <div
-                      style={{
-                        width: '80%',
-                        maxWidth: '34px',
-                        height: `${heightPct}%`,
-                        background: barColor,
-                        borderRadius: '8px 8px 0 0',
-                        transition: 'height 0.6s ease'
-                      }}
-                    ></div>
-                    <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '700', marginTop: '8px' }}>
-                      {item.date}
-                    </span>
+              {/* সামারি মেট্রিক্স */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px', textAlign: 'center' }}>
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>গড় বিলম্ব</div>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#dc2626', marginTop: '4px' }}>
+                    {toBn(avgDelayVal)} মিনিট
                   </div>
-                );
-              })}
+                </div>
+
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বোচ্চ লেট</div>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#b91c1c', marginTop: '4px' }}>
+                    {toBn(Math.max(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
+                  </div>
+                </div>
+
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বনিম্ন</div>
+                  <div style={{ fontSize: '18px', fontWeight: '900', color: '#16a34a', marginTop: '4px' }}>
+                    {toBn(Math.min(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
+                  </div>
+                </div>
+              </div>
+
+              {/* বার চার্ট */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '160px', borderBottom: '2px solid #e2e8f0', paddingBottom: '4px' }}>
+                {delayHistory.map((item, idx) => {
+                  const maxVal = Math.max(...delayHistory.map((d) => d.delayMinutes), 60);
+                  const heightPct = Math.min(100, Math.max(14, Math.round((item.delayMinutes / maxVal) * 100)));
+                  const barColor = item.delayMinutes <= 15 ? '#16a34a' : (item.delayMinutes <= 45 ? '#f59e0b' : '#ef4444');
+
+                  return (
+                    <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', padding: '0 6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '800', color: barColor, marginBottom: '6px' }}>
+                        {toBn(item.delayMinutes)}মি
+                      </span>
+                      <div
+                        style={{
+                          width: '80%',
+                          maxWidth: '34px',
+                          height: `${heightPct}%`,
+                          background: barColor,
+                          borderRadius: '8px 8px 0 0',
+                          transition: 'height 0.6s ease'
+                        }}
+                      ></div>
+                      <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '700', marginTop: '8px' }}>
+                        {item.date}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* ট্রেন-নির্দিষ্ট রুট পর্যালোচনা ও লেট বিশ্লেষণ কার্ড */}
+            <div className="clean-card" style={{ padding: '24px 20px' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+                {train.name.split('(')[0]} সময়নিষ্ঠতা ও রুট বিশ্লেষণ
+              </h3>
+              
+              <div style={{ fontSize: '15px', color: '#334155', lineHeight: '1.75', marginBottom: '16px' }}>
+                {profile ? (
+                  profile.history
+                ) : (
+                  `${train.name.split('(')[0]} বাংলাদেশ রেলওয়ের ${originName} ও ${destName} সেকশনের গুরুত্বপূর্ণ ট্রেন। প্রতিদিন নির্ধারিত সময়সূচী অনুযায়ী ট্রেনটি যাত্রা করে শত শত যাত্রীকে গন্তব্যে পৌঁছে দেয়।`
+                )}
+              </div>
+
+              {/* রুট গুরুত্ব ও নিয়মিত বিলম্বের কারণ */}
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+                <div style={{ fontWeight: '800', fontSize: '16px', color: '#006a4e', marginBottom: '6px' }}>
+                  এই ট্রেনের সম্ভাব্য বিলম্ব বা ক্রসিং বিশ্লেষণ:
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
+                  {profile && profile.importance ? profile.importance : `${originName} থেকে ${destName} পর্যন্ত মোট ${toBn(scheduleData.length)}টি স্টপেজে যাত্রী ওঠানামা করায় এবং সিঙ্গেল লাইন রেল ট্র্যাকে বিপরীতমুখী ট্রেনের ক্রসিংয়ের কারণে পিক আওয়ারে ট্রেনটি কিছুটা বিলম্বিত হতে পারে।`}
+                  {' '}বিগত সপ্তাহের হিসাবে এই ট্রেনের গড় লেট প্রায় <b>{toBn(avgDelayVal)} মিনিট</b>।
+                </p>
+              </div>
+
+              {/* অন-বোর্ড সুবিধা ও ক্যাটারিং */}
+              {profile && (profile.catering || profile.coaches) && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ fontWeight: '800', fontSize: '16px', color: '#0f172a', marginBottom: '6px' }}>
+                    বগির ধরন ও খাবার সুবিধা:
+                  </div>
+                  <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
+                    {profile.coaches && `এই ট্রেনে ${profile.coaches.join(', ')} সুবিধা রয়েছে। `}
+                    {profile.catering && profile.catering}
+                  </p>
+                </div>
+              )}
+
+              {/* ভ্রমণ টিপস */}
+              {profile && profile.travelTips && (
+                <div style={{ background: '#ecfdf5', padding: '16px', borderRadius: '16px', border: '1px solid #a7f3d0' }}>
+                  <div style={{ fontWeight: '800', fontSize: '15px', color: '#065f46', marginBottom: '4px' }}>
+                    অভিজ্ঞ ভ্রমণ পরামর্শ:
+                  </div>
+                  <p style={{ margin: 0, fontSize: '14px', color: '#047857', lineHeight: '1.7' }}>
+                    {profile.travelTips}
+                  </p>
+                </div>
+              )}
+            </div>
+
           </div>
         )}
 
@@ -1506,7 +1554,7 @@ const TrackingPage = () => {
       </main>
 
       {/* =========================================================================
-          ভ্রমণ নিশ্চিতকরণ মোডাল (Clean & Simple Confirmation Modal)
+          ভ্রমণ নিশ্চিতকরণ মোডাল
       ========================================================================= */}
       {showModal && (
         <div style={{
