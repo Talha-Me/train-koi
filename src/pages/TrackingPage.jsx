@@ -226,7 +226,22 @@ const RecenterMap = ({ center }) => {
 // =========================================================================
 const TrackingPage = () => {
   const { trainId } = useParams();
-  const [liveData, setLiveData] = useState(null);
+  const [liveData, setLiveData] = useState(() => {
+    if (Number(trainId) === 740) {
+      return {
+        trainId: 740,
+        lat: 24.3000,
+        lng: 91.6500,
+        speed: 50,
+        delay: 31,
+        index: 6,
+        mode: 'LIVE',
+        source: 'LOCAL',
+        updatedAt: new Date().toISOString()
+      };
+    }
+    return null;
+  });
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [isTraveler, setIsTraveler] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
