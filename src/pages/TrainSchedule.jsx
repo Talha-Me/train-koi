@@ -775,15 +775,47 @@ const TrainSchedule = () => {
                           )}
                         </div>
                       ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '14.5px', lineHeight: '1.85', color: '#334155' }}>
-                          <p style={{ margin: 0, textAlign: 'justify' }}>
-                            <strong>{selectedTrain.name}</strong> বাংলাদেশ রেলওয়ের নিয়মিত পরিচালিত আন্তঃনগর ট্রেন সার্ভিস। ট্রেনটি প্রারম্ভিক স্টেশন <strong>{startSt?.name.split('(')[0]}</strong> থেকে নির্ধারিত সময় <strong>{startSt?.departure || 'সময়মতো'}</strong> মিনিটে যাত্রা শুরু করে এবং চূড়ান্ত গন্তব্য <strong>{endSt?.name.split('(')[0]}</strong> স্টেশনে প্রায় <strong>{endSt?.arrival || 'সময়মতো'}</strong> মিনিটে পৌঁছায়।
-                          </p>
-                          <p style={{ margin: 0, textAlign: 'justify' }}>
-                            যাত্রাপথে ট্রেনটি সর্বমোট <strong>{selectedTrain.stations.length}টি স্টেশনে</strong> যাত্রাবিরতি দেয়। {totalKm > 0 ? `সম্পূর্ণ রুটের মোট রেল দূরত্ব প্রায় ${totalKm} কিলোমিটার এবং ` : ''}নির্ধারিত সময়সূচী অনুযায়ী মোট ভ্রমণ সময় আনুমানিক <strong>{duration ? duration.text : 'সময়সূচী অনুযায়ী নির্ধারিত'}</strong>।
-                          </p>
-                          <div style={{ backgroundColor: '#f0fdf4', padding: '14px 18px', borderRadius: '14px', borderLeft: '4px solid #16a34a', fontSize: '13.5px', color: '#166534' }}>
-                            <strong>নিয়মিত শিডিউল:</strong> ট্রেনটির সাপ্তাহিক বন্ধের দিন: <strong>{offDayDisplay}</strong>। নির্ধারিত অফ-ডে ব্যতীত এটি প্রতিদিন তার নির্দিষ্ট সময় মেনে চলাচল করে থাকে।
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '14px', lineHeight: '1.8', color: '#334155' }}>
+                          <div style={{ backgroundColor: '#f0fdf4', padding: '16px 20px', borderRadius: '16px', border: '1px solid #bbf7d0' }}>
+                            <h4 style={{ margin: '0 0 6px', fontSize: '15px', color: '#166534', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <Train size={18} color="#166534" /> মেইল / কমিউটার সার্ভিস ক্যাটাগরি ও যাত্রী সুবিধা
+                            </h4>
+                            <p style={{ margin: 0, color: '#14532d', fontSize: '13.5px' }}>
+                              <strong>{selectedTrain.name}</strong> বাংলাদেশ রেলওয়ের নিয়মিত পরিচালিত মেইল/কমিউটার লোকাল সার্ভিস। দৈনন্দিন অফিসগামী যাত্রী, সাধারণ শ্রমজীবী, ব্যবসায়ী ও শিক্ষার্থীদের স্বল্প খরচে জেলা ও উপজেলার মধ্যবর্তী স্টেশনে সহজে যাতায়াতের জন্য এই সেবা পরিচালিত হয়।
+                            </p>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                            <div style={{ backgroundColor: '#f8fafc', padding: '14px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                              <h5 style={{ margin: '0 0 4px', fontSize: '13.5px', color: '#006a4e', fontWeight: '800' }}>
+                                কাউন্টার টিকিট ও স্ট্যান্ডিং নিয়ম:
+                              </h5>
+                              <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b' }}>
+                                এই সার্ভিসের টিকিট অনলাইনে বিক্রি হয় না। যাত্রার দিন স্ব-স্ব স্টেশনের জেনারেল টিকিট কাউন্টার থেকে সরাসরি সংগ্রহ করতে হয়।
+                              </p>
+                            </div>
+
+                            <div style={{ backgroundColor: '#f8fafc', padding: '14px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                              <h5 style={{ margin: '0 0 4px', fontSize: '13.5px', color: '#006a4e', fontWeight: '800' }}>
+                                আসন বিন্যাস ও সিটিং ব্যবস্থা:
+                              </h5>
+                              <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b' }}>
+                                সাধারণ দ্বিতীয় শ্রেণি বা শোভন আসন রয়েছে। 'আগে আসলে আগে বসার' ভিত্তিতে আসন গ্রহণ করতে হয়।
+                              </p>
+                            </div>
+
+                            <div style={{ backgroundColor: '#f8fafc', padding: '14px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                              <h5 style={{ margin: '0 0 4px', fontSize: '13.5px', color: '#006a4e', fontWeight: '800' }}>
+                                সাশ্রয়ী লোকাল ভাড়া সুবিধা:
+                              </h5>
+                              <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b' }}>
+                                এক্সপ্রেস ও আন্তঃনগর ট্রেনের তুলনায় মেইল ও কমিউটার ট্রেনের ভাড়া বহুলাংশে সাশ্রয়ী ও স্বল্পব্যয়ী।
+                              </p>
+                            </div>
+                          </div>
+
+                          <div style={{ backgroundColor: '#fffbf5', padding: '14px 18px', borderRadius: '14px', borderLeft: '4px solid #f59e0b', fontSize: '13px', color: '#78350f' }}>
+                            <strong>যাত্রী পরামর্শ:</strong> কমিউটার ট্রেনে নিয়মিত প্রচুর যাত্রী পরিবহন করা হয়, তাই ভিড় এড়াতে ট্রেন ছাড়ার অন্তত ১৫–২০ মিনিট পূর্বে স্টেশনের প্ল্যাটফর্মে উপস্থিত থাকা এবং নিজের টিকিট ও মালামাল সাবধানে রাখা বাঞ্ছনীয়।
                           </div>
                         </div>
                       )}
