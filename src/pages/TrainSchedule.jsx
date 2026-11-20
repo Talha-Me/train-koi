@@ -190,13 +190,23 @@ const TrainSchedule = () => {
   return (
     <div className="ts-page">
       <style>{`
+        html, body {
+          overflow-x: hidden !important;
+          max-width: 100vw !important;
+          width: 100% !important;
+          margin: 0;
+          padding: 0;
+        }
+
         .ts-page {
           background-color: #f0f4f2;
           min-height: 100vh;
           font-family: 'Hind Siliguri', sans-serif;
-          padding-bottom: 70px;
-          overflow-x: hidden;
-          width: 100%;
+          padding-bottom: 95px;
+          overflow-x: hidden !important;
+          width: 100% !important;
+          max-width: 100vw !important;
+          box-sizing: border-box;
         }
         .ts-page *, .ts-page *::before, .ts-page *::after {
           box-sizing: border-box;
@@ -214,6 +224,7 @@ const TrainSchedule = () => {
           z-index: 100;
           box-shadow: 0 4px 15px rgba(0,0,0,0.12);
           width: 100%;
+          max-width: 100vw;
           overflow: hidden;
         }
         @media (min-width: 769px) {
@@ -225,22 +236,24 @@ const TrainSchedule = () => {
         /* Container */
         .ts-main-container {
           max-width: 1520px;
-          width: 95%;
+          width: 100%;
           margin: 0 auto;
-          padding: 24px 16px 40px;
+          padding: 20px 16px 40px;
+          box-sizing: border-box;
+          overflow: hidden;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 640px) {
           .ts-main-container {
-            width: 100%;
             padding: 12px 10px 40px;
           }
         }
 
-        /* Trains Grid (Desktop 2-3 cols, Mobile 1 col) */
+        /* Trains Grid */
         .ts-trains-grid {
           display: grid;
           grid-template-columns: 1fr;
           gap: 14px;
+          width: 100%;
         }
         @media (min-width: 640px) {
           .ts-trains-grid {
@@ -266,10 +279,12 @@ const TrainSchedule = () => {
           box-shadow: 0 4px 14px rgba(0,0,0,0.03);
           border: 1px solid #eef2f0;
           transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+          width: 100%;
+          max-width: 100%;
         }
         @media (max-width: 480px) {
           .ts-train-card {
-            padding: 15px 14px;
+            padding: 14px 12px;
             border-radius: 16px;
           }
         }
@@ -283,90 +298,107 @@ const TrainSchedule = () => {
           box-shadow: 0 4px 18px rgba(255, 77, 79, 0.12);
         }
 
-        /* Responsive Content Card */
+        /* Responsive Detail Layout - Critical: minmax(0, 1fr) prevents blowout */
+        .ts-detail-layout {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+          gap: 16px;
+          width: 100%;
+          max-width: 100%;
+        }
+        @media (min-width: 992px) {
+          .ts-detail-layout {
+            grid-template-columns: 380px minmax(0, 1fr);
+            align-items: start;
+            gap: 24px;
+          }
+        }
+
+        /* Detail Column */
+        .ts-detail-col {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          min-width: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        /* Content Card */
         .ts-card {
           background-color: white;
-          border-radius: 24px;
-          padding: 24px;
+          border-radius: 22px;
+          padding: 22px;
           border: 1px solid #edf2ef;
           box-shadow: 0 4px 18px rgba(0,0,0,0.03);
-          max-width: 100%;
+          min-width: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
           overflow: hidden;
         }
         @media (max-width: 640px) {
           .ts-card {
             padding: 16px 14px !important;
-            border-radius: 18px !important;
+            border-radius: 16px !important;
           }
         }
 
-        /* Responsive Train Title */
+        /* Train Title */
         .ts-train-title {
           font-size: 24px;
           color: #0f1f1a;
           margin: 8px 0 14px;
           font-weight: 900;
           word-break: break-word;
+          line-height: 1.3;
         }
         @media (max-width: 640px) {
           .ts-train-title {
-            font-size: 19px !important;
+            font-size: 18px !important;
             margin: 6px 0 10px !important;
           }
         }
 
-        /* Responsive Detail Layout */
-        .ts-detail-layout {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 18px;
-        }
-        @media (min-width: 992px) {
-          .ts-detail-layout {
-            grid-template-columns: 400px minmax(0, 1fr);
-            align-items: start;
-            gap: 24px;
-          }
-        }
-
-        /* Table Wrappers & Responsive Tables */
+        /* Table Box & Touch Scroll */
         .ts-table-box {
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          border-radius: 16px;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+          border-radius: 14px;
           border: 1px solid #eef2f0;
-          width: 100%;
-          max-width: 100%;
+          width: 100% !important;
+          max-width: 100% !important;
+          display: block;
         }
         .ts-timetable {
           width: 100%;
-          min-width: 500px;
+          min-width: 460px;
           border-collapse: collapse;
           text-align: left;
         }
         @media (max-width: 640px) {
           .ts-timetable {
-            min-width: 440px;
+            min-width: 390px;
           }
           .ts-timetable th, .ts-timetable td {
-            padding: 9px 8px !important;
-            font-size: 12px !important;
+            padding: 8px 6px !important;
+            font-size: 11.5px !important;
           }
         }
 
         .ts-inter-table {
           width: 100%;
-          min-width: 400px;
+          min-width: 360px;
           border-collapse: collapse;
           font-size: 13px;
         }
         @media (max-width: 640px) {
           .ts-inter-table {
-            min-width: 340px;
-            font-size: 12px !important;
+            min-width: 310px;
+            font-size: 11.5px !important;
           }
           .ts-inter-table th, .ts-inter-table td {
-            padding: 8px 8px !important;
+            padding: 7px 5px !important;
           }
         }
 
@@ -374,26 +406,27 @@ const TrainSchedule = () => {
         .ts-fare-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 14px;
-          margin-bottom: 20px;
+          gap: 12px;
+          margin-bottom: 16px;
+          width: 100%;
         }
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
           .ts-fare-grid {
             grid-template-columns: 1fr;
             gap: 10px;
-            margin-bottom: 16px;
           }
         }
 
         .ts-amenities-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 14px;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+          width: 100%;
         }
         @media (max-width: 640px) {
           .ts-amenities-grid {
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 8px;
           }
         }
 
@@ -401,9 +434,9 @@ const TrainSchedule = () => {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
           gap: 8px;
-          font-size: 12px;
+          width: 100%;
         }
-        @media (max-width: 640px) {
+        @media (max-width: 500px) {
           .ts-policy-grid {
             grid-template-columns: 1fr;
             gap: 8px;
@@ -422,9 +455,26 @@ const TrainSchedule = () => {
             padding: 3px 8px;
             border-radius: 6px;
             font-weight: 700;
+            margin-bottom: 8px;
           }
         }
 
+        /* Animation Keyframes */
+        @keyframes ts-fade {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes ts-pulse {
+          0% { transform: scale(0.95); opacity: 0.7; }
+          50% { transform: scale(1.18); opacity: 1; }
+          100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        .ts-pulse-red {
+          animation: ts-pulse 1.4s infinite ease-in-out;
+        }
+        .ts-pulse-white {
+          animation: ts-pulse 1.2s infinite ease-in-out;
+        }
         .ts-live-dot {
           width: 9px;
           height: 9px;
@@ -642,7 +692,7 @@ const TrainSchedule = () => {
             
             <div className="ts-detail-layout">
               {/* Left Column (Train Info, Actions, SMS) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              <div className="ts-detail-col">
                 
                 {/* Train Card Header */}
                 <div className="ts-card">
@@ -733,46 +783,46 @@ const TrainSchedule = () => {
                   const totalKm = endSt?.km || 0;
 
                   return (
-                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', border: '1px solid #eef2f0' }}>
+                    <div className="ts-card">
                       <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
                         ট্রেন তথ্যের সারসংক্ষেপ
                       </h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', fontSize: '13px', color: '#475569' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>মোট স্টপ:</span>
-                          <b>{selectedTrain.stations.length}টি স্টেশন</b>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#475569', width: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+                          <span style={{ flexShrink: 0 }}>মোট স্টপ:</span>
+                          <b style={{ textAlign: 'right' }}>{selectedTrain.stations.length}টি স্টেশন</b>
                         </div>
                         {totalKm > 0 && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>রেল দূরত্ব:</span>
-                            <b>{totalKm} কিমি</b>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+                            <span style={{ flexShrink: 0 }}>রেল দূরত্ব:</span>
+                            <b style={{ textAlign: 'right' }}>{totalKm} কিমি</b>
                           </div>
                         )}
                         {duration && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>গড় ভ্রমণ সময়:</span>
-                            <b style={{ color: '#006a4e' }}>{duration.text}</b>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+                            <span style={{ flexShrink: 0 }}>গড় ভ্রমণ সময়:</span>
+                            <b style={{ color: '#006a4e', textAlign: 'right' }}>{duration.text}</b>
                           </div>
                         )}
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>প্রারম্ভিক:</span>
-                          <b>{startSt?.name.split('(')[0]}</b>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+                          <span style={{ flexShrink: 0 }}>প্রারম্ভিক:</span>
+                          <b style={{ textAlign: 'right' }}>{startSt?.name.split('(')[0]}</b>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>গন্তব্য:</span>
-                          <b>{endSt?.name.split('(')[0]}</b>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+                          <span style={{ flexShrink: 0 }}>গন্তব্য:</span>
+                          <b style={{ textAlign: 'right' }}>{endSt?.name.split('(')[0]}</b>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>সাপ্তাহিক বন্ধ:</span>
-                          <b>{selectedTrain.offDay || 'নেই'}</b>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+                          <span style={{ flexShrink: 0 }}>সাপ্তাহিক বন্ধ:</span>
+                          <b style={{ textAlign: 'right' }}>{selectedTrain.offDay || 'নেই'}</b>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #e2e8f0', paddingTop: '8px' }}>
-                          <span>ফ্রি লাগেজ সীমা:</span>
-                          <b style={{ color: '#166534' }}>৩৭.৫ — ৫৬ কেজি</b>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px dashed #e2e8f0', paddingTop: '8px', width: '100%', gap: '8px' }}>
+                          <span style={{ flexShrink: 0 }}>ফ্রি লাগেজ সীমা:</span>
+                          <b style={{ color: '#166534', textAlign: 'right' }}>৩৭.৫ — ৫৬ কেজি</b>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>রেলওয়ে হেল্পলাইন:</span>
-                          <b style={{ color: '#006a4e' }}>১৬৪৫৯</b>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+                          <span style={{ flexShrink: 0 }}>রেলওয়ে হেল্পলাইন:</span>
+                          <b style={{ color: '#006a4e', textAlign: 'right' }}>১৬৪৫৯</b>
                         </div>
                       </div>
                     </div>
@@ -782,7 +832,7 @@ const TrainSchedule = () => {
               </div>
 
               {/* Right Column (Timetable, Editorial Guide, Fare Table, FAQ & Advisory) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="ts-detail-col">
                 
                 {/* ১. স্টেশনভিত্তিক অফিসিয়াল সময়সূচী টেবিল */}
                 <div className="ts-card">
