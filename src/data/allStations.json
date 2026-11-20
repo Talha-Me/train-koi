@@ -1,0 +1,4050 @@
+{
+  "আব্দুলপুর (Abdulpur)": {
+    "id": 1,
+    "code": "N001",
+    "nameBn": "আব্দুলপুর",
+    "nameEn": "Abdulpur",
+    "lat": 24.259879,
+    "lng": 88.9716424
+  },
+  "আদিতমারী (Aditmari)": {
+    "id": 2,
+    "code": "N002",
+    "nameBn": "আদিতমারী",
+    "nameEn": "Aditmari",
+    "lat": 25.9243213,
+    "lng": 89.3487635
+  },
+  "আহসানগঞ্জ (Ahsanganj)": {
+    "id": 3,
+    "code": "N003",
+    "nameBn": "আহসানগঞ্জ",
+    "nameEn": "Ahsanganj",
+    "lat": 24.6145042,
+    "lng": 88.9752638
+  },
+  "আখানগর (Akhanagar)": {
+    "id": 4,
+    "code": "N004",
+    "nameBn": "আখানগর",
+    "nameEn": "Akhanagar",
+    "lat": 26.098879247962582,
+    "lng": 88.39126643427191
+  },
+  "আখাউড়া (Akhaura)": {
+    "id": 5,
+    "code": "N005",
+    "nameBn": "আখাউড়া",
+    "nameEn": "Akhaura",
+    "lat": 23.8692201,
+    "lng": 91.2055531
+  },
+  "আক্কেলপুর (Akkelpur)": {
+    "id": 6,
+    "code": "N006",
+    "nameBn": "আক্কেলপুর",
+    "nameEn": "Akkelpur",
+    "lat": 24.965345,
+    "lng": 89.0159337
+  },
+  "আলমডাঙ্গা (Alamdanga)": {
+    "id": 7,
+    "code": "N007",
+    "nameBn": "আলমডাঙ্গা",
+    "nameEn": "Alamdanga",
+    "lat": 23.7616172,
+    "lng": 88.9367003
+  },
+  "আমিরাবাদ (Amirabad)": {
+    "id": 8,
+    "code": "N008",
+    "nameBn": "আমিরাবাদ",
+    "nameEn": "Amirabad",
+    "lat": 23.6398026,
+    "lng": 89.7443448
+  },
+  "আমনুরা (Amnura)": {
+    "id": 9,
+    "code": "N009",
+    "nameBn": "আমনুরা",
+    "nameEn": "Amnura",
+    "lat": 24.6248653,
+    "lng": 88.3984867
+  },
+  "আমনুরা বাইপাস (Amnura Bypass)": {
+    "id": 10,
+    "code": "N010",
+    "nameBn": "আমনুরা বাইপাস",
+    "nameEn": "Amnura Bypass",
+    "lat": 24.6147528,
+    "lng": 88.3962831
+  },
+  "আড়ানী (Arani)": {
+    "id": 11,
+    "code": "N011",
+    "nameBn": "আড়ানী",
+    "nameEn": "Arani",
+    "lat": 24.2902114,
+    "lng": 88.8812764
+  },
+  "আশুগঞ্জ (Ashuganj)": {
+    "id": 12,
+    "code": "N012",
+    "nameBn": "আশুগঞ্জ",
+    "nameEn": "Ashuganj",
+    "lat": 24.0376091,
+    "lng": 91.0023368
+  },
+  "আঠারবাড়ী (Atharabari)": {
+    "id": 13,
+    "code": "N013",
+    "nameBn": "আঠারবাড়ী",
+    "nameEn": "Atharabari",
+    "lat": 24.6405321,
+    "lng": 90.7136051
+  },
+  "আজমপুর (Azampur)": {
+    "id": 14,
+    "code": "N014",
+    "nameBn": "আজমপুর",
+    "nameEn": "Azampur",
+    "lat": 23.8938358,
+    "lng": 91.2211582
+  },
+  "আজিমনগর (Azim Nagar)": {
+    "id": 15,
+    "code": "N015",
+    "nameBn": "আজিমনগর",
+    "nameEn": "Azim Nagar",
+    "lat": 24.2065671,
+    "lng": 89.0059225
+  },
+  "বদরগঞ্জ (Badarganj)": {
+    "id": 16,
+    "code": "N016",
+    "nameBn": "বদরগঞ্জ",
+    "nameEn": "Badarganj",
+    "lat": 25.6720107,
+    "lng": 89.0580411
+  },
+  "বাঁধেরহাট (Badherhat)": {
+    "id": 17,
+    "code": "N017",
+    "nameBn": "বাঁধেরহাট",
+    "nameEn": "Badherhat",
+    "lat": 23.8972532,
+    "lng": 89.6369274
+  },
+  "বাদিয়াখালী (Badiakhali)": {
+    "id": 18,
+    "code": "N018",
+    "nameBn": "বাদিয়াখালী",
+    "nameEn": "Badiakhali",
+    "lat": 25.236036,
+    "lng": 89.5426761
+  },
+  "বহরপুর (Baharpur)": {
+    "id": 19,
+    "code": "N019",
+    "nameBn": "বহরপুর",
+    "nameEn": "Baharpur",
+    "lat": 23.68622198513214,
+    "lng": 89.56155360673304
+  },
+  "বাজিতপুর (Bajitpur)": {
+    "id": 20,
+    "code": "N020",
+    "nameBn": "বাজিতপুর",
+    "nameEn": "Bajitpur",
+    "lat": 24.199548,
+    "lng": 90.9130316
+  },
+  "বজরা (Bajra)": {
+    "id": 21,
+    "code": "N021",
+    "nameBn": "বজরা",
+    "nameEn": "Bajra",
+    "lat": 22.9925582,
+    "lng": 91.1004687
+  },
+  "বামনডাঙ্গা (Bamondanga)": {
+    "id": 22,
+    "code": "N022",
+    "nameBn": "বামনডাঙ্গা",
+    "nameEn": "Bamondanga",
+    "lat": 25.5323131,
+    "lng": 89.4462605
+  },
+  "বরমচাল (Baramchal)": {
+    "id": 23,
+    "code": "N023",
+    "nameBn": "বরমচাল",
+    "nameEn": "Baramchal",
+    "lat": 24.5882633,
+    "lng": 91.9791794
+  },
+  "বারহাট্টা (Barhatta)": {
+    "id": 24,
+    "code": "N024",
+    "nameBn": "বারহাট্টা",
+    "nameEn": "Barhatta",
+    "lat": 24.8977025,
+    "lng": 90.8814935
+  },
+  "বড়খাতা (Barkhata)": {
+    "id": 25,
+    "code": "N025",
+    "nameBn": "বড়খাতা",
+    "nameEn": "Barkhata",
+    "lat": 26.2023363,
+    "lng": 89.1114149
+  },
+  "বাউরা (Baura)": {
+    "id": 26,
+    "code": "N026",
+    "nameBn": "বাউরা",
+    "nameEn": "Baura",
+    "lat": 26.25100999265332,
+    "lng": 89.0805386456321
+  },
+  "বেনাপোল (Benapole)": {
+    "id": 27,
+    "code": "N027",
+    "nameBn": "বেনাপোল",
+    "nameEn": "Benapole",
+    "lat": 23.0435453,
+    "lng": 88.9039381
+  },
+  "ভৈরব বাজার (Bhairab Bazar)": {
+    "id": 28,
+    "code": "N028",
+    "nameBn": "ভৈরব বাজার",
+    "nameEn": "Bhairab Bazar",
+    "lat": 24.050267278319545,
+    "lng": 90.9785593715768
+  },
+  "ভাঙ্গা (Bhanga)": {
+    "id": 29,
+    "code": "N029",
+    "nameBn": "ভাঙ্গা",
+    "nameEn": "Bhanga",
+    "lat": 23.4006689,
+    "lng": 89.9845366
+  },
+  "ভাঙ্গা জংশন (Bhanga Junction)": {
+    "id": 30,
+    "code": "N030",
+    "nameBn": "ভাঙ্গা জংশন",
+    "nameEn": "Bhanga Junction",
+    "lat": 23.3759937,
+    "lng": 90.0173071
+  },
+  "ভানুগাছ (Bhanugach)": {
+    "id": 31,
+    "code": "N031",
+    "nameBn": "ভানুগাছ",
+    "nameEn": "Bhanugach",
+    "lat": 24.3519451,
+    "lng": 91.8414428
+  },
+  "ভাটিয়ারী (Bhatiary)": {
+    "id": 32,
+    "code": "N032",
+    "nameBn": "ভাটিয়ারী",
+    "nameEn": "Bhatiary",
+    "lat": 22.429852073709053,
+    "lng": 91.74894957206475
+  },
+  "ভেড়ামারা (Bheramara)": {
+    "id": 33,
+    "code": "N033",
+    "nameBn": "ভেড়ামারা",
+    "nameEn": "Bheramara",
+    "lat": 24.029992,
+    "lng": 88.9907535
+  },
+  "ভোমরাদহ (Bhomradah)": {
+    "id": 34,
+    "code": "N034",
+    "nameBn": "ভোমরাদহ",
+    "nameEn": "Bhomradah",
+    "lat": 25.9333024,
+    "lng": 88.3670838
+  },
+  "ভোটমারি (Bhotmari)": {
+    "id": 35,
+    "code": "N035",
+    "nameBn": "ভোটমারি",
+    "nameEn": "Bhotmari",
+    "lat": 26.0266494,
+    "lng": 89.1633128
+  },
+  "ভুয়াপুর (Bhuapur)": {
+    "id": 36,
+    "code": "N036",
+    "nameBn": "ভুয়াপুর",
+    "nameEn": "Bhuapur",
+    "lat": 24.4677784,
+    "lng": 89.8671122
+  },
+  "বিদ্যাগঞ্জ (Bidyaganj)": {
+    "id": 37,
+    "code": "N037",
+    "nameBn": "বিদ্যাগঞ্জ",
+    "nameEn": "Bidyaganj",
+    "lat": 24.82412860217991,
+    "lng": 90.25943328796339
+  },
+  "বিমান বন্দর (Biman Bandar)": {
+    "id": 38,
+    "code": "N038",
+    "nameBn": "বিমান বন্দর",
+    "nameEn": "Biman Bandar",
+    "lat": 23.8519864,
+    "lng": 90.4082676
+  },
+  "বিরামপুর (Birampur)": {
+    "id": 39,
+    "code": "N039",
+    "nameBn": "বিরামপুর",
+    "nameEn": "Birampur",
+    "lat": 25.3979262,
+    "lng": 88.9942413
+  },
+  "বিরল (Birol)": {
+    "id": 40,
+    "code": "N040",
+    "nameBn": "বিরল",
+    "nameEn": "Birol",
+    "lat": 25.6350913,
+    "lng": 88.5393544
+  },
+  "বোয়ালমারী বাজার (Boalmari Bazar)": {
+    "id": 41,
+    "code": "N041",
+    "nameBn": "বোয়ালমারী বাজার",
+    "nameEn": "Boalmari Bazar",
+    "lat": 23.3898462,
+    "lng": 89.687716
+  },
+  "বগুড়া (Bogura)": {
+    "id": 42,
+    "code": "N042",
+    "nameBn": "বগুড়া",
+    "nameEn": "Bogura",
+    "lat": 24.84862476928507,
+    "lng": 89.36701040334258
+  },
+  "বোনারপাড়া (Bonar Para)": {
+    "id": 43,
+    "code": "N043",
+    "nameBn": "বোনারপাড়া",
+    "nameEn": "Bonar Para",
+    "lat": 25.1656607,
+    "lng": 89.5234771
+  },
+  "বড়ালব্রীজ (Boral Bridge)": {
+    "id": 44,
+    "code": "N044",
+    "nameBn": "বড়ালব্রীজ",
+    "nameEn": "Boral Bridge",
+    "lat": 24.215032470622102,
+    "lng": 89.38120174143033
+  },
+  "বোড়াশী (Borashi)": {
+    "id": 45,
+    "code": "N045",
+    "nameBn": "বোড়াশী",
+    "nameEn": "Borashi",
+    "lat": 22.9950927,
+    "lng": 89.8427264
+  },
+  "ব্রাহ্মণবাড়িয়া (Brahmanbaria)": {
+    "id": 46,
+    "code": "N046",
+    "nameBn": "ব্রাহ্মণবাড়িয়া",
+    "nameEn": "Brahmanbaria",
+    "lat": 23.9668212,
+    "lng": 91.1092039
+  },
+  "বুড়িমারী (Burimari)": {
+    "id": 47,
+    "code": "N047",
+    "nameBn": "বুড়িমারী",
+    "nameEn": "Burimari",
+    "lat": 26.396287351384743,
+    "lng": 88.93525827270516
+  },
+  "চকরিয়া (Chakaria)": {
+    "id": 48,
+    "code": "N048",
+    "nameBn": "চকরিয়া",
+    "nameEn": "Chakaria",
+    "lat": 21.7559517,
+    "lng": 92.0428188
+  },
+  "চাঁদপুর (Chandpur)": {
+    "id": 49,
+    "code": "N049",
+    "nameBn": "চাঁদপুর",
+    "nameEn": "Chandpur",
+    "lat": 23.2304137,
+    "lng": 90.6434789
+  },
+  "চাঁদপুর কোর্ট (Chandpur Court)": {
+    "id": 50,
+    "code": "N050",
+    "nameBn": "চাঁদপুর কোর্ট",
+    "nameEn": "Chandpur Court",
+    "lat": 23.22554413550829,
+    "lng": 90.65517933868709
+  },
+  "চন্দ্রদিঘলিয়া (Chandradighalia)": {
+    "id": 51,
+    "code": "N051",
+    "nameBn": "চন্দ্রদিঘলিয়া",
+    "nameEn": "Chandradighalia",
+    "lat": 23.073303,
+    "lng": 89.7768707
+  },
+  "চাঁপাইনবাবগঞ্জ (Chapainawabganj)": {
+    "id": 52,
+    "code": "N052",
+    "nameBn": "চাঁপাইনবাবগঞ্জ",
+    "nameEn": "Chapainawabganj",
+    "lat": 24.5986727,
+    "lng": 88.2810491
+  },
+  "চাপতা (Chapta)": {
+    "id": 53,
+    "code": "N053",
+    "nameBn": "চাপতা",
+    "nameEn": "Chapta",
+    "lat": 23.19793659749061,
+    "lng": 89.75217130219885
+  },
+  "চাটমোহর (Chatmohar)": {
+    "id": 54,
+    "code": "N054",
+    "nameBn": "চাটমোহর",
+    "nameEn": "Chatmohar",
+    "lat": 24.188900352154715,
+    "lng": 89.27518111815651
+  },
+  "চট্টগ্রাম (Chattogram)": {
+    "id": 55,
+    "code": "N055",
+    "nameBn": "চট্টগ্রাম",
+    "nameEn": "Chattogram",
+    "lat": 22.3341663,
+    "lng": 91.8297129
+  },
+  "চিলাহাটি (Chilahati)": {
+    "id": 56,
+    "code": "N056",
+    "nameBn": "চিলাহাটি",
+    "nameEn": "Chilahati",
+    "lat": 26.243144,
+    "lng": 88.796499
+  },
+  "চিরিরবন্দর (Chirirbandar)": {
+    "id": 57,
+    "code": "N057",
+    "nameBn": "চিরিরবন্দর",
+    "nameEn": "Chirirbandar",
+    "lat": 25.6458717,
+    "lng": 88.7761656
+  },
+  "চিতোষী রোড (Chitoshi Road)": {
+    "id": 58,
+    "code": "N058",
+    "nameBn": "চিতোষী রোড",
+    "nameEn": "Chitoshi Road",
+    "lat": 23.2355371,
+    "lng": 91.02994
+  },
+  "ছোট বাহিরবাগ (Choto Bahirbag)": {
+    "id": 59,
+    "code": "N059",
+    "nameBn": "ছোট বাহিরবাগ",
+    "nameEn": "Choto Bahirbag",
+    "lat": 23.1411034,
+    "lng": 89.7817424
+  },
+  "চৌমুহনী (Choumuhani)": {
+    "id": 60,
+    "code": "N060",
+    "nameBn": "চৌমুহনী",
+    "nameEn": "Choumuhani",
+    "lat": 22.9440749,
+    "lng": 91.1208476
+  },
+  "চুয়াডাঙ্গা (Chuadanga)": {
+    "id": 61,
+    "code": "N061",
+    "nameBn": "চুয়াডাঙ্গা",
+    "nameEn": "Chuadanga",
+    "lat": 23.6403499,
+    "lng": 88.8570427
+  },
+  "কক্সবাজার (Cox's Bazar)": {
+    "id": 62,
+    "code": "N062",
+    "nameBn": "কক্সবাজার",
+    "nameEn": "Cox's Bazar",
+    "lat": 21.4293712,
+    "lng": 92.0140787
+  },
+  "কুমিল্লা (Cumilla)": {
+    "id": 63,
+    "code": "N063",
+    "nameBn": "কুমিল্লা",
+    "nameEn": "Cumilla",
+    "lat": 23.4635946,
+    "lng": 91.1666729
+  },
+  "দর্শনা হল্ট (Darshana Halt)": {
+    "id": 64,
+    "code": "N064",
+    "nameBn": "দর্শনা হল্ট",
+    "nameEn": "Darshana Halt",
+    "lat": 23.529323,
+    "lng": 88.8098127
+  },
+  "দাশুড়িয়া (Dashuria)": {
+    "id": 65,
+    "code": "N065",
+    "nameBn": "দাশুড়িয়া",
+    "nameEn": "Dashuria",
+    "lat": 24.1138338,
+    "lng": 89.1284979
+  },
+  "দৌলতপুর (Daulatpur)": {
+    "id": 66,
+    "code": "N066",
+    "nameBn": "দৌলতপুর",
+    "nameEn": "Daulatpur",
+    "lat": 22.8764018,
+    "lng": 89.522582
+  },
+  "দেওয়ানগঞ্জ বাজার (Dewanganj Bazar)": {
+    "id": 67,
+    "code": "N067",
+    "nameBn": "দেওয়ানগঞ্জ বাজার",
+    "nameEn": "Dewanganj Bazar",
+    "lat": 25.157228500858096,
+    "lng": 89.75667271869838
+  },
+  "ঢাকা (Dhaka)": {
+    "id": 68,
+    "code": "N068",
+    "nameBn": "ঢাকা",
+    "nameEn": "Dhaka",
+    "lat": 23.735179801373416,
+    "lng": 90.42605428760805
+  },
+  "ঢালারচর (Dhalarchar)": {
+    "id": 69,
+    "code": "N069",
+    "nameBn": "ঢালারচর",
+    "nameEn": "Dhalarchar",
+    "lat": 23.8406546,
+    "lng": 89.668184
+  },
+  "দিনাজপুর (Dinajpur)": {
+    "id": 70,
+    "code": "N070",
+    "nameBn": "দিনাজপুর",
+    "nameEn": "Dinajpur",
+    "lat": 25.6248265,
+    "lng": 88.6318967
+  },
+  "দোহাজারী (Dohazari)": {
+    "id": 71,
+    "code": "N071",
+    "nameBn": "দোহাজারী",
+    "nameEn": "Dohazari",
+    "lat": 22.1625175,
+    "lng": 92.0694041
+  },
+  "ডোমার (Domar)": {
+    "id": 72,
+    "code": "N072",
+    "nameBn": "ডোমার",
+    "nameEn": "Domar",
+    "lat": 26.1018019,
+    "lng": 88.8197257
+  },
+  "দুবলিয়া (Dublia)": {
+    "id": 73,
+    "code": "N073",
+    "nameBn": "দুবলিয়া",
+    "nameEn": "Dublia",
+    "lat": 23.9775765,
+    "lng": 89.3710261
+  },
+  "ডুলাহাজারা (Dulahazara)": {
+    "id": 74,
+    "code": "N074",
+    "nameBn": "ডুলাহাজারা",
+    "nameEn": "Dulahazara",
+    "lat": 21.67545,
+    "lng": 92.0736708
+  },
+  "ফরিদপুর (Faridpur)": {
+    "id": 75,
+    "code": "N075",
+    "nameBn": "ফরিদপুর",
+    "nameEn": "Faridpur",
+    "lat": 23.61115199097255,
+    "lng": 89.8429280927029
+  },
+  "ফেনী (Feni)": {
+    "id": 76,
+    "code": "N076",
+    "nameBn": "ফেনী",
+    "nameEn": "Feni",
+    "lat": 23.0132301,
+    "lng": 91.403622
+  },
+  "ফুলবাড়ী (Fulbari)": {
+    "id": 77,
+    "code": "N077",
+    "nameBn": "ফুলবাড়ী",
+    "nameEn": "Fulbari",
+    "lat": 25.4957091,
+    "lng": 88.968926
+  },
+  "গোমদণ্ডী (GOMDANDI)": {
+    "id": 78,
+    "code": "N078",
+    "nameBn": "গোমদণ্ডী",
+    "nameEn": "GOMDANDI",
+    "lat": 22.3780322,
+    "lng": 91.9171248
+  },
+  "গচিহাটা (Gachihata)": {
+    "id": 79,
+    "code": "N079",
+    "nameBn": "গচিহাটা",
+    "nameEn": "Gachihata",
+    "lat": 24.3424225,
+    "lng": 90.8245899
+  },
+  "গফরগাঁও (Gafargaon)": {
+    "id": 80,
+    "code": "N080",
+    "nameBn": "গফরগাঁও",
+    "nameEn": "Gafargaon",
+    "lat": 24.4535089,
+    "lng": 90.5477329
+  },
+  "গাইবান্ধা (Gaibandha)": {
+    "id": 81,
+    "code": "N081",
+    "nameBn": "গাইবান্ধা",
+    "nameEn": "Gaibandha",
+    "lat": 25.3332633,
+    "lng": 89.5421706
+  },
+  "গোবরা (Gobra)": {
+    "id": 82,
+    "code": "N082",
+    "nameBn": "গোবরা",
+    "nameEn": "Gobra",
+    "lat": 22.947738580558106,
+    "lng": 89.8294048658174
+  },
+  "গোপালগঞ্জ (Gopalganj)": {
+    "id": 83,
+    "code": "N083",
+    "nameBn": "গোপালগঞ্জ",
+    "nameEn": "Gopalganj",
+    "lat": 23.0341129,
+    "lng": 89.8396103
+  },
+  "গৌরীপুর (Gouripur Myn)": {
+    "id": 84,
+    "code": "N084",
+    "nameBn": "গৌরীপুর",
+    "nameEn": "Gouripur Myn",
+    "lat": 24.7640868,
+    "lng": 90.565811
+  },
+  "গুণবতী (Gunabati)": {
+    "id": 85,
+    "code": "N085",
+    "nameBn": "গুণবতী",
+    "nameEn": "Gunabati",
+    "lat": 23.0874925,
+    "lng": 91.2976693
+  },
+  "হারবাং (HARBANG)": {
+    "id": 86,
+    "code": "N086",
+    "nameBn": "হারবাং",
+    "nameEn": "HARBANG",
+    "lat": 21.8506707,
+    "lng": 92.0482129
+  },
+  "হাজীগঞ্জ (Hajiganj)": {
+    "id": 87,
+    "code": "N087",
+    "nameBn": "হাজীগঞ্জ",
+    "nameEn": "Hajiganj",
+    "lat": 23.2583084,
+    "lng": 90.8447327
+  },
+  "হরষপুর (Harashpur)": {
+    "id": 88,
+    "code": "N088",
+    "nameBn": "হরষপুর",
+    "nameEn": "Harashpur",
+    "lat": 24.0173893,
+    "lng": 91.3107583
+  },
+  "হাসানপুর (Hasanpur)": {
+    "id": 89,
+    "code": "N089",
+    "nameBn": "হাসানপুর",
+    "nameEn": "Hasanpur",
+    "lat": 23.1354195,
+    "lng": 91.2370832
+  },
+  "হাতিবান্ধা (Hatibandha)": {
+    "id": 90,
+    "code": "N090",
+    "nameBn": "হাতিবান্ধা",
+    "nameEn": "Hatibandha",
+    "lat": 26.1284372,
+    "lng": 89.1386621
+  },
+  "হেমনগর (Hemnagar)": {
+    "id": 91,
+    "code": "N091",
+    "nameBn": "হেমনগর",
+    "nameEn": "Hemnagar",
+    "lat": 24.5695829,
+    "lng": 89.8590579
+  },
+  "হাই-টেক সিটি (Hi-Tech City)": {
+    "id": 92,
+    "code": "N092",
+    "nameBn": "হাই-টেক সিটি",
+    "nameEn": "Hi-Tech City",
+    "lat": 24.062810066732716,
+    "lng": 90.22029599148875
+  },
+  "হিলি (Hili)": {
+    "id": 93,
+    "code": "N093",
+    "nameBn": "হিলি",
+    "nameEn": "Hili",
+    "lat": 25.2777684,
+    "lng": 89.0070171
+  },
+  "ইসলামাবাদ (ISLAMABAD)": {
+    "id": 94,
+    "code": "N094",
+    "nameBn": "ইসলামাবাদ",
+    "nameEn": "ISLAMABAD",
+    "lat": 21.5638,
+    "lng": 92.053588
+  },
+  "ইব্রাহিমাবাদ (Ibrahimabad)": {
+    "id": 95,
+    "code": "N095",
+    "nameBn": "ইব্রাহিমাবাদ",
+    "nameEn": "Ibrahimabad",
+    "lat": 24.3896144,
+    "lng": 89.8200814
+  },
+  "ঈশ্বরদী (Ishwardi)": {
+    "id": 96,
+    "code": "N096",
+    "nameBn": "ঈশ্বরদী",
+    "nameEn": "Ishwardi",
+    "lat": 24.1299955,
+    "lng": 89.063509
+  },
+  "ঈশ্বরদী বাইপাস (Ishwardi Bypass)": {
+    "id": 97,
+    "code": "N097",
+    "nameBn": "ঈশ্বরদী বাইপাস",
+    "nameEn": "Ishwardi Bypass",
+    "lat": 24.15681,
+    "lng": 89.055877
+  },
+  "ইসলামপুর বাজার (Islampur Bazar)": {
+    "id": 98,
+    "code": "N098",
+    "nameBn": "ইসলামপুর বাজার",
+    "nameEn": "Islampur Bazar",
+    "lat": 25.0778125,
+    "lng": 89.7914661
+  },
+  "জাফরশাহী (Jaforshahi)": {
+    "id": 99,
+    "code": "N099",
+    "nameBn": "জাফরশাহী",
+    "nameEn": "Jaforshahi",
+    "lat": 24.81317809996919,
+    "lng": 89.85870965730516
+  },
+  "জগন্নাথগঞ্জ বাজার (Jagannathgonj Bazar)": {
+    "id": 100,
+    "code": "N100",
+    "nameBn": "জগন্নাথগঞ্জ বাজার",
+    "nameEn": "Jagannathgonj Bazar",
+    "lat": 24.660204971806913,
+    "lng": 89.81765587462576
+  },
+  "জামালগঞ্জ (Jamalganj)": {
+    "id": 101,
+    "code": "N101",
+    "nameBn": "জামালগঞ্জ",
+    "nameEn": "Jamalganj",
+    "lat": 25.0307144,
+    "lng": 89.0219523
+  },
+  "জামালপুর টাউন (Jamalpur Town)": {
+    "id": 102,
+    "code": "N102",
+    "nameBn": "জামালপুর টাউন",
+    "nameEn": "Jamalpur Town",
+    "lat": 24.9152358,
+    "lng": 89.9537685
+  },
+  "জামতৈল (Jamtail)": {
+    "id": 103,
+    "code": "N103",
+    "nameBn": "জামতৈল",
+    "nameEn": "Jamtail",
+    "lat": 24.3615567,
+    "lng": 89.6603341
+  },
+  "জান আলীর হাট (Janali Hat)": {
+    "id": 104,
+    "code": "N104",
+    "nameBn": "জান আলীর হাট",
+    "nameEn": "Janali Hat",
+    "lat": 22.3960533,
+    "lng": 91.8726241
+  },
+  "যশোর (Jessore)": {
+    "id": 105,
+    "code": "N105",
+    "nameBn": "যশোর",
+    "nameEn": "Jessore",
+    "lat": 23.1539874,
+    "lng": 89.2087674
+  },
+  "ঝিকরগাছা (Jhikargacha)": {
+    "id": 106,
+    "code": "N106",
+    "nameBn": "ঝিকরগাছা",
+    "nameEn": "Jhikargacha",
+    "lat": 23.1012928,
+    "lng": 89.103156
+  },
+  "জয়দেবপুর (Joydebpur)": {
+    "id": 107,
+    "code": "N107",
+    "nameBn": "জয়দেবপুর",
+    "nameEn": "Joydebpur",
+    "lat": 23.9983107,
+    "lng": 90.4201612
+  },
+  "জয়পুরহাট (Joypurhat)": {
+    "id": 108,
+    "code": "N108",
+    "nameBn": "জয়পুরহাট",
+    "nameEn": "Joypurhat",
+    "lat": 25.0988822,
+    "lng": 89.0259865
+  },
+  "কাকনহাট (Kakonhat)": {
+    "id": 109,
+    "code": "N109",
+    "nameBn": "কাকনহাট",
+    "nameEn": "Kakonhat",
+    "lat": 24.5068959,
+    "lng": 88.4715458
+  },
+  "কালুখালী (Kalukhali)": {
+    "id": 110,
+    "code": "N110",
+    "nameBn": "কালুখালী",
+    "nameEn": "Kalukhali",
+    "lat": 23.767973764542074,
+    "lng": 89.48132863770687
+  },
+  "কাঞ্চন জংশন (Kanchan Junction)": {
+    "id": 111,
+    "code": "N111",
+    "nameBn": "কাঞ্চন জংশন",
+    "nameEn": "Kanchan Junction",
+    "lat": 25.6234087,
+    "lng": 88.6003845
+  },
+  "কাকিনা (Kankina)": {
+    "id": 112,
+    "code": "N112",
+    "nameBn": "কাকিনা",
+    "nameEn": "Kankina",
+    "lat": 25.95541598401548,
+    "lng": 89.24363314570772
+  },
+  "কাওরাইদ (Kaoraid)": {
+    "id": 113,
+    "code": "N113",
+    "nameBn": "কাওরাইদ",
+    "nameEn": "Kaoraid",
+    "lat": 24.3083931,
+    "lng": 90.5125829
+  },
+  "কাশিয়ানী (Kashiani)": {
+    "id": 114,
+    "code": "N114",
+    "nameBn": "কাশিয়ানী",
+    "nameEn": "Kashiani",
+    "lat": 23.2336027,
+    "lng": 89.7254714
+  },
+  "কাশিনাথপুর (Kashinathpur)": {
+    "id": 115,
+    "code": "N115",
+    "nameBn": "কাশিনাথপুর",
+    "nameEn": "Kashinathpur",
+    "lat": 23.9703649,
+    "lng": 89.5901544
+  },
+  "কাউনিয়া (Kaunia)": {
+    "id": 116,
+    "code": "N116",
+    "nameBn": "কাউনিয়া",
+    "nameEn": "Kaunia",
+    "lat": 25.77802133429496,
+    "lng": 89.42294733828368
+  },
+  "কাউগাঁ (Kawgaon)": {
+    "id": 117,
+    "code": "N117",
+    "nameBn": "কাউগাঁ",
+    "nameEn": "Kawgaon",
+    "lat": 25.6191149,
+    "lng": 88.7064379
+  },
+  "কেন্দুয়া বাজার (Kendua Bazar)": {
+    "id": 118,
+    "code": "N118",
+    "nameBn": "কেন্দুয়া বাজার",
+    "nameEn": "Kendua Bazar",
+    "lat": 24.8594894,
+    "lng": 89.9090831
+  },
+  "খোকসা (Khoksha)": {
+    "id": 119,
+    "code": "N119",
+    "nameBn": "খোকসা",
+    "nameEn": "Khoksha",
+    "lat": 23.8293093,
+    "lng": 89.3057257
+  },
+  "খোলাহাটি (Kholahati)": {
+    "id": 120,
+    "code": "N120",
+    "nameBn": "খোলাহাটি",
+    "nameEn": "Kholahati",
+    "lat": 25.6563459,
+    "lng": 88.9833074
+  },
+  "খুলনা (Khulna)": {
+    "id": 121,
+    "code": "N121",
+    "nameBn": "খুলনা",
+    "nameEn": "Khulna",
+    "lat": 22.820523628268653,
+    "lng": 89.55752067040193
+  },
+  "কিশোরগঞ্জ (Kishorganj)": {
+    "id": 122,
+    "code": "N122",
+    "nameBn": "কিশোরগঞ্জ",
+    "nameEn": "Kishorganj",
+    "lat": 24.4270479,
+    "lng": 90.7885419
+  },
+  "কিসমত (Kismat)": {
+    "id": 123,
+    "code": "N123",
+    "nameBn": "কিসমত",
+    "nameEn": "Kismat",
+    "lat": 26.2224631,
+    "lng": 88.4472706
+  },
+  "কোটচাঁদপুর (Kotchandpur)": {
+    "id": 124,
+    "code": "N124",
+    "nameBn": "কোটচাঁদপুর",
+    "nameEn": "Kotchandpur",
+    "lat": 23.415605033622786,
+    "lng": 89.01446677816841
+  },
+  "কুলাউড়া (Kulaura)": {
+    "id": 125,
+    "code": "N125",
+    "nameBn": "কুলাউড়া",
+    "nameEn": "Kulaura",
+    "lat": 24.5227959,
+    "lng": 92.0371004
+  },
+  "কুলিয়ারচর (Kuliarchar)": {
+    "id": 126,
+    "code": "N126",
+    "nameBn": "কুলিয়ারচর",
+    "nameEn": "Kuliarchar",
+    "lat": 24.1511304,
+    "lng": 90.9285682
+  },
+  "কুমারখালী (Kumarkhali)": {
+    "id": 127,
+    "code": "N127",
+    "nameBn": "কুমারখালী",
+    "nameEn": "Kumarkhali",
+    "lat": 23.8602521,
+    "lng": 89.2414083
+  },
+  "কুমিরা (Kumira)": {
+    "id": 128,
+    "code": "N128",
+    "nameBn": "কুমিরা",
+    "nameEn": "Kumira",
+    "lat": 22.505029,
+    "lng": 91.7161208
+  },
+  "কুড়িগ্রাম (Kurigram)": {
+    "id": 129,
+    "code": "N129",
+    "nameBn": "কুড়িগ্রাম",
+    "nameEn": "Kurigram",
+    "lat": 25.8075187,
+    "lng": 89.6215453
+  },
+  "কুষ্টিয়া কোর্ট (Kushtia Court)": {
+    "id": 130,
+    "code": "N130",
+    "nameBn": "কুষ্টিয়া কোর্ট",
+    "nameEn": "Kushtia Court",
+    "lat": 23.907137,
+    "lng": 89.1284858
+  },
+  "লোহাগাড়া (LOHAGARA)": {
+    "id": 131,
+    "code": "N131",
+    "nameBn": "লোহাগাড়া",
+    "nameEn": "LOHAGARA",
+    "lat": 21.986294228720197,
+    "lng": 92.07160794798332
+  },
+  "লাকসাম (Laksam)": {
+    "id": 132,
+    "code": "N132",
+    "nameBn": "লাকসাম",
+    "nameEn": "Laksam",
+    "lat": 23.255019,
+    "lng": 91.1244039
+  },
+  "লালমনিরহাট (Lalmonirhat)": {
+    "id": 133,
+    "code": "N133",
+    "nameBn": "লালমনিরহাট",
+    "nameEn": "Lalmonirhat",
+    "lat": 25.912479434926016,
+    "lng": 89.44562082825155
+  },
+  "লোহাগড়া (Lohagora)": {
+    "id": 134,
+    "code": "N134",
+    "nameBn": "লোহাগড়া",
+    "nameEn": "Lohagora",
+    "lat": 23.2021657,
+    "lng": 89.6395381
+  },
+  "লোকমানপুর (Lokmanpur)": {
+    "id": 135,
+    "code": "N135",
+    "nameBn": "লোকমানপুর",
+    "nameEn": "Lokmanpur",
+    "lat": 24.2812698,
+    "lng": 88.9337833
+  },
+  "ললিতনগর (Lolitnagar)": {
+    "id": 136,
+    "code": "N136",
+    "nameBn": "ললিতনগর",
+    "nameEn": "Lolitnagar",
+    "lat": 24.562815278124734,
+    "lng": 88.43494210940607
+  },
+  "মাধনগর (Madhnagar)": {
+    "id": 137,
+    "code": "N137",
+    "nameBn": "মাধনগর",
+    "nameEn": "Madhnagar",
+    "lat": 24.5360596,
+    "lng": 88.9620421
+  },
+  "মধুখালী (Madhukhali)": {
+    "id": 138,
+    "code": "N138",
+    "nameBn": "মধুখালী",
+    "nameEn": "Madhukhali",
+    "lat": 23.5467388,
+    "lng": 89.6309103
+  },
+  "মহেন্দ্রনগর (Mahendranagar)": {
+    "id": 139,
+    "code": "N139",
+    "nameBn": "মহেন্দ্রনগর",
+    "nameEn": "Mahendranagar",
+    "lat": 25.8789523,
+    "lng": 89.4479934
+  },
+  "মহিমাগঞ্জ (Mahimaganj)": {
+    "id": 140,
+    "code": "N140",
+    "nameBn": "মহিমাগঞ্জ",
+    "nameEn": "Mahimaganj",
+    "lat": 25.1042601,
+    "lng": 89.4939652
+  },
+  "মাইজদী কোর্ট (Maijdi Court)": {
+    "id": 141,
+    "code": "N141",
+    "nameBn": "মাইজদী কোর্ট",
+    "nameEn": "Maijdi Court",
+    "lat": 22.8608714,
+    "lng": 91.1050383
+  },
+  "মাইজগাঁও (Maijgaon)": {
+    "id": 142,
+    "code": "N142",
+    "nameBn": "মাইজগাঁও",
+    "nameEn": "Maijgaon",
+    "lat": 24.6862623,
+    "lng": 91.9514162
+  },
+  "মাঝগ্রাম (Majhgram)": {
+    "id": 143,
+    "code": "N143",
+    "nameBn": "মাঝগ্রাম",
+    "nameEn": "Majhgram",
+    "lat": 24.1629542,
+    "lng": 89.092214
+  },
+  "মানিকখালী (Manikkhali)": {
+    "id": 144,
+    "code": "N144",
+    "nameBn": "মানিকখালী",
+    "nameEn": "Manikkhali",
+    "lat": 24.2974274,
+    "lng": 90.8467065
+  },
+  "মন্মথপুর (Manmathapur)": {
+    "id": 145,
+    "code": "N145",
+    "nameBn": "মন্মথপুর",
+    "nameEn": "Manmathapur",
+    "lat": 25.658823048265738,
+    "lng": 88.85250806711588
+  },
+  "মাওয়া (Mawa)": {
+    "id": 146,
+    "code": "N146",
+    "nameBn": "মাওয়া",
+    "nameEn": "Mawa",
+    "lat": 23.5038002,
+    "lng": 90.2743593
+  },
+  "মেহের (Meher)": {
+    "id": 147,
+    "code": "N147",
+    "nameBn": "মেহের",
+    "nameEn": "Meher",
+    "lat": 23.2451219,
+    "lng": 90.9433273
+  },
+  "মেলান্দহ বাজার (Melandah Bazar)": {
+    "id": 148,
+    "code": "N148",
+    "nameBn": "মেলান্দহ বাজার",
+    "nameEn": "Melandah Bazar",
+    "lat": 24.978345032871967,
+    "lng": 89.85352518989669
+  },
+  "মেথিকান্দা (Methikanda)": {
+    "id": 149,
+    "code": "N149",
+    "nameBn": "মেথিকান্দা",
+    "nameEn": "Methikanda",
+    "lat": 23.992806730122265,
+    "lng": 90.86704175095022
+  },
+  "মীরবাগ (Mirbagh)": {
+    "id": 150,
+    "code": "N150",
+    "nameBn": "মীরবাগ",
+    "nameEn": "Mirbagh",
+    "lat": 25.7649989,
+    "lng": 89.3522756
+  },
+  "মিরপুর (Mirpur)": {
+    "id": 151,
+    "code": "N151",
+    "nameBn": "মিরপুর",
+    "nameEn": "Mirpur",
+    "lat": 23.9416894,
+    "lng": 88.9969255
+  },
+  "মির্জাপুর (Mirzapur)": {
+    "id": 152,
+    "code": "N152",
+    "nameBn": "মির্জাপুর",
+    "nameEn": "Mirzapur",
+    "lat": 24.1055561,
+    "lng": 90.101721
+  },
+  "মধুরোড (Modhu Road)": {
+    "id": 153,
+    "code": "N153",
+    "nameBn": "মধুরোড",
+    "nameEn": "Modhu Road",
+    "lat": 23.244339536997792,
+    "lng": 90.7555836247088
+  },
+  "মোহনগঞ্জ (Mohanganj)": {
+    "id": 154,
+    "code": "N154",
+    "nameBn": "মোহনগঞ্জ",
+    "nameEn": "Mohanganj",
+    "lat": 24.870857,
+    "lng": 90.973317
+  },
+  "মঙ্গলপুর (Mongalpur)": {
+    "id": 155,
+    "code": "N155",
+    "nameBn": "মঙ্গলপুর",
+    "nameEn": "Mongalpur",
+    "lat": 25.7191317,
+    "lng": 88.5354115
+  },
+  "মনতলা (Montola)": {
+    "id": 156,
+    "code": "N156",
+    "nameBn": "মনতলা",
+    "nameEn": "Montola",
+    "lat": 24.0695296824779,
+    "lng": 91.34507889589887
+  },
+  "মোবারকগঞ্জ (Mubarakganj)": {
+    "id": 157,
+    "code": "N157",
+    "nameBn": "মোবারকগঞ্জ",
+    "nameEn": "Mubarakganj",
+    "lat": 23.4004134,
+    "lng": 89.1244062
+  },
+  "মুকুন্দপুর (Mukundapur)": {
+    "id": 158,
+    "code": "N158",
+    "nameBn": "মুকুন্দপুর",
+    "nameEn": "Mukundapur",
+    "lat": 23.96409982269797,
+    "lng": 91.26515513822275
+  },
+  "মুলাডুলি (Muladhuli)": {
+    "id": 159,
+    "code": "N159",
+    "nameBn": "মুলাডুলি",
+    "nameEn": "Muladhuli",
+    "lat": 24.1646984,
+    "lng": 89.1467077
+  },
+  "ময়মনসিংহ (Mymensingh)": {
+    "id": 160,
+    "code": "N160",
+    "nameBn": "ময়মনসিংহ",
+    "nameEn": "Mymensingh",
+    "lat": 24.7534005,
+    "lng": 90.4103056
+  },
+  "নাচোল (Nachole)": {
+    "id": 161,
+    "code": "N161",
+    "nameBn": "নাচোল",
+    "nameEn": "Nachole",
+    "lat": 24.7249338,
+    "lng": 88.4023481
+  },
+  "নলিয়াগ্রাম (Naliagram)": {
+    "id": 162,
+    "code": "N162",
+    "nameBn": "নলিয়াগ্রাম",
+    "nameEn": "Naliagram",
+    "lat": 23.5992757,
+    "lng": 89.6070829
+  },
+  "নান্দিনা (Nandina)": {
+    "id": 163,
+    "code": "N163",
+    "nameBn": "নান্দিনা",
+    "nameEn": "Nandina",
+    "lat": 24.8678969,
+    "lng": 90.0328814
+  },
+  "নাঙ্গলকোট (Nangolkot)": {
+    "id": 164,
+    "code": "N164",
+    "nameBn": "নাঙ্গলকোট",
+    "nameEn": "Nangolkot",
+    "lat": 23.16543208093019,
+    "lng": 91.20134616677245
+  },
+  "নড়াইল (Narail)": {
+    "id": 165,
+    "code": "N165",
+    "nameBn": "নড়াইল",
+    "nameEn": "Narail",
+    "lat": 23.1766005,
+    "lng": 89.4957392
+  },
+  "নারায়ণগঞ্জ (Narayanganj)": {
+    "id": 166,
+    "code": "N166",
+    "nameBn": "নারায়ণগঞ্জ",
+    "nameEn": "Narayanganj",
+    "lat": 23.6180565,
+    "lng": 90.505459
+  },
+  "নরসিংদী (Narsingdi)": {
+    "id": 167,
+    "code": "N167",
+    "nameBn": "নরসিংদী",
+    "nameEn": "Narsingdi",
+    "lat": 23.930999204671625,
+    "lng": 90.72115450145081
+  },
+  "নরুন্দি (Narundi)": {
+    "id": 168,
+    "code": "N168",
+    "nameBn": "নরুন্দি",
+    "nameEn": "Narundi",
+    "lat": 24.8650881,
+    "lng": 90.1198091
+  },
+  "নাথেরপেটুয়া (Natherpetua)": {
+    "id": 169,
+    "code": "N169",
+    "nameBn": "নাথেরপেটুয়া",
+    "nameEn": "Natherpetua",
+    "lat": 23.113133808529692,
+    "lng": 91.11543844745768
+  },
+  "নাটোর (Natore)": {
+    "id": 170,
+    "code": "N170",
+    "nameBn": "নাটোর",
+    "nameEn": "Natore",
+    "lat": 24.410955963782893,
+    "lng": 88.96646327107027
+  },
+  "নয়নিবুরুজ (Nayaniburuj)": {
+    "id": 171,
+    "code": "N171",
+    "nameBn": "নয়নিবুরুজ",
+    "nameEn": "Nayaniburuj",
+    "lat": 26.2782893,
+    "lng": 88.4968732
+  },
+  "নওয়াপাড়া (Nayapara)": {
+    "id": 172,
+    "code": "N172",
+    "nameBn": "নওয়াপাড়া",
+    "nameEn": "Nayapara",
+    "lat": 24.18076461600188,
+    "lng": 91.35668239563724
+  },
+  "নেত্রকোনা (Netrakona)": {
+    "id": 173,
+    "code": "N173",
+    "nameBn": "নেত্রকোনা",
+    "nameEn": "Netrakona",
+    "lat": 24.8889277,
+    "lng": 90.7207503
+  },
+  "নীলফামারী (Nilphamari)": {
+    "id": 174,
+    "code": "N174",
+    "nameBn": "নীলফামারী",
+    "nameEn": "Nilphamari",
+    "lat": 25.9528402,
+    "lng": 88.8352569
+  },
+  "নোয়াখালী (Noakhali)": {
+    "id": 175,
+    "code": "N175",
+    "nameBn": "নোয়াখালী",
+    "nameEn": "Noakhali",
+    "lat": 22.8276019,
+    "lng": 91.1014872
+  },
+  "নোয়াপাড়া (Noapara)": {
+    "id": 176,
+    "code": "N176",
+    "nameBn": "নোয়াপাড়া",
+    "nameEn": "Noapara",
+    "lat": 23.0333221,
+    "lng": 89.3953747
+  },
+  "পাবনা (Pabna)": {
+    "id": 177,
+    "code": "N177",
+    "nameBn": "পাবনা",
+    "nameEn": "Pabna",
+    "lat": 24.0161012,
+    "lng": 89.256252
+  },
+  "পাচুরিয়া (Pachuria)": {
+    "id": 178,
+    "code": "N178",
+    "nameBn": "পাচুরিয়া",
+    "nameEn": "Pachuria",
+    "lat": 23.7474948,
+    "lng": 89.7120937
+  },
+  "পদ্মা (Padma)": {
+    "id": 179,
+    "code": "N179",
+    "nameBn": "পদ্মা",
+    "nameEn": "Padma",
+    "lat": 23.3979423,
+    "lng": 90.2186942
+  },
+  "পাকশী (Paksey)": {
+    "id": 180,
+    "code": "N180",
+    "nameBn": "পাকশী",
+    "nameEn": "Paksey",
+    "lat": 24.070891279984394,
+    "lng": 89.04077224750267
+  },
+  "পঞ্চগড় (Panchagarh)": {
+    "id": 181,
+    "code": "N181",
+    "nameBn": "পঞ্চগড়",
+    "nameEn": "Panchagarh",
+    "lat": 26.3264666,
+    "lng": 88.5358609
+  },
+  "পাঁচবিবি (Panchbibi)": {
+    "id": 182,
+    "code": "N182",
+    "nameBn": "পাঁচবিবি",
+    "nameEn": "Panchbibi",
+    "lat": 25.1891719,
+    "lng": 89.021464
+  },
+  "পাংশা (Pangsha)": {
+    "id": 183,
+    "code": "N183",
+    "nameBn": "পাংশা",
+    "nameEn": "Pangsha",
+    "lat": 23.7860607,
+    "lng": 89.4172157
+  },
+  "পার্বতীপুর (Parbatipur)": {
+    "id": 184,
+    "code": "N184",
+    "nameBn": "পার্বতীপুর",
+    "nameEn": "Parbatipur",
+    "lat": 25.6530936,
+    "lng": 88.9158572
+  },
+  "পাটগ্রাম (Patgram)": {
+    "id": 185,
+    "code": "N185",
+    "nameBn": "পাটগ্রাম",
+    "nameEn": "Patgram",
+    "lat": 26.3437052,
+    "lng": 89.0213928
+  },
+  "পটিয়া (Patiya)": {
+    "id": 186,
+    "code": "N186",
+    "nameBn": "পটিয়া",
+    "nameEn": "Patiya",
+    "lat": 22.2977957,
+    "lng": 91.982117
+  },
+  "পীরগাছা (Pirgacha)": {
+    "id": 187,
+    "code": "N187",
+    "nameBn": "পীরগাছা",
+    "nameEn": "Pirgacha",
+    "lat": 25.6606305,
+    "lng": 89.4073767
+  },
+  "পীরগঞ্জ (Pirganj)": {
+    "id": 188,
+    "code": "N188",
+    "nameBn": "পীরগঞ্জ",
+    "nameEn": "Pirganj",
+    "lat": 25.8601043,
+    "lng": 88.3576135
+  },
+  "পিয়ারপুর (Piyarpur)": {
+    "id": 189,
+    "code": "N189",
+    "nameBn": "পিয়ারপুর",
+    "nameEn": "Piyarpur",
+    "lat": 24.8791431,
+    "lng": 90.1967737
+  },
+  "পোড়াদহ (Poradaha)": {
+    "id": 190,
+    "code": "N190",
+    "nameBn": "পোড়াদহ",
+    "nameEn": "Poradaha",
+    "lat": 23.864796,
+    "lng": 89.0325783
+  },
+  "পুখুরিয়া (Pukuria)": {
+    "id": 191,
+    "code": "N191",
+    "nameBn": "পুখুরিয়া",
+    "nameEn": "Pukuria",
+    "lat": 23.4426684,
+    "lng": 89.9575561
+  },
+  "কসবা (Quasba)": {
+    "id": 192,
+    "code": "N192",
+    "nameBn": "কসবা",
+    "nameEn": "Quasba",
+    "lat": 23.7403548,
+    "lng": 91.1557143
+  },
+  "রাঘবপুর (Raghabpur)": {
+    "id": 193,
+    "code": "N193",
+    "nameBn": "রাঘবপুর",
+    "nameEn": "Raghabpur",
+    "lat": 23.9951365,
+    "lng": 89.3048835
+  },
+  "রাজবাড়ী (Rajbari)": {
+    "id": 194,
+    "code": "N194",
+    "nameBn": "রাজবাড়ী",
+    "nameEn": "Rajbari",
+    "lat": 23.7627947,
+    "lng": 89.6451463
+  },
+  "রাজশাহী (Rajshahi)": {
+    "id": 195,
+    "code": "N195",
+    "nameBn": "রাজশাহী",
+    "nameEn": "Rajshahi",
+    "lat": 24.375258,
+    "lng": 88.6084771
+  },
+  "রাজশাহী কোর্ট (Rajshahi Court)": {
+    "id": 196,
+    "code": "N196",
+    "nameBn": "রাজশাহী কোর্ট",
+    "nameEn": "Rajshahi Court",
+    "lat": 24.379103867025986,
+    "lng": 88.56549693797137
+  },
+  "রামু (Ramu)": {
+    "id": 197,
+    "code": "N197",
+    "nameBn": "রামু",
+    "nameEn": "Ramu",
+    "lat": 21.4224448,
+    "lng": 92.095184
+  },
+  "রংপুর (Rangpur)": {
+    "id": 198,
+    "code": "N198",
+    "nameBn": "রংপুর",
+    "nameEn": "Rangpur",
+    "lat": 25.7282585,
+    "lng": 89.2635557
+  },
+  "রহনপুর (Rohanpur)": {
+    "id": 199,
+    "code": "N199",
+    "nameBn": "রহনপুর",
+    "nameEn": "Rohanpur",
+    "lat": 24.8206696,
+    "lng": 88.3193407
+  },
+  "রুহিয়া (Ruhia)": {
+    "id": 200,
+    "code": "N200",
+    "nameBn": "রুহিয়া",
+    "nameEn": "Ruhia",
+    "lat": 26.1683838,
+    "lng": 88.4053112
+  },
+  "শহীদ এম মনসুর আলী (SH M Monsur Ali)": {
+    "id": 201,
+    "code": "N201",
+    "nameBn": "শহীদ এম মনসুর আলী",
+    "nameEn": "SH M Monsur Ali",
+    "lat": 24.3974125,
+    "lng": 89.6901271
+  },
+  "সয়দাবাদ (SOYDABAD)": {
+    "id": 202,
+    "code": "N202",
+    "nameBn": "সয়দাবাদ",
+    "nameEn": "SOYDABAD",
+    "lat": 24.396016836477862,
+    "lng": 89.73344543797187
+  },
+  "সাফদারপুর (Safdarpur)": {
+    "id": 203,
+    "code": "N203",
+    "nameBn": "সাফদারপুর",
+    "nameEn": "Safdarpur",
+    "lat": 23.463158,
+    "lng": 88.9598871
+  },
+  "সৈয়দপুর (Saidpur)": {
+    "id": 204,
+    "code": "N204",
+    "nameBn": "সৈয়দপুর",
+    "nameEn": "Saidpur",
+    "lat": 25.78827117734321,
+    "lng": 88.89242399568585
+  },
+  "সান্তাহার (Santahar)": {
+    "id": 205,
+    "code": "N205",
+    "nameBn": "সান্তাহার",
+    "nameEn": "Santahar",
+    "lat": 24.807352069409088,
+    "lng": 88.98603479990611
+  },
+  "সরারচর (Sararchar)": {
+    "id": 206,
+    "code": "N206",
+    "nameBn": "সরারচর",
+    "nameEn": "Sararchar",
+    "lat": 24.2188652,
+    "lng": 90.9007476
+  },
+  "সরদহ রোড (Sardah Road)": {
+    "id": 207,
+    "code": "N207",
+    "nameBn": "সরদহ রোড",
+    "nameEn": "Sardah Road",
+    "lat": 24.3373059,
+    "lng": 88.7524171
+  },
+  "সরিষাবাড়ী (Sarishabari)": {
+    "id": 208,
+    "code": "N208",
+    "nameBn": "সরিষাবাড়ী",
+    "nameEn": "Sarishabari",
+    "lat": 24.760979343087723,
+    "lng": 89.84002599750522
+  },
+  "সাঁথিয়া রাজাপুর (Sathia Rajapur)": {
+    "id": 209,
+    "code": "N209",
+    "nameBn": "সাঁথিয়া রাজাপুর",
+    "nameEn": "Sathia Rajapur",
+    "lat": 23.97280804193016,
+    "lng": 89.48695021494449
+  },
+  "সাতকানিয়া (Satkania)": {
+    "id": 210,
+    "code": "N210",
+    "nameBn": "সাতকানিয়া",
+    "nameEn": "Satkania",
+    "lat": 22.0924216,
+    "lng": 92.0617336
+  },
+  "সেতাবগঞ্জ (Setabganj)": {
+    "id": 211,
+    "code": "N211",
+    "nameBn": "সেতাবগঞ্জ",
+    "nameEn": "Setabganj",
+    "lat": 25.7980412,
+    "lng": 88.4615537
+  },
+  "শাহজিবাজার (Shahaji Bazar)": {
+    "id": 212,
+    "code": "N212",
+    "nameBn": "শাহজিবাজার",
+    "nameEn": "Shahaji Bazar",
+    "lat": 24.25330762833878,
+    "lng": 91.38202448796768
+  },
+  "শায়েস্তাগঞ্জ (Shaistaganj)": {
+    "id": 213,
+    "code": "N213",
+    "nameBn": "শায়েস্তাগঞ্জ",
+    "nameEn": "Shaistaganj",
+    "lat": 24.2782666,
+    "lng": 91.4499776
+  },
+  "শমশেরনগর (Shamshernagar)": {
+    "id": 214,
+    "code": "N214",
+    "nameBn": "শমশেরনগর",
+    "nameEn": "Shamshernagar",
+    "lat": 24.38293325963758,
+    "lng": 91.900220001464
+  },
+  "শশীদল (Shashidal)": {
+    "id": 215,
+    "code": "N215",
+    "nameBn": "শশীদল",
+    "nameEn": "Shashidal",
+    "lat": 23.639354302549926,
+    "lng": 91.14691100439234
+  },
+  "শিবচর (Shibchar)": {
+    "id": 216,
+    "code": "N216",
+    "nameBn": "শিবচর",
+    "nameEn": "Shibchar",
+    "lat": 23.3854906,
+    "lng": 90.1299076
+  },
+  "শিবগঞ্জ (Shibganj)": {
+    "id": 217,
+    "code": "N217",
+    "nameBn": "শিবগঞ্জ",
+    "nameEn": "Shibganj",
+    "lat": 25.9980365,
+    "lng": 88.4035402
+  },
+  "ষোলশহর (Sholoshohor)": {
+    "id": 218,
+    "code": "N218",
+    "nameBn": "ষোলশহর",
+    "nameEn": "Sholoshohor",
+    "lat": 22.3685016,
+    "lng": 91.826604
+  },
+  "শ্যামগঞ্জ (Shyamgonj)": {
+    "id": 219,
+    "code": "N219",
+    "nameBn": "শ্যামগঞ্জ",
+    "nameEn": "Shyamgonj",
+    "lat": 24.8383210649749,
+    "lng": 90.57934618983587
+  },
+  "শ্যামপুর (Shyampur)": {
+    "id": 220,
+    "code": "N220",
+    "nameBn": "শ্যামপুর",
+    "nameEn": "Shyampur",
+    "lat": 25.69423243626246,
+    "lng": 89.14889617533976
+  },
+  "সিঙ্গিয়া (Singia)": {
+    "id": 221,
+    "code": "N221",
+    "nameBn": "সিঙ্গিয়া",
+    "nameEn": "Singia",
+    "lat": 23.1212902,
+    "lng": 89.3467294
+  },
+  "সিরাজগঞ্জ বাজার (Sirajganj Bazar)": {
+    "id": 222,
+    "code": "N222",
+    "nameBn": "সিরাজগঞ্জ বাজার",
+    "nameEn": "Sirajganj Bazar",
+    "lat": 24.4485101,
+    "lng": 89.7052449
+  },
+  "সিরাজগঞ্জ রায়পুর (Sirajganjraipur)": {
+    "id": 223,
+    "code": "N223",
+    "nameBn": "সিরাজগঞ্জ রায়পুর",
+    "nameEn": "Sirajganjraipur",
+    "lat": 24.4373207,
+    "lng": 89.7000609
+  },
+  "সোনাইমুড়ি (Sonaimuri)": {
+    "id": 224,
+    "code": "N224",
+    "nameBn": "সোনাইমুড়ি",
+    "nameEn": "Sonaimuri",
+    "lat": 23.0406453,
+    "lng": 91.0980417
+  },
+  "সোনাতলা (Sonatola)": {
+    "id": 225,
+    "code": "N225",
+    "nameBn": "সোনাতলা",
+    "nameEn": "Sonatola",
+    "lat": 25.044066493737393,
+    "lng": 89.49713290301243
+  },
+  "শ্রীমঙ্গল (Sreemangal)": {
+    "id": 226,
+    "code": "N226",
+    "nameBn": "শ্রীমঙ্গল",
+    "nameEn": "Sreemangal",
+    "lat": 24.3063792,
+    "lng": 91.7348528
+  },
+  "শ্রীপুর (Sreepur)": {
+    "id": 227,
+    "code": "N227",
+    "nameBn": "শ্রীপুর",
+    "nameEn": "Sreepur",
+    "lat": 24.199188220230504,
+    "lng": 90.47955753796613
+  },
+  "সুলতানপুর (Sultanpur)": {
+    "id": 228,
+    "code": "N228",
+    "nameBn": "সুলতানপুর",
+    "nameEn": "Sultanpur",
+    "lat": 25.822892997590042,
+    "lng": 88.4038136759344
+  },
+  "সিলেট (Sylhet)": {
+    "id": 229,
+    "code": "N229",
+    "nameBn": "সিলেট",
+    "nameEn": "Sylhet",
+    "lat": 24.8818295,
+    "lng": 91.8681242
+  },
+  "তালমা (Talma)": {
+    "id": 230,
+    "code": "N230",
+    "nameBn": "তালমা",
+    "nameEn": "Talma",
+    "lat": 23.4904008,
+    "lng": 89.8766538
+  },
+  "তালোড়া (Talora)": {
+    "id": 231,
+    "code": "N231",
+    "nameBn": "তালোড়া",
+    "nameEn": "Talora",
+    "lat": 24.824169860774077,
+    "lng": 89.18065617234285
+  },
+  "টাঙ্গাইল (Tangail)": {
+    "id": 232,
+    "code": "N232",
+    "nameBn": "টাঙ্গাইল",
+    "nameEn": "Tangail",
+    "lat": 24.2739084,
+    "lng": 89.9377349
+  },
+  "তাঁতিবন্দ (Tantibandha)": {
+    "id": 233,
+    "code": "N233",
+    "nameBn": "তাঁতিবন্দ",
+    "nameEn": "Tantibandha",
+    "lat": 23.9751224,
+    "lng": 89.4086124
+  },
+  "তারাকান্দি (Tarakandi)": {
+    "id": 234,
+    "code": "N234",
+    "nameBn": "তারাকান্দি",
+    "nameEn": "Tarakandi",
+    "lat": 24.6851803,
+    "lng": 89.8242749
+  },
+  "টেবুনিয়া (Tebunia)": {
+    "id": 235,
+    "code": "N235",
+    "nameBn": "টেবুনিয়া",
+    "nameEn": "Tebunia",
+    "lat": 24.0749889,
+    "lng": 89.2046562
+  },
+  "তিস্তা জংশন (Teesta Junction)": {
+    "id": 236,
+    "code": "N236",
+    "nameBn": "তিস্তা জংশন",
+    "nameEn": "Teesta Junction",
+    "lat": 25.8085333,
+    "lng": 89.4408633
+  },
+  "ঠাকুরাকোনা (Thakrokona)": {
+    "id": 237,
+    "code": "N237",
+    "nameBn": "ঠাকুরাকোনা",
+    "nameEn": "Thakrokona",
+    "lat": 24.90734193300187,
+    "lng": 90.81801872234209
+  },
+  "ঠাকুরগাঁও রোড (Thakurgaon Road)": {
+    "id": 238,
+    "code": "N238",
+    "nameBn": "ঠাকুরগাঁও রোড",
+    "nameEn": "Thakurgaon Road",
+    "lat": 26.0407358,
+    "lng": 88.4265267
+  },
+  "তুষভাণ্ডার (Tushbhandar)": {
+    "id": 239,
+    "code": "N239",
+    "nameBn": "তুষভাণ্ডার",
+    "nameEn": "Tushbhandar",
+    "lat": 25.96722,
+    "lng": 89.2027741
+  },
+  "উল্লাপাড়া (Ullapara)": {
+    "id": 240,
+    "code": "N240",
+    "nameBn": "উল্লাপাড়া",
+    "nameEn": "Ullapara",
+    "lat": 24.2901951,
+    "lng": 89.5701506
+  },
+  "পাহাড়তলী (Pahartoli)": {
+    "id": 241,
+    "code": "N241",
+    "nameBn": "পাহাড়তলী",
+    "nameEn": "Pahartoli",
+    "lat": 22.354075782601193,
+    "lng": 91.7956229977531
+  },
+  "ভাটিয়ারী (Bhatiari)": {
+    "id": 242,
+    "code": "N242",
+    "nameBn": "ভাটিয়ারী",
+    "nameEn": "Bhatiari",
+    "lat": 22.429969167395807,
+    "lng": 91.7489363750895
+  },
+  "সীতাকুণ্ড (Shitakundo)": {
+    "id": 243,
+    "code": "N243",
+    "nameBn": "সীতাকুণ্ড",
+    "nameEn": "Shitakundo",
+    "lat": 22.623309947570785,
+    "lng": 91.66044590096656
+  },
+  "চিনকী আস্তানা (Chinki Astana)": {
+    "id": 244,
+    "code": "N244",
+    "nameBn": "চিনকী আস্তানা",
+    "nameEn": "Chinki Astana",
+    "lat": 22.884887088231384,
+    "lng": 91.53886947211647
+  },
+  "ফাজিলপুর (Fajilpur)": {
+    "id": 245,
+    "code": "N245",
+    "nameBn": "ফাজিলপুর",
+    "nameEn": "Fajilpur",
+    "lat": 22.9549458428763,
+    "lng": 91.48669603360561
+  },
+  "গুণবতী (Gunoboti)": {
+    "id": 246,
+    "code": "N246",
+    "nameBn": "গুণবতী",
+    "nameEn": "Gunoboti",
+    "lat": 23.087633923284717,
+    "lng": 91.2974755959856
+  },
+  "শাহরাস্তি রোড (Shaharasti Road)": {
+    "id": 247,
+    "code": "N247",
+    "nameBn": "শাহরাস্তি রোড",
+    "nameEn": "Shaharasti Road",
+    "lat": 23.24024025999887,
+    "lng": 90.98782263009598
+  },
+  "ওয়ারুক (Waruk)": {
+    "id": 248,
+    "code": "N248",
+    "nameBn": "ওয়ারুক",
+    "nameEn": "Waruk",
+    "lat": 23.2496060934843,
+    "lng": 90.90305357701769
+  },
+  "বলাখাল (Bolakhal)": {
+    "id": 249,
+    "code": "N249",
+    "nameBn": "বলাখাল",
+    "nameEn": "Bolakhal",
+    "lat": 23.256143800314423,
+    "lng": 90.81499866093456
+  },
+  "শাহতলী (Shahatoli)": {
+    "id": 250,
+    "code": "N250",
+    "nameBn": "শাহতলী",
+    "nameEn": "Shahatoli",
+    "lat": 23.240761651873687,
+    "lng": 90.72484397752409
+  },
+  "মইশাদি (Moishadi)": {
+    "id": 251,
+    "code": "N251",
+    "nameBn": "মইশাদি",
+    "nameEn": "Moishadi",
+    "lat": 23.2347984,
+    "lng": 90.6977412
+  },
+  "আদমদীঘি (Adamdighi)": {
+    "id": 300,
+    "code": "N300",
+    "nameBn": "আদমদীঘি",
+    "nameEn": "Adamdighi",
+    "lat": 24.8088599,
+    "lng": 89.0474429
+  },
+  "কৃষি বিশ্ববিদ্যালয় (Agri Univ)": {
+    "id": 301,
+    "code": "N301",
+    "nameBn": "কৃষি বিশ্ববিদ্যালয়",
+    "nameEn": "Agri Univ",
+    "lat": 24.7240847,
+    "lng": 90.4341851
+  },
+  "আহমদবাড়ী (Ahmodbari)": {
+    "id": 302,
+    "code": "N302",
+    "nameBn": "আহমদবাড়ী",
+    "nameEn": "Ahmodbari",
+    "lat": 24.6112332,
+    "lng": 90.483588
+  },
+  "আলতাফনগর (Altaf Nagar)": {
+    "id": 303,
+    "code": "N303",
+    "nameBn": "আলতাফনগর",
+    "nameEn": "Altaf Nagar",
+    "lat": 24.8189053,
+    "lng": 89.1300317
+  },
+  "আমিরগঞ্জ (Amirganj)": {
+    "id": 304,
+    "code": "N304",
+    "nameBn": "আমিরগঞ্জ",
+    "nameEn": "Amirganj",
+    "lat": 23.93579314878235,
+    "lng": 90.77244874601003
+  },
+  "আনসারবাড়িয়া (Ansarbaria)": {
+    "id": 305,
+    "code": "N305",
+    "nameBn": "আনসারবাড়িয়া",
+    "nameEn": "Ansarbaria",
+    "lat": 23.492145151713167,
+    "lng": 88.88556681323908
+  },
+  "আড়িখোলা (Arikhola)": {
+    "id": 306,
+    "code": "N306",
+    "nameBn": "আড়িখোলা",
+    "nameEn": "Arikhola",
+    "lat": 23.92871414062652,
+    "lng": 90.55412486658378
+  },
+  "আত্রাই (Atrai)": {
+    "id": 307,
+    "code": "N307",
+    "nameBn": "আত্রাই",
+    "nameEn": "Atrai",
+    "lat": 24.621497202378738,
+    "lng": 88.97676247623019
+  },
+  "আউলিয়ানগর (Aulia Nagar)": {
+    "id": 308,
+    "code": "N308",
+    "nameBn": "আউলিয়ানগর",
+    "nameEn": "Aulia Nagar",
+    "lat": 24.5694587,
+    "lng": 90.5081436
+  },
+  "আওলিয়াগঞ্জ (Auliaganj)": {
+    "id": 309,
+    "code": "N309",
+    "nameBn": "আওলিয়াগঞ্জ",
+    "nameEn": "Auliaganj",
+    "lat": 25.682364,
+    "lng": 89.1088276
+  },
+  "বালাবাড়ী (Balabari)": {
+    "id": 310,
+    "code": "N310",
+    "nameBn": "বালাবাড়ী",
+    "nameEn": "Balabari",
+    "lat": 25.604752,
+    "lng": 89.649797
+  },
+  "বারতাকিয়া (Baratkia)": {
+    "id": 311,
+    "code": "N311",
+    "nameBn": "বারতাকিয়া",
+    "nameEn": "Baratkia",
+    "lat": 22.7538038,
+    "lng": 91.5980555
+  },
+  "বড়ই পটল (Boroi Potol)": {
+    "id": 312,
+    "code": "N312",
+    "nameBn": "বড়ই পটল",
+    "nameEn": "Boroi Potol",
+    "lat": 24.63061529489051,
+    "lng": 89.8311918892055
+  },
+  "বারোবাজার (Barobazar)": {
+    "id": 313,
+    "code": "N313",
+    "nameBn": "বারোবাজার",
+    "nameEn": "Barobazar",
+    "lat": 23.3062815,
+    "lng": 89.1499956
+  },
+  "বাসুদেবপুর (Bashudebpur)": {
+    "id": 314,
+    "code": "N314",
+    "nameBn": "বাসুদেবপুর",
+    "nameEn": "Bashudebpur",
+    "lat": 24.46971881321713,
+    "lng": 88.96329191709397
+  },
+  "বাউসী (Baushi)": {
+    "id": 315,
+    "code": "N315",
+    "nameBn": "বাউসী",
+    "nameEn": "Baushi",
+    "lat": 24.7888068,
+    "lng": 89.8548857
+  },
+  "বেজেরডাঙ্গা (Bejerdanga)": {
+    "id": 316,
+    "code": "N316",
+    "nameBn": "বেজেরডাঙ্গা",
+    "nameEn": "Bejerdanga",
+    "lat": 22.97832305150652,
+    "lng": 89.44688964628074
+  },
+  "বেলগাছি (Belgachi)": {
+    "id": 317,
+    "code": "N317",
+    "nameBn": "বেলগাছি",
+    "nameEn": "Belgachi",
+    "lat": 23.7808592,
+    "lng": 89.5413534
+  },
+  "ভবানীপুর (Bhobanipur)": {
+    "id": 318,
+    "code": "N318",
+    "nameBn": "ভবানীপুর",
+    "nameEn": "Bhobanipur",
+    "lat": 25.5788952,
+    "lng": 88.942851
+  },
+  "ভাতশালা (Bhatshala)": {
+    "id": 319,
+    "code": "N319",
+    "nameBn": "ভাতশালা",
+    "nameEn": "Bhatshala",
+    "lat": 23.8925689,
+    "lng": 91.1692784
+  },
+  "ভাঙ্গুড়া (Bhangura)": {
+    "id": 320,
+    "code": "N320",
+    "nameBn": "ভাঙ্গুড়া",
+    "nameEn": "Bhangura",
+    "lat": 24.210888909917323,
+    "lng": 89.36451274043363
+  },
+  "ভাটেরা বাজার (Bhatera Bazar)": {
+    "id": 321,
+    "code": "N321",
+    "nameBn": "ভাটেরা বাজার",
+    "nameEn": "Bhatera Bazar",
+    "lat": 24.6290971,
+    "lng": 91.9893039
+  },
+  "ভাওয়াল গাজীপুর (Bhawal Gazipur)": {
+    "id": 322,
+    "code": "N322",
+    "nameBn": "ভাওয়াল গাজীপুর",
+    "nameEn": "Bhawal Gazipur",
+    "lat": 24.0487857,
+    "lng": 90.4343609
+  },
+  "বিদ্যাগঞ্জ (Biddaganj)": {
+    "id": 323,
+    "code": "N323",
+    "nameBn": "বিদ্যাগঞ্জ",
+    "nameEn": "Biddaganj",
+    "lat": 24.82418754347448,
+    "lng": 90.25939553131496
+  },
+  "বাইগনবাড়ী (Baigunbari)": {
+    "id": 324,
+    "code": "N324",
+    "nameBn": "বাইগনবাড়ী",
+    "nameEn": "Baigunbari",
+    "lat": 24.802806817681713,
+    "lng": 90.30628497949627
+  },
+  "বেলাইচণ্ডি (Belaichondi)": {
+    "id": 325,
+    "code": "N325",
+    "nameBn": "বেলাইচণ্ডি",
+    "nameEn": "Belaichondi",
+    "lat": 25.726119301035837,
+    "lng": 88.90653208954853
+  },
+  "বিপুলাসার (Bipulshar)": {
+    "id": 326,
+    "code": "N326",
+    "nameBn": "বিপুলাসার",
+    "nameEn": "Bipulshar",
+    "lat": 23.0774414,
+    "lng": 91.1080539
+  },
+  "বীরকুটশা (Birkutsha)": {
+    "id": 327,
+    "code": "N327",
+    "nameBn": "বীরকুটশা",
+    "nameEn": "Birkutsha",
+    "lat": 24.55941586773981,
+    "lng": 88.96447999574522
+  },
+  "বজরা (Bojra)": {
+    "id": 329,
+    "code": "N329",
+    "nameBn": "বজরা",
+    "nameEn": "Bojra",
+    "lat": 22.9919084,
+    "lng": 91.1007724
+  },
+  "বনানী (Bonani)": {
+    "id": 330,
+    "code": "N330",
+    "nameBn": "বনানী",
+    "nameEn": "Bonani",
+    "lat": 23.7956384,
+    "lng": 90.4006622
+  },
+  "বরমচাল (Boromchal)": {
+    "id": 331,
+    "code": "N331",
+    "nameBn": "বরমচাল",
+    "nameEn": "Boromchal",
+    "lat": 24.58732847606264,
+    "lng": 91.97889728682513
+  },
+  "চব্বিশনগর (Chabbish Nagar)": {
+    "id": 332,
+    "code": "N332",
+    "nameBn": "চব্বিশনগর",
+    "nameEn": "Chabbish Nagar",
+    "lat": 24.4719627,
+    "lng": 88.4941639
+  },
+  "চেঙ্গুটিয়া (Chengutia)": {
+    "id": 333,
+    "code": "N333",
+    "nameBn": "চেঙ্গুটিয়া",
+    "nameEn": "Chengutia",
+    "lat": 23.0761996,
+    "lng": 89.3653675
+  },
+  "ছকাপন (Chokapon)": {
+    "id": 334,
+    "code": "N334",
+    "nameBn": "ছকাপন",
+    "nameEn": "Chokapon",
+    "lat": 24.5589718,
+    "lng": 92.0165639
+  },
+  "চৌধুরাণী (Chowdhurani)": {
+    "id": 335,
+    "code": "N335",
+    "nameBn": "চৌধুরাণী",
+    "nameEn": "Chowdhurani",
+    "lat": 25.6078307,
+    "lng": 89.4200804
+  },
+  "চুলকাটি বাজার (Chulkati Bazar)": {
+    "id": 336,
+    "code": "N336",
+    "nameBn": "চুলকাটি বাজার",
+    "nameEn": "Chulkati Bazar",
+    "lat": 22.6913336,
+    "lng": 89.6491444
+  },
+  "দারোয়ানী (Darwani)": {
+    "id": 337,
+    "code": "N337",
+    "nameBn": "দারোয়ানী",
+    "nameEn": "Darwani",
+    "lat": 25.883552,
+    "lng": 88.8404133
+  },
+  "ঢাকা ক্যান্টনমেন্ট (Dhaka Cantt)": {
+    "id": 338,
+    "code": "N338",
+    "nameBn": "ঢাকা ক্যান্টনমেন্ট",
+    "nameEn": "Dhaka Cantt",
+    "lat": 23.8164851,
+    "lng": 90.411756
+  },
+  "ধীরাশ্রম (Dhirasrom)": {
+    "id": 339,
+    "code": "N339",
+    "nameBn": "ধীরাশ্রম",
+    "nameEn": "Dhirasrom",
+    "lat": 23.959044,
+    "lng": 90.4156043
+  },
+  "ঢোলা (Dhola)": {
+    "id": 340,
+    "code": "N340",
+    "nameBn": "ঢোলা",
+    "nameEn": "Dhola",
+    "lat": 24.5316832,
+    "lng": 90.5086535
+  },
+  "দিলপাশার (Dilpashar)": {
+    "id": 341,
+    "code": "N341",
+    "nameBn": "দিলপাশার",
+    "nameEn": "Dilpashar",
+    "lat": 24.2396152,
+    "lng": 89.4472588
+  },
+  "দৌলতগঞ্জ (Doulatganj)": {
+    "id": 342,
+    "code": "N342",
+    "nameBn": "দৌলতগঞ্জ",
+    "nameEn": "Doulatganj",
+    "lat": 23.2354525,
+    "lng": 91.119561
+  },
+  "দৌলতকান্দি (Doulatkandi)": {
+    "id": 343,
+    "code": "N343",
+    "nameBn": "দৌলতকান্দি",
+    "nameEn": "Doulatkandi",
+    "lat": 24.0232458,
+    "lng": 90.9496729
+  },
+  "দুরমুঠ (Durmuth)": {
+    "id": 344,
+    "code": "N344",
+    "nameBn": "দুরমুঠ",
+    "nameEn": "Durmuth",
+    "lat": 25.0313504,
+    "lng": 89.8188195
+  },
+  "ফাতেমানগর (Fatema Nagar)": {
+    "id": 345,
+    "code": "N345",
+    "nameBn": "ফাতেমানগর",
+    "nameEn": "Fatema Nagar",
+    "lat": 24.6332454,
+    "lng": 90.4615241
+  },
+  "ফেঞ্চুগঞ্জ (Fenchuganj)": {
+    "id": 346,
+    "code": "N346",
+    "nameBn": "ফেঞ্চুগঞ্জ",
+    "nameEn": "Fenchuganj",
+    "lat": 24.6928866,
+    "lng": 91.9467453
+  },
+  "ফুলতলা (Fultola)": {
+    "id": 347,
+    "code": "N347",
+    "nameBn": "ফুলতলা",
+    "nameEn": "Fultola",
+    "lat": 22.9782193,
+    "lng": 89.4469726
+  },
+  "গাবতলী (Gabtoli)": {
+    "id": 348,
+    "code": "N348",
+    "nameBn": "গাবতলী",
+    "nameEn": "Gabtoli",
+    "lat": 24.8854018,
+    "lng": 89.4518223
+  },
+  "গেন্ডারিয়া (Gandaria)": {
+    "id": 349,
+    "code": "N349",
+    "nameBn": "গেন্ডারিয়া",
+    "nameEn": "Gandaria",
+    "lat": 23.701598891354912,
+    "lng": 90.42924913777728
+  },
+  "গঙ্গাসাগর (Gangashagor)": {
+    "id": 350,
+    "code": "N350",
+    "nameBn": "গঙ্গাসাগর",
+    "nameEn": "Gangashagor",
+    "lat": 23.8262019,
+    "lng": 91.1941102
+  },
+  "গফুরাবাদ (Gofurabad)": {
+    "id": 352,
+    "code": "N352",
+    "nameBn": "গফুরাবাদ",
+    "nameEn": "Gofurabad",
+    "lat": 24.17863552941472,
+    "lng": 89.22002063224008
+  },
+  "গোলাবাড়ী (Golabari)": {
+    "id": 353,
+    "code": "N353",
+    "nameBn": "গোলাবাড়ী",
+    "nameEn": "Golabari",
+    "lat": 24.777787042427363,
+    "lng": 88.36944312065035
+  },
+  "গুয়াখড়া (Guakhara)": {
+    "id": 354,
+    "code": "N354",
+    "nameBn": "গুয়াখড়া",
+    "nameEn": "Guakhara",
+    "lat": 24.200796180369448,
+    "lng": 89.32349127480764
+  },
+  "হালসা (Halsa)": {
+    "id": 355,
+    "code": "N355",
+    "nameBn": "হালসা",
+    "nameEn": "Halsa",
+    "lat": 23.8150876,
+    "lng": 88.9914557
+  },
+  "হাসানগঞ্জ (Hasanganj)": {
+    "id": 356,
+    "code": "N356",
+    "nameBn": "হাসানগঞ্জ",
+    "nameEn": "Hasanganj",
+    "lat": 25.5723014,
+    "lng": 89.4297079
+  },
+  "হাটুভাঙ্গা (Hatubhanga)": {
+    "id": 357,
+    "code": "N357",
+    "nameBn": "হাটুভাঙ্গা",
+    "nameEn": "Hatubhanga",
+    "lat": 23.96963989033462,
+    "lng": 90.82438668459639
+  },
+  "হরিনারায়ণপুর (Horinaraynpur)": {
+    "id": 358,
+    "code": "N358",
+    "nameBn": "হরিনারায়ণপুর",
+    "nameEn": "Horinaraynpur",
+    "lat": 22.8543487,
+    "lng": 91.1039068
+  },
+  "হরষপুর (Horoshpur)": {
+    "id": 359,
+    "code": "N359",
+    "nameBn": "হরষপুর",
+    "nameEn": "Horoshpur",
+    "lat": 24.01725624460883,
+    "lng": 91.3106503793724
+  },
+  "হরিয়ান (Horyan)": {
+    "id": 360,
+    "code": "N360",
+    "nameBn": "হরিয়ান",
+    "nameEn": "Horyan",
+    "lat": 24.375666,
+    "lng": 88.6858606
+  },
+  "ইজ্জতপুর (Ijjatpur)": {
+    "id": 361,
+    "code": "N361",
+    "nameBn": "ইজ্জতপুর",
+    "nameEn": "Ijjatpur",
+    "lat": 24.1441366,
+    "lng": 90.4630267
+  },
+  "ইমামবাড়ী (Imambari)": {
+    "id": 362,
+    "code": "N362",
+    "nameBn": "ইমামবাড়ী",
+    "nameEn": "Imambari",
+    "lat": 23.792542640261406,
+    "lng": 91.17340509551094
+  },
+  "ঈশ্বরগঞ্জ (Ishwarganj)": {
+    "id": 363,
+    "code": "N363",
+    "nameBn": "ঈশ্বরগঞ্জ",
+    "nameEn": "Ishwarganj",
+    "lat": 24.692113,
+    "lng": 90.5943955
+  },
+  "জাফরপুর (Jaforpur)": {
+    "id": 364,
+    "code": "N364",
+    "nameBn": "জাফরপুর",
+    "nameEn": "Jaforpur",
+    "lat": 24.9210169,
+    "lng": 89.0145947
+  },
+  "জালশুকা (Jalsuka)": {
+    "id": 365,
+    "code": "N365",
+    "nameBn": "জালশুকা",
+    "nameEn": "Jalsuka",
+    "lat": 24.908065287638294,
+    "lng": 90.59403419599164
+  },
+  "জারিয়া ঝাঞ্জাইল (Jariajhanzile)": {
+    "id": 366,
+    "code": "N366",
+    "nameBn": "জারিয়া ঝাঞ্জাইল",
+    "nameEn": "Jariajhanzile",
+    "lat": 25.0095334,
+    "lng": 90.6487844
+  },
+  "যশোর ক্যান্টনমেন্ট (Jashore Cantt)": {
+    "id": 367,
+    "code": "N367",
+    "nameBn": "যশোর ক্যান্টনমেন্ট",
+    "nameEn": "Jashore Cantt",
+    "lat": 23.1928545,
+    "lng": 89.1809837
+  },
+  "জিনারদী (Jinardi)": {
+    "id": 368,
+    "code": "N368",
+    "nameBn": "জিনারদী",
+    "nameEn": "Jinardi",
+    "lat": 23.93050386913268,
+    "lng": 90.6742758121153
+  },
+  "জয়রামপুর (Joyrampur)": {
+    "id": 369,
+    "code": "N369",
+    "nameBn": "জয়রামপুর",
+    "nameEn": "Joyrampur",
+    "lat": 23.5740232,
+    "lng": 88.8107893
+  },
+  "কাহালু (Kahalu)": {
+    "id": 370,
+    "code": "N370",
+    "nameBn": "কাহালু",
+    "nameEn": "Kahalu",
+    "lat": 24.8367998,
+    "lng": 89.3012521
+  },
+  "কালিকাপ্রসাদ (Kalikaprosad)": {
+    "id": 371,
+    "code": "N371",
+    "nameBn": "কালিকাপ্রসাদ",
+    "nameEn": "Kalikaprosad",
+    "lat": 24.0920425,
+    "lng": 90.9393213
+  },
+  "কামারপাড়া (Kamarpara)": {
+    "id": 372,
+    "code": "N372",
+    "nameBn": "কামারপাড়া",
+    "nameEn": "Kamarpara",
+    "lat": 25.4352938,
+    "lng": 89.4986836
+  },
+  "কাটাখালী (Katakhali)": {
+    "id": 374,
+    "code": "N374",
+    "nameBn": "কাটাখালী",
+    "nameEn": "Katakhali",
+    "lat": 22.7343368,
+    "lng": 89.6329939
+  },
+  "খানাবাড়ী (Khanbari)": {
+    "id": 375,
+    "code": "N375",
+    "nameBn": "খানাবাড়ী",
+    "nameEn": "Khanbari",
+    "lat": 23.9533457,
+    "lng": 90.7986482
+  },
+  "খানখানাপুর (Khankhanapur)": {
+    "id": 376,
+    "code": "N376",
+    "nameBn": "খানখানাপুর",
+    "nameEn": "Khankhanapur",
+    "lat": 23.7014234,
+    "lng": 89.7136564
+  },
+  "খিলা (Khila)": {
+    "id": 377,
+    "code": "N377",
+    "nameBn": "খিলা",
+    "nameEn": "Khila",
+    "lat": 23.1710894,
+    "lng": 91.1287129
+  },
+  "খয়রাতনগর (Khoyrat Nagar)": {
+    "id": 378,
+    "code": "N378",
+    "nameBn": "খয়রাতনগর",
+    "nameEn": "Khoyrat Nagar",
+    "lat": 25.8538096,
+    "lng": 88.8515026
+  },
+  "কুপতলা (Kuptola)": {
+    "id": 379,
+    "code": "N379",
+    "nameBn": "কুপতলা",
+    "nameEn": "Kuptola",
+    "lat": 25.3744988,
+    "lng": 89.5283265
+  },
+  "কুষ্টিয়া (Kushtia)": {
+    "id": 380,
+    "code": "N380",
+    "nameBn": "কুষ্টিয়া",
+    "nameEn": "Kushtia",
+    "lat": 23.9026083,
+    "lng": 89.1454961
+  },
+  "লাহিড়ী মোহনপুর (Lahiri Mohonpur)": {
+    "id": 381,
+    "code": "N381",
+    "nameBn": "লাহিড়ী মোহনপুর",
+    "nameEn": "Lahiri Mohonpur",
+    "lat": 24.2608885,
+    "lng": 89.4991381
+  },
+  "লালমাই (Lalmai)": {
+    "id": 382,
+    "code": "N382",
+    "nameBn": "লালমাই",
+    "nameEn": "Lalmai",
+    "lat": 23.307723,
+    "lng": 91.1388728
+  },
+  "লংলা (Longla)": {
+    "id": 383,
+    "code": "N383",
+    "nameBn": "লংলা",
+    "nameEn": "Longla",
+    "lat": 24.4628494,
+    "lng": 91.9878266
+  },
+  "মাছপাড়া (Machpara)": {
+    "id": 384,
+    "code": "N384",
+    "nameBn": "মাছপাড়া",
+    "nameEn": "Machpara",
+    "lat": 23.8041753,
+    "lng": 89.3579511
+  },
+  "মাইজদী (Maijdi)": {
+    "id": 385,
+    "code": "N385",
+    "nameBn": "মাইজদী",
+    "nameEn": "Maijdi",
+    "lat": 22.88253955057961,
+    "lng": 91.10874006113883
+  },
+  "মালঞ্চি (Malonchi)": {
+    "id": 386,
+    "code": "N386",
+    "nameBn": "মালঞ্চি",
+    "nameEn": "Malonchi",
+    "lat": 24.3060341,
+    "lng": 88.9634765
+  },
+  "মোগলাবাজার (Moghla bazar)": {
+    "id": 387,
+    "code": "N387",
+    "nameBn": "মোগলাবাজার",
+    "nameEn": "Moghla bazar",
+    "lat": 24.7982642,
+    "lng": 91.9103958
+  },
+  "মেহেরুল্লানগর (Meherulla Nagar)": {
+    "id": 388,
+    "code": "N388",
+    "nameBn": "মেহেরুল্লানগর",
+    "nameEn": "Meherulla Nagar",
+    "lat": 23.2166493,
+    "lng": 89.1639261
+  },
+  "মীর্জাগঞ্জ (Mirzaganj)": {
+    "id": 389,
+    "code": "N389",
+    "nameBn": "মীর্জাগঞ্জ",
+    "nameEn": "Mirzaganj",
+    "lat": 26.1755767,
+    "lng": 88.8006233
+  },
+  "মোহম্মদনগর (Mohammad Nagar)": {
+    "id": 390,
+    "code": "N390",
+    "nameBn": "মোহম্মদনগর",
+    "nameEn": "Mohammad Nagar",
+    "lat": 22.7915435,
+    "lng": 89.5200253
+  },
+  "মহেড়া (Mohera)": {
+    "id": 391,
+    "code": "N391",
+    "nameBn": "মহেড়া",
+    "nameEn": "Mohera",
+    "lat": 24.1682868,
+    "lng": 90.0315026
+  },
+  "মমিনপুর (Mominpur)": {
+    "id": 392,
+    "code": "N392",
+    "nameBn": "মমিনপুর",
+    "nameEn": "Mominpur",
+    "lat": 23.6841652661942,
+    "lng": 88.87890544329217
+  },
+  "মন্দবাগ (Mondobag)": {
+    "id": 393,
+    "code": "N393",
+    "nameBn": "মন্দবাগ",
+    "nameEn": "Mondobag",
+    "lat": 23.688251610986296,
+    "lng": 91.1523972812806
+  },
+  "মংলা (Mongla)": {
+    "id": 394,
+    "code": "N394",
+    "nameBn": "মংলা",
+    "nameEn": "Mongla",
+    "lat": 22.4775686,
+    "lng": 89.5996016
+  },
+  "মনু (Monu)": {
+    "id": 395,
+    "code": "N395",
+    "nameBn": "মনু",
+    "nameEn": "Monu",
+    "lat": 24.4260991,
+    "lng": 91.9393099
+  },
+  "মশাখালী (Moshakhali)": {
+    "id": 396,
+    "code": "N396",
+    "nameBn": "মশাখালী",
+    "nameEn": "Moshakhali",
+    "lat": 24.3854759,
+    "lng": 90.53586
+  },
+  "মোশারফগঞ্জ (Mosharofganj)": {
+    "id": 397,
+    "code": "N397",
+    "nameBn": "মোশারফগঞ্জ",
+    "nameEn": "Mosharofganj",
+    "lat": 25.1081582,
+    "lng": 89.7735965
+  },
+  "মৌচাক (Mowchak)": {
+    "id": 398,
+    "code": "N398",
+    "nameBn": "মৌচাক",
+    "nameEn": "Mowchak",
+    "lat": 24.0389476,
+    "lng": 90.2823129
+  },
+  "মুহুরীগঞ্জ (Muhuriganj)": {
+    "id": 399,
+    "code": "N399",
+    "nameBn": "মুহুরীগঞ্জ",
+    "nameEn": "Muhuriganj",
+    "lat": 22.9392387,
+    "lng": 91.5144087
+  },
+  "মুন্সীগঞ্জ (Munshiganj)": {
+    "id": 400,
+    "code": "N400",
+    "nameBn": "মুন্সীগঞ্জ",
+    "nameEn": "Munshiganj",
+    "lat": 23.7169269,
+    "lng": 88.8944273
+  },
+  "ময়মনসিংহ রোড (Mymensingh Road)": {
+    "id": 401,
+    "code": "N401",
+    "nameBn": "ময়মনসিংহ রোড",
+    "nameEn": "Mymensingh Road",
+    "lat": 24.7739755,
+    "lng": 90.3675008
+  },
+  "নান্দাইল রোড (Nandail Road)": {
+    "id": 402,
+    "code": "N402",
+    "nameBn": "নান্দাইল রোড",
+    "nameEn": "Nandail Road",
+    "lat": 24.5791363,
+    "lng": 90.7480869
+  },
+  "নন্দনগাছি (Nandigachi)": {
+    "id": 403,
+    "code": "N403",
+    "nameBn": "নন্দনগাছি",
+    "nameEn": "Nandigachi",
+    "lat": 24.3152438,
+    "lng": 88.8014623
+  },
+  "নাভারন (Navaron)": {
+    "id": 404,
+    "code": "N404",
+    "nameBn": "নাভারন",
+    "nameEn": "Navaron",
+    "lat": 23.0556728,
+    "lng": 88.9941161
+  },
+  "নেত্রকোনা কোর্ট (Netrakona Court)": {
+    "id": 405,
+    "code": "N405",
+    "nameBn": "নেত্রকোনা কোর্ট",
+    "nameEn": "Netrakona Court",
+    "lat": 24.88746312765455,
+    "lng": 90.73148671151704
+  },
+  "নীলগঞ্জ (Nilganj)": {
+    "id": 406,
+    "code": "N406",
+    "nameBn": "নীলগঞ্জ",
+    "nameEn": "Nilganj",
+    "lat": 24.496994,
+    "lng": 90.7927844
+  },
+  "নিমতলী বাজার (Nimtola Bazar)": {
+    "id": 407,
+    "code": "N407",
+    "nameBn": "নিমতলী বাজার",
+    "nameEn": "Nimtola Bazar",
+    "lat": 24.8389374,
+    "lng": 90.2298879
+  },
+  "নিজামপুর (Nizampur)": {
+    "id": 408,
+    "code": "N408",
+    "nameBn": "নিজামপুর",
+    "nameEn": "Nizampur",
+    "lat": 24.69112959381457,
+    "lng": 88.41737934821695
+  },
+  "নলডাঙ্গা (Noldanga)": {
+    "id": 409,
+    "code": "N409",
+    "nameBn": "নলডাঙ্গা",
+    "nameEn": "Noldanga",
+    "lat": 25.4809872,
+    "lng": 89.4744694
+  },
+  "নলডাঙ্গার হাট (Noldangarhat)": {
+    "id": 410,
+    "code": "N410",
+    "nameBn": "নলডাঙ্গার হাট",
+    "nameEn": "Noldangarhat",
+    "lat": 24.5025233,
+    "lng": 88.9593029
+  },
+  "নসরতপুর (Noshrotpur)": {
+    "id": 411,
+    "code": "N411",
+    "nameBn": "নসরতপুর",
+    "nameEn": "Noshrotpur",
+    "lat": 24.813739541678473,
+    "lng": 89.0762289123491
+  },
+  "অন্নদানগর (Onnoda Nagar)": {
+    "id": 412,
+    "code": "N412",
+    "nameBn": "অন্নদানগর",
+    "nameEn": "Onnoda Nagar",
+    "lat": 25.7337011,
+    "lng": 89.40934
+  },
+  "পাঁচপীর মাজার (Pachpirmazar)": {
+    "id": 413,
+    "code": "N413",
+    "nameBn": "পাঁচপীর মাজার",
+    "nameEn": "Pachpirmazar",
+    "lat": 24.8272316,
+    "lng": 89.2213596
+  },
+  "পাঘাচং (Paghachong)": {
+    "id": 414,
+    "code": "N414",
+    "nameBn": "পাঘাচং",
+    "nameEn": "Paghachong",
+    "lat": 23.9240514,
+    "lng": 91.1389909
+  },
+  "পাঁচপীর (Panchpir)": {
+    "id": 415,
+    "code": "N415",
+    "nameBn": "পাঁচপীর",
+    "nameEn": "Panchpir",
+    "lat": 25.7354794,
+    "lng": 89.6247109
+  },
+  "পুবাইল (Pubail)": {
+    "id": 416,
+    "code": "N416",
+    "nameBn": "পুবাইল",
+    "nameEn": "Pubail",
+    "lat": 23.936386149557514,
+    "lng": 90.4781411912712
+  },
+  "পূর্বধলা (Purbadhola)": {
+    "id": 417,
+    "code": "N417",
+    "nameBn": "পূর্বধলা",
+    "nameEn": "Purbadhola",
+    "lat": 24.9514052,
+    "lng": 90.6043494
+  },
+  "রাজশাহী বিশ্ববিদ্যালয় (Raj Univ)": {
+    "id": 418,
+    "code": "N418",
+    "nameBn": "রাজশাহী বিশ্ববিদ্যালয়",
+    "nameEn": "Raj Univ",
+    "lat": 24.3755524,
+    "lng": 88.6452238
+  },
+  "রাজাপুর (Rajapur)": {
+    "id": 419,
+    "code": "N419",
+    "nameBn": "রাজাপুর",
+    "nameEn": "Rajapur",
+    "lat": 23.5773659,
+    "lng": 91.1540124
+  },
+  "রাজারহাট (Rajarhat)": {
+    "id": 420,
+    "code": "N420",
+    "nameBn": "রাজারহাট",
+    "nameEn": "Rajarhat",
+    "lat": 25.7986349,
+    "lng": 89.5475423
+  },
+  "রাজেন্দ্রপুর (Rajendrapur)": {
+    "id": 421,
+    "code": "N421",
+    "nameBn": "রাজেন্দ্রপুর",
+    "nameEn": "Rajendrapur",
+    "lat": 24.0974023,
+    "lng": 90.4490578
+  },
+  "রাণীনগর (Rani Nagar)": {
+    "id": 422,
+    "code": "N422",
+    "nameBn": "রাণীনগর",
+    "nameEn": "Rani Nagar",
+    "lat": 24.7414369,
+    "lng": 88.9696135
+  },
+  "রমনা বাজার (Romnabazar)": {
+    "id": 423,
+    "code": "N423",
+    "nameBn": "রমনা বাজার",
+    "nameEn": "Romnabazar",
+    "lat": 25.5783216,
+    "lng": 89.6732638
+  },
+  "রশিদপুর (Roshidpur)": {
+    "id": 424,
+    "code": "N424",
+    "nameBn": "রশিদপুর",
+    "nameEn": "Roshidpur",
+    "lat": 24.2810293,
+    "lng": 91.5643724
+  },
+  "রূপদিয়া (Rupdia)": {
+    "id": 425,
+    "code": "N425",
+    "nameBn": "রূপদিয়া",
+    "nameEn": "Rupdia",
+    "lat": 23.1253238,
+    "lng": 89.2866
+  },
+  "সৈয়দ আহমেদ কলেজ (Sayedahmed College)": {
+    "id": 426,
+    "code": "N426",
+    "nameBn": "সৈয়দ আহমেদ কলেজ",
+    "nameEn": "Sayedahmed College",
+    "lat": 24.9446108,
+    "lng": 89.4921073
+  },
+  "সাহাগোলা (Shahagola)": {
+    "id": 427,
+    "code": "N427",
+    "nameBn": "সাহাগোলা",
+    "nameEn": "Shahagola",
+    "lat": 24.6790971,
+    "lng": 88.975599
+  },
+  "সালদানদী (Shaldanodi)": {
+    "id": 428,
+    "code": "N428",
+    "nameBn": "সালদানদী",
+    "nameEn": "Shaldanodi",
+    "lat": 23.67081833840616,
+    "lng": 91.15586810500665
+  },
+  "শরৎনগর (Sharat Nagar)": {
+    "id": 429,
+    "code": "N429",
+    "nameBn": "শরৎনগর",
+    "nameEn": "Sharat Nagar",
+    "lat": 24.222281,
+    "lng": 89.4058946
+  },
+  "সাত খামাইর (Shatkhamair)": {
+    "id": 430,
+    "code": "N430",
+    "nameBn": "সাত খামাইর",
+    "nameEn": "Shatkhamair",
+    "lat": 24.2343597,
+    "lng": 90.490244
+  },
+  "শিঙ্গারদাবাড়ী (Shingardabari)": {
+    "id": 431,
+    "code": "N431",
+    "nameBn": "শিঙ্গারদাবাড়ী",
+    "nameEn": "Shingardabari",
+    "lat": 25.8043948,
+    "lng": 89.5032228
+  },
+  "সিতলাই (Shitolai)": {
+    "id": 432,
+    "code": "N432",
+    "nameBn": "সিতলাই",
+    "nameEn": "Shitolai",
+    "lat": 24.421396968788716,
+    "lng": 88.52687711067658
+  },
+  "সদর রসুলপুর (Shodor Roshulpur)": {
+    "id": 433,
+    "code": "N433",
+    "nameBn": "সদর রসুলপুর",
+    "nameEn": "Shodor Roshulpur",
+    "lat": 23.51933948751527,
+    "lng": 91.16863313371623
+  },
+  "সোহাগী (Shohagi)": {
+    "id": 434,
+    "code": "N434",
+    "nameBn": "সোহাগী",
+    "nameEn": "Shohagi",
+    "lat": 24.689063189275387,
+    "lng": 90.65403827269985
+  },
+  "সলপ (Sholop)": {
+    "id": 435,
+    "code": "N435",
+    "nameBn": "সলপ",
+    "nameEn": "Sholop",
+    "lat": 24.316238,
+    "lng": 89.6123489
+  },
+  "শম্ভুগঞ্জ (Shombhuganj)": {
+    "id": 436,
+    "code": "N436",
+    "nameBn": "শম্ভুগঞ্জ",
+    "nameEn": "Shombhuganj",
+    "lat": 24.759939,
+    "lng": 90.4495884
+  },
+  "শ্রীনিধি (Shrinidhi)": {
+    "id": 437,
+    "code": "N437",
+    "nameBn": "শ্রীনিধি",
+    "nameEn": "Shrinidhi",
+    "lat": 24.005868491860493,
+    "lng": 90.90241476245376
+  },
+  "সুন্দরপুর (Shundarpur)": {
+    "id": 438,
+    "code": "N438",
+    "nameBn": "সুন্দরপুর",
+    "nameEn": "Shundarpur",
+    "lat": 23.415557,
+    "lng": 89.0848253
+  },
+  "শ্রীনগর (Sreenagar)": {
+    "id": 439,
+    "code": "N439",
+    "nameBn": "শ্রীনগর",
+    "nameEn": "Sreenagar",
+    "lat": 23.5384279,
+    "lng": 90.2918947
+  },
+  "সুখানপুকুর (Sukhanpukur)": {
+    "id": 440,
+    "code": "N440",
+    "nameBn": "সুখানপুকুর",
+    "nameEn": "Sukhanpukur",
+    "lat": 24.9285869,
+    "lng": 89.4812582
+  },
+  "সুতিয়াখালী (Sutiakhali)": {
+    "id": 441,
+    "code": "N441",
+    "nameBn": "সুতিয়াখালী",
+    "nameEn": "Sutiakhali",
+    "lat": 24.6962828,
+    "lng": 90.451822
+  },
+  "টগরাই হাট (Tagraihat)": {
+    "id": 442,
+    "code": "N442",
+    "nameBn": "টগরাই হাট",
+    "nameEn": "Tagraihat",
+    "lat": 25.808329,
+    "lng": 89.5897379
+  },
+  "তালশহর (Talshohor)": {
+    "id": 443,
+    "code": "N443",
+    "nameBn": "তালশহর",
+    "nameEn": "Talshohor",
+    "lat": 24.010361,
+    "lng": 91.0381725
+  },
+  "তেজগাঁও (Tejgao)": {
+    "id": 444,
+    "code": "N444",
+    "nameBn": "তেজগাঁও",
+    "nameEn": "Tejgao",
+    "lat": 23.7603609,
+    "lng": 90.3949899
+  },
+  "টিলাগাঁও (Tilagao)": {
+    "id": 445,
+    "code": "N445",
+    "nameBn": "টিলাগাঁও",
+    "nameEn": "Tilagao",
+    "lat": 24.4466781,
+    "lng": 91.966132
+  },
+  "টঙ্গী (Tongi)": {
+    "id": 446,
+    "code": "N446",
+    "nameBn": "টঙ্গী",
+    "nameEn": "Tongi",
+    "lat": 23.898655184573798,
+    "lng": 90.40836938508824
+  },
+  "তরণীবাড়ী (Toronibari)": {
+    "id": 447,
+    "code": "N447",
+    "nameBn": "তরণীবাড়ী",
+    "nameEn": "Toronibari",
+    "lat": 26.0237589,
+    "lng": 88.8240929
+  },
+  "ত্রিমোহনী (Trimohini)": {
+    "id": 448,
+    "code": "N448",
+    "nameBn": "ত্রিমোহনী",
+    "nameEn": "Trimohini",
+    "lat": 25.2836027,
+    "lng": 89.5430013
+  },
+  "উলিপুর (Ulipur)": {
+    "id": 449,
+    "code": "N449",
+    "nameBn": "উলিপুর",
+    "nameEn": "Ulipur",
+    "lat": 25.6525263,
+    "lng": 89.6237815
+  },
+  "ভেলুরপাড়া (Velurpara)": {
+    "id": 450,
+    "code": "N450",
+    "nameBn": "ভেলুরপাড়া",
+    "nameEn": "Velurpara",
+    "lat": 24.9870521,
+    "lng": 89.5014576
+  },
+  "ইয়াছিনপুর (Yasinpur)": {
+    "id": 451,
+    "code": "N451",
+    "nameBn": "ইয়াছিনপুর",
+    "nameEn": "Yasinpur",
+    "lat": 24.3622909,
+    "lng": 88.9639411
+  },
+  "উথলী (Utholi)": {
+    "id": 452,
+    "code": "N452",
+    "nameBn": "উথলী",
+    "nameEn": "Utholi",
+    "lat": 23.492443,
+    "lng": 88.8453879
+  },
+  "তিলকপুর (Tilokpur)": {
+    "id": 453,
+    "code": "N453",
+    "nameBn": "তিলকপুর",
+    "nameEn": "Tilokpur",
+    "lat": 24.877177,
+    "lng": 89.0018766
+  },
+  "ঘোড়াশাল (Ghorashal)": {
+    "id": 454,
+    "code": "N454",
+    "nameBn": "ঘোড়াশাল",
+    "nameEn": "Ghorashal",
+    "lat": 23.940490205875143,
+    "lng": 90.61982370759083
+  },
+  "নামুরিরহাট (Namurirhat)": {
+    "id": 455,
+    "code": "N455",
+    "nameBn": "নামুরিরহাট",
+    "nameEn": "Namurirhat",
+    "lat": 25.940195,
+    "lng": 89.306015
+  },
+  "চট্টগ্রাম ক্যান্টনমেন্ট (Chittagong Cantonment)": {
+    "id": 456,
+    "code": "N456",
+    "nameBn": "চট্টগ্রাম ক্যান্টনমেন্ট",
+    "nameEn": "Chittagong Cantonment",
+    "lat": 22.4172316,
+    "lng": 91.8136497
+  },
+  "বটতলী (Bottoli)": {
+    "id": 457,
+    "code": "N457",
+    "nameBn": "বটতলী",
+    "nameEn": "Bottoli",
+    "lat": 22.335040462596112,
+    "lng": 91.82583137133007
+  },
+  "ঝাউতলা (Jhawtola)": {
+    "id": 458,
+    "code": "N458",
+    "nameBn": "ঝাউতলা",
+    "nameEn": "Jhawtola",
+    "lat": 22.356557559248234,
+    "lng": 91.80752261254024
+  },
+  "চৌধুরীহাট (Chowdhury Hat)": {
+    "id": 459,
+    "code": "N459",
+    "nameBn": "চৌধুরীহাট",
+    "nameEn": "Chowdhury Hat",
+    "lat": 22.446261783366907,
+    "lng": 91.81798602729287
+  },
+  "ফতেয়াবাদ (Fateyabad)": {
+    "id": 460,
+    "code": "N460",
+    "nameBn": "ফতেয়াবাদ",
+    "nameEn": "Fateyabad",
+    "lat": 22.45889589382217,
+    "lng": 91.81156208561154
+  },
+  "চট্টগ্রাম বিশ্ববিদ্যালয় (Chittagong University)": {
+    "id": 461,
+    "code": "N461",
+    "nameBn": "চট্টগ্রাম বিশ্ববিদ্যালয়",
+    "nameEn": "Chittagong University",
+    "lat": 22.4706405,
+    "lng": 91.7943422
+  },
+  "বিষকা (Biska)": {
+    "id": 1454,
+    "code": "N1454",
+    "nameBn": "বিষকা",
+    "nameEn": "Biska",
+    "lat": 24.758214123458064,
+    "lng": 90.51512024035668
+  },
+  "সাতগাঁও (Satgao)": {
+    "id": 1455,
+    "code": "N1455",
+    "nameBn": "সাতগাঁও",
+    "nameEn": "Satgao",
+    "lat": 24.2888606,
+    "lng": 91.6655539
+  },
+  "নাওটি (Nauti)": {
+    "id": 1456,
+    "code": "N1456",
+    "nameBn": "নাওটি",
+    "nameEn": "Nauti",
+    "lat": 23.20078384623597,
+    "lng": 91.15929362492147
+  },
+  "শর্শদি (Sharshadi)": {
+    "id": 1457,
+    "code": "N1457",
+    "nameBn": "শর্শদি",
+    "nameEn": "Sharshadi",
+    "lat": 23.058556737598614,
+    "lng": 91.33902128476537
+  },
+  "বোকাইনগর (Bokainagar)": {
+    "id": 1458,
+    "code": "N1458",
+    "nameBn": "বোকাইনগর",
+    "nameEn": "Bokainagar",
+    "lat": 24.729191866486676,
+    "lng": 90.58166716410591
+  },
+  "ছয়সূতি (Chaysuti)": {
+    "id": 1459,
+    "code": "N1459",
+    "nameBn": "ছয়সূতি",
+    "nameEn": "Chaysuti",
+    "lat": 24.1241927,
+    "lng": 90.9156836
+  },
+  "হালিমপুর মকসুদ (Halimpur Moksud)": {
+    "id": 1460,
+    "code": "N1460",
+    "nameBn": "হালিমপুর মকসুদ",
+    "nameEn": "Halimpur Moksud",
+    "lat": 24.2503923,
+    "lng": 90.8790234
+  },
+  "মুসুলী (Musuli)": {
+    "id": 1461,
+    "code": "N1461",
+    "nameBn": "মুসুলী",
+    "nameEn": "Musuli",
+    "lat": 24.5460204,
+    "lng": 90.7700066
+  },
+  "ঘোড়াশাল ফ্ল্যাগ (Ghorashal Flag)": {
+    "id": 1462,
+    "code": "N1462",
+    "nameBn": "ঘোড়াশাল ফ্ল্যাগ",
+    "nameEn": "Ghorashal Flag",
+    "lat": 23.940515443554634,
+    "lng": 90.61976726136122
+  },
+  "রামদিয়া (Ramdiya)": {
+    "id": 1468,
+    "code": "N1468",
+    "nameBn": "রামদিয়া",
+    "nameEn": "Ramdiya",
+    "lat": 23.707298898185197,
+    "lng": 89.52455516270722
+  },
+  "আড়কান্দি (Arkandi)": {
+    "id": 1469,
+    "code": "N1469",
+    "nameBn": "আড়কান্দি",
+    "nameEn": "Arkandi",
+    "lat": 23.638826005473003,
+    "lng": 89.5800669879538
+  },
+  "ঘোড়াখালী (Ghorakhalı)": {
+    "id": 1470,
+    "code": "N1470",
+    "nameBn": "ঘোড়াখালী",
+    "nameEn": "Ghorakhalı",
+    "lat": 23.4873087,
+    "lng": 89.6378388
+  },
+  "সাতৈর (Satair)": {
+    "id": 1471,
+    "code": "N1471",
+    "nameBn": "সাতৈর",
+    "nameEn": "Satair",
+    "lat": 23.434543510985538,
+    "lng": 89.66493650658194
+  },
+  "ব্যাসপুর (Baspur)": {
+    "id": 1472,
+    "code": "N1472",
+    "nameBn": "ব্যাসপুর",
+    "nameEn": "Baspur",
+    "lat": 23.2773829,
+    "lng": 89.7554243
+  },
+  "ভাটিয়াপাড়া ঘাট (Bhatiapara Ghat)": {
+    "id": 1473,
+    "code": "N1473",
+    "nameBn": "ভাটিয়াপাড়া ঘাট",
+    "nameEn": "Bhatiapara Ghat",
+    "lat": 23.212895695155648,
+    "lng": 89.69942602214603
+  },
+  "বনমালীপুর (Bonmalippur)": {
+    "id": 1474,
+    "code": "N1474",
+    "nameBn": "বনমালীপুর",
+    "nameEn": "Bonmalippur",
+    "lat": 23.298690103556304,
+    "lng": 89.7428656766802
+  },
+  "সহস্রাইল (Sahastail)": {
+    "id": 1475,
+    "code": "N1475",
+    "nameBn": "সহস্রাইল",
+    "nameEn": "Sahastail",
+    "lat": 23.32165966593115,
+    "lng": 89.72024669356898
+  },
+  "গোয়ালন্দ ঘাট (Goalando Ghat)": {
+    "id": 1479,
+    "code": "N1479",
+    "nameBn": "গোয়ালন্দ ঘাট",
+    "nameEn": "Goalando Ghat",
+    "lat": 23.761868790368812,
+    "lng": 89.78042697666147
+  },
+  "গোয়ালন্দ বাজার (Goalando Bazar)": {
+    "id": 1480,
+    "code": "N1480",
+    "nameBn": "গোয়ালন্দ বাজার",
+    "nameEn": "Goalando Bazar",
+    "lat": 23.7243008876452,
+    "lng": 89.76436000189366
+  },
+  "সূর্যনগর (Surjanagar)": {
+    "id": 1481,
+    "code": "N1481",
+    "nameBn": "সূর্যনগর",
+    "nameEn": "Surjanagar",
+    "lat": 23.773592256852893,
+    "lng": 89.59701499203918
+  },
+  "চড়াইকল (Charaikal)": {
+    "id": 1482,
+    "code": "N1482",
+    "nameBn": "চড়াইকল",
+    "nameEn": "Charaikal",
+    "lat": 23.877788756804218,
+    "lng": 89.20494559945978
+  },
+  "জগতি (Jagati)": {
+    "id": 1483,
+    "code": "N1483",
+    "nameBn": "জগতি",
+    "nameEn": "Jagati",
+    "lat": 23.890732552339717,
+    "lng": 89.09873199811636
+  },
+  "বসন্তপুর (Basantapur)": {
+    "id": 1484,
+    "code": "N1484",
+    "nameBn": "বসন্তপুর",
+    "nameEn": "Basantapur",
+    "lat": 23.66169208673093,
+    "lng": 89.7189116658573
+  },
+  "ফরিদপুর কলেজ (Faridpur College)": {
+    "id": 1485,
+    "code": "N1485",
+    "nameBn": "ফরিদপুর কলেজ",
+    "nameEn": "Faridpur College",
+    "lat": 23.595484760404457,
+    "lng": 89.85826542558314
+  },
+  "বাখুন্ডা (Bakunda)": {
+    "id": 1486,
+    "code": "N1486",
+    "nameBn": "বাখুন্ডা",
+    "nameEn": "Bakunda",
+    "lat": 23.54568044610568,
+    "lng": 89.8601401264008
+  },
+  "কেরানীগঞ্জ (Keraniganj)": {
+    "id": 1499,
+    "code": "N1499",
+    "nameBn": "কেরানীগঞ্জ",
+    "nameEn": "Keraniganj",
+    "lat": 23.648764450176415,
+    "lng": 90.41557135483382
+  },
+  "নগরকান্দা (Nagarkanda)": {
+    "id": 1500,
+    "code": "N1500",
+    "nameBn": "নগরকান্দা",
+    "nameEn": "Nagarkanda",
+    "lat": 23.3605094,
+    "lng": 89.9038843
+  },
+  "মুকসুদপুর (Muksudpur)": {
+    "id": 1501,
+    "code": "N1501",
+    "nameBn": "মুকসুদপুর",
+    "nameEn": "Muksudpur",
+    "lat": 23.329562219823107,
+    "lng": 89.85190268245451
+  },
+  "মহেশপুর (Moheshpur Gopalganj)": {
+    "id": 1502,
+    "code": "N1502",
+    "nameBn": "মহেশপুর",
+    "nameEn": "Moheshpur Gopalganj",
+    "lat": 23.2829173,
+    "lng": 89.7800737
+  },
+  "আফজালাবাদ (Afzalabad)": {
+    "id": 1508,
+    "code": "N1508",
+    "nameBn": "আফজালাবাদ",
+    "nameEn": "Afzalabad",
+    "lat": 24.9256448943429,
+    "lng": 91.6849976226114
+  },
+  "আলাউদ্দিননগর (Alauddin Nagar)": {
+    "id": 1509,
+    "code": "N1509",
+    "nameBn": "আলাউদ্দিননগর",
+    "nameEn": "Alauddin Nagar",
+    "lat": 26.2952051848491,
+    "lng": 89.0630818946422
+  },
+  "অম্বিকাপুর (Ambikapur)": {
+    "id": 1510,
+    "code": "N1510",
+    "nameBn": "অম্বিকাপুর",
+    "nameEn": "Ambikapur",
+    "lat": 23.6100804687487,
+    "lng": 89.8186883268116
+  },
+  "আড়ংঘাটা (Arong Ghata)": {
+    "id": 1511,
+    "code": "N1511",
+    "nameBn": "আড়ংঘাটা",
+    "nameEn": "Arong Ghata",
+    "lat": 22.8799057,
+    "lng": 89.4843579
+  },
+  "আতিথপুর (Atithpur)": {
+    "id": 1512,
+    "code": "N1512",
+    "nameBn": "আতিথপুর",
+    "nameEn": "Atithpur",
+    "lat": 24.875395,
+    "lng": 90.932773
+  },
+  "বাগজানা (Bagzana)": {
+    "id": 1513,
+    "code": "N1513",
+    "nameBn": "বাগজানা",
+    "nameEn": "Bagzana",
+    "lat": 25.2415912608374,
+    "lng": 89.0124291621278
+  },
+  "বাংলা (Bangla)": {
+    "id": 1514,
+    "code": "N1514",
+    "nameBn": "বাংলা",
+    "nameEn": "Bangla",
+    "lat": 24.894983291626,
+    "lng": 90.7402420043945
+  },
+  "বড়লেখা (Barlekha)": {
+    "id": 1515,
+    "code": "N1515",
+    "nameBn": "বড়লেখা",
+    "nameEn": "Barlekha",
+    "lat": 24.7049427032471,
+    "lng": 92.1908874511719
+  },
+  "বাড়বকুণ্ড (Barobkundo)": {
+    "id": 1516,
+    "code": "N1516",
+    "nameBn": "বাড়বকুণ্ড",
+    "nameEn": "Barobkundo",
+    "lat": 22.5791253617986,
+    "lng": 91.681844367533
+  },
+  "বারৈয়াঢালা (Baroiadhala)": {
+    "id": 1517,
+    "code": "N1517",
+    "nameBn": "বারৈয়াঢালা",
+    "nameEn": "Baroiadhala",
+    "lat": 22.6771823897384,
+    "lng": 91.634554037269
+  },
+  "বাজনাহার (Baznahar)": {
+    "id": 1518,
+    "code": "N1518",
+    "nameBn": "বাজনাহার",
+    "nameEn": "Baznahar",
+    "lat": 25.6671267837916,
+    "lng": 88.5849490288945
+  },
+  "বেলপুকুর (Belpukur)": {
+    "id": 1519,
+    "code": "N1519",
+    "nameBn": "বেলপুকুর",
+    "nameEn": "Belpukur",
+    "lat": 24.3648396541586,
+    "lng": 88.7246338079809
+  },
+  "সিজিপিওয়াই (CGPY)": {
+    "id": 1520,
+    "code": "N1520",
+    "nameBn": "সিজিপিওয়াই",
+    "nameEn": "CGPY",
+    "lat": 22.3221343,
+    "lng": 91.7820151
+  },
+  "চারিয়া মাদ্রাসা (Chariamadrasa)": {
+    "id": 1521,
+    "code": "N1521",
+    "nameBn": "চারিয়া মাদ্রাসা",
+    "nameEn": "Chariamadrasa",
+    "lat": 22.5350298801715,
+    "lng": 91.792941539273
+  },
+  "চাষাঢ়া (Chashara)": {
+    "id": 1522,
+    "code": "N1522",
+    "nameBn": "চাষাঢ়া",
+    "nameEn": "Chashara",
+    "lat": 23.6254003,
+    "lng": 90.4974418
+  },
+  "ছাতক (Chhatak)": {
+    "id": 1523,
+    "code": "N1523",
+    "nameBn": "ছাতক",
+    "nameEn": "Chhatak",
+    "lat": 25.0287911,
+    "lng": 91.6565508
+  },
+  "ছাতিয়ান গ্রাম (Chhatiangram)": {
+    "id": 1524,
+    "code": "N1524",
+    "nameBn": "ছাতিয়ান গ্রাম",
+    "nameEn": "Chhatiangram",
+    "lat": 24.8440776,
+    "lng": 88.9945132
+  },
+  "চক্রশালা (Chokroshala)": {
+    "id": 1525,
+    "code": "N1525",
+    "nameBn": "চক্রশালা",
+    "nameEn": "Chokroshala",
+    "lat": 22.2795066833496,
+    "lng": 92.0032348632813
+  },
+  "চল্লিশানগর (Chollish Nagar)": {
+    "id": 1526,
+    "code": "N1526",
+    "nameBn": "চল্লিশানগর",
+    "nameEn": "Chollish Nagar",
+    "lat": 24.878386,
+    "lng": 90.6923531
+  },
+  "চট্টগ্রাম পলিটেকনিক (Ctg Polytech)": {
+    "id": 1527,
+    "code": "N1527",
+    "nameBn": "চট্টগ্রাম পলিটেকনিক",
+    "nameEn": "Ctg Polytech",
+    "lat": 22.3658021538587,
+    "lng": 91.8115997608759
+  },
+  "দক্ষিণভাগ (Dakkhinvag)": {
+    "id": 1528,
+    "code": "N1528",
+    "nameBn": "দক্ষিণভাগ",
+    "nameEn": "Dakkhinvag",
+    "lat": 24.6381301879883,
+    "lng": 92.1614685058594
+  },
+  "ডাঙ্গাপাড়া (Dangapara)": {
+    "id": 1529,
+    "code": "N1529",
+    "nameBn": "ডাঙ্গাপাড়া",
+    "nameEn": "Dangapara",
+    "lat": 25.3340058,
+    "lng": 89.0045536
+  },
+  "দর্শনা (Darshana)": {
+    "id": 1530,
+    "code": "N1530",
+    "nameBn": "দর্শনা",
+    "nameEn": "Darshana",
+    "lat": 23.5264369985713,
+    "lng": 88.7971266088793
+  },
+  "ধলঘাট (Dholghat)": {
+    "id": 1531,
+    "code": "N1531",
+    "nameBn": "ধলঘাট",
+    "nameEn": "Dholghat",
+    "lat": 22.3368816375732,
+    "lng": 91.9571914672852
+  },
+  "দিগরাজ (Digraj)": {
+    "id": 1532,
+    "code": "N1532",
+    "nameBn": "দিগরাজ",
+    "nameEn": "Digraj",
+    "lat": 22.5224533081055,
+    "lng": 89.5922241210938
+  },
+  "ফতুল্লা (Fatulla)": {
+    "id": 1533,
+    "code": "N1533",
+    "nameBn": "ফতুল্লা",
+    "nameEn": "Fatulla",
+    "lat": 23.6507972,
+    "lng": 90.473967
+  },
+  "ফৌজদারহাট (Foujdar Hat)": {
+    "id": 1534,
+    "code": "N1534",
+    "nameBn": "ফৌজদারহাট",
+    "nameEn": "Foujdar Hat",
+    "lat": 22.4099884033203,
+    "lng": 91.755859375
+  },
+  "হলদিবাড়ী (Haldibari)": {
+    "id": 1535,
+    "code": "N1535",
+    "nameBn": "হলদিবাড়ী",
+    "nameEn": "Haldibari",
+    "lat": 26.3355,
+    "lng": 88.7825
+  },
+  "হাশিমপুর (Hashimpur)": {
+    "id": 1536,
+    "code": "N1536",
+    "nameBn": "হাশিমপুর",
+    "nameEn": "Hashimpur",
+    "lat": 22.1953766666667,
+    "lng": 92.0524583333333
+  },
+  "হাটহাজারী (Hathazari)": {
+    "id": 1537,
+    "code": "N1537",
+    "nameBn": "হাটহাজারী",
+    "nameEn": "Hathazari",
+    "lat": 22.5041828155518,
+    "lng": 91.8041610717773
+  },
+  "হিরণপুর (Hironpur)": {
+    "id": 1538,
+    "code": "N1538",
+    "nameBn": "হিরণপুর",
+    "nameEn": "Hironpur",
+    "lat": 24.8487663269043,
+    "lng": 90.6458282470703
+  },
+  "ইটাখোলা (Itakhola)": {
+    "id": 1539,
+    "code": "N1539",
+    "nameBn": "ইটাখোলা",
+    "nameEn": "Itakhola",
+    "lat": 24.1510601043701,
+    "lng": 91.3628311157227
+  },
+  "জামালপুর কোর্ট (Jamalpur Court)": {
+    "id": 1540,
+    "code": "N1540",
+    "nameBn": "জামালপুর কোর্ট",
+    "nameEn": "Jamalpur Court",
+    "lat": 24.9446315,
+    "lng": 89.9138427
+  },
+  "জামদিয়া (Jamdia)": {
+    "id": 1541,
+    "code": "N1541",
+    "nameBn": "জামদিয়া",
+    "nameEn": "Jamdia",
+    "lat": 23.1607032,
+    "lng": 89.3775947
+  },
+  "জোবরা (Jobra)": {
+    "id": 1542,
+    "code": "N1542",
+    "nameBn": "জোবরা",
+    "nameEn": "Jobra",
+    "lat": 22.4763450622559,
+    "lng": 91.8063430786133
+  },
+  "যশোদলপুর (Josodolpur)": {
+    "id": 1543,
+    "code": "N1543",
+    "nameBn": "যশোদলপুর",
+    "nameEn": "Josodolpur",
+    "lat": 24.4041308,
+    "lng": 90.803418
+  },
+  "জুড়ী (Juree)": {
+    "id": 1544,
+    "code": "N1544",
+    "nameBn": "জুড়ী",
+    "nameEn": "Juree",
+    "lat": 24.5996944444444,
+    "lng": 92.1231666666667
+  },
+  "কালিদহ (Kalidoho)": {
+    "id": 1545,
+    "code": "N1545",
+    "nameBn": "কালিদহ",
+    "nameEn": "Kalidoho",
+    "lat": 22.9858308666584,
+    "lng": 91.4427009502626
+  },
+  "কাঞ্চননগর (Kanchan Nagar)": {
+    "id": 1546,
+    "code": "N1546",
+    "nameBn": "কাঞ্চননগর",
+    "nameEn": "Kanchan Nagar",
+    "lat": 22.2355556488037,
+    "lng": 92.0283813476563
+  },
+  "কাশিমনগর (Kashim Nagar)": {
+    "id": 1547,
+    "code": "N1547",
+    "nameBn": "কাশিমনগর",
+    "nameEn": "Kashim Nagar",
+    "lat": 24.0476093292236,
+    "lng": 91.3344116210938
+  },
+  "কাঁঠালতলী (Kathaltali)": {
+    "id": 1548,
+    "code": "N1548",
+    "nameBn": "কাঁঠালতলী",
+    "nameEn": "Kathaltali",
+    "lat": 24.6723308563232,
+    "lng": 92.1705780029297
+  },
+  "কাটিরহাট (Kathirhat)": {
+    "id": 1549,
+    "code": "N1549",
+    "nameBn": "কাটিরহাট",
+    "nameEn": "Kathirhat",
+    "lat": 22.6005209022623,
+    "lng": 91.7924527486886
+  },
+  "খানহাট (Khanhat)": {
+    "id": 1550,
+    "code": "N1550",
+    "nameBn": "খানহাট",
+    "nameEn": "Khanhat",
+    "lat": 22.2155685424805,
+    "lng": 92.0401611328125
+  },
+  "খানমোহনা (Khanmohon)": {
+    "id": 1551,
+    "code": "N1551",
+    "nameBn": "খানমোহনা",
+    "nameEn": "Khanmohon",
+    "lat": 22.3184032,
+    "lng": 91.9706087
+  },
+  "খাজাঞ্চী (Khazanchi)": {
+    "id": 1552,
+    "code": "N1552",
+    "nameBn": "খাজাঞ্চী",
+    "nameEn": "Khazanchi",
+    "lat": 24.8772206,
+    "lng": 91.7710177
+  },
+  "খরনা (Khorna)": {
+    "id": 1553,
+    "code": "N1553",
+    "nameBn": "খরনা",
+    "nameEn": "Khorna",
+    "lat": 22.2607536315918,
+    "lng": 92.0151062011719
+  },
+  "কৈবল্যধাম (Koibollodham)": {
+    "id": 1554,
+    "code": "N1554",
+    "nameBn": "কৈবল্যধাম",
+    "nameEn": "Koibollodham",
+    "lat": 22.3668129153368,
+    "lng": 91.7822485202696
+  },
+  "করটিয়া (Korotia)": {
+    "id": 1555,
+    "code": "N1555",
+    "nameBn": "করটিয়া",
+    "nameEn": "Korotia",
+    "lat": 24.2277327,
+    "lng": 89.9872728
+  },
+  "লস্করপুর (Loshkorpur)": {
+    "id": 1556,
+    "code": "N1556",
+    "nameBn": "লস্করপুর",
+    "nameEn": "Loshkorpur",
+    "lat": 24.2764282226563,
+    "lng": 91.4862289428711
+  },
+  "মেড়াশানী (Merashani)": {
+    "id": 1557,
+    "code": "N1557",
+    "nameBn": "মেড়াশানী",
+    "nameEn": "Merashani",
+    "lat": 23.9182139,
+    "lng": 91.2285095
+  },
+  "মীরসরাই (Mirshorai)": {
+    "id": 1558,
+    "code": "N1558",
+    "nameBn": "মীরসরাই",
+    "nameEn": "Mirshorai",
+    "lat": 22.7956628973425,
+    "lng": 91.5781912761111
+  },
+  "মোল্লাপাড়া (Mollapara)": {
+    "id": 1559,
+    "code": "N1559",
+    "nameBn": "মোল্লাপাড়া",
+    "nameEn": "Mollapara",
+    "lat": 25.7580846,
+    "lng": 88.5157058
+  },
+  "মাস্তাননগর (Mostan Nagar)": {
+    "id": 1560,
+    "code": "N1560",
+    "nameBn": "মাস্তাননগর",
+    "nameEn": "Mostan Nagar",
+    "lat": 22.8383605727431,
+    "lng": 91.5579041988919
+  },
+  "ময়নামতি (Moynamoti)": {
+    "id": 1561,
+    "code": "N1561",
+    "nameBn": "ময়নামতি",
+    "nameEn": "Moynamoti",
+    "lat": 23.4328225405836,
+    "lng": 91.171120051787
+  },
+  "নাজিরহাট (Nazirhat)": {
+    "id": 1562,
+    "code": "N1562",
+    "nameBn": "নাজিরহাট",
+    "nameEn": "Nazirhat",
+    "lat": 22.6293903,
+    "lng": 91.7877608
+  },
+  "নীলফামারী কলেজ (Nilphamari College)": {
+    "id": 1563,
+    "code": "N1563",
+    "nameBn": "নীলফামারী কলেজ",
+    "nameEn": "Nilphamari College",
+    "lat": 25.9313789,
+    "lng": 88.8385981
+  },
+  "নিমতলা (Nimtoli)": {
+    "id": 1564,
+    "code": "N1564",
+    "nameBn": "নিমতলা",
+    "nameEn": "Nimtoli",
+    "lat": 23.6105939,
+    "lng": 90.326769
+  },
+  "পদ্মবিলা (Padmabila)": {
+    "id": 1565,
+    "code": "N1565",
+    "nameBn": "পদ্মবিলা",
+    "nameEn": "Padmabila",
+    "lat": 23.1464826,
+    "lng": 89.3490646
+  },
+  "পাগলা (Pagla)": {
+    "id": 1566,
+    "code": "N1566",
+    "nameBn": "পাগলা",
+    "nameEn": "Pagla",
+    "lat": 23.6657252,
+    "lng": 90.4601265
+  },
+  "সাটিয়াজুড়ি (Satiajuri)": {
+    "id": 1567,
+    "code": "N1567",
+    "nameBn": "সাটিয়াজুড়ি",
+    "nameEn": "Satiajuri",
+    "lat": 24.2794114,
+    "lng": 91.536329
+  },
+  "শাহবাজপুর (Shahbazpur)": {
+    "id": 1568,
+    "code": "N1568",
+    "nameBn": "শাহবাজপুর",
+    "nameEn": "Shahbazpur",
+    "lat": 24.8046348,
+    "lng": 92.2375983
+  },
+  "শহীদ বোরহাননগর (Shahid Borhan Nagar)": {
+    "id": 1569,
+    "code": "N1569",
+    "nameBn": "শহীদ বোরহাননগর",
+    "nameEn": "Shahid Borhan Nagar",
+    "lat": 26.073098,
+    "lng": 89.138939
+  },
+  "শাহপুর (Shahpur)": {
+    "id": 1570,
+    "code": "N1570",
+    "nameBn": "শাহপুর",
+    "nameEn": "Shahpur",
+    "lat": 24.100378036499,
+    "lng": 91.357307434082
+  },
+  "সরকারহাট (Sharkerhat)": {
+    "id": 1571,
+    "code": "N1571",
+    "nameBn": "সরকারহাট",
+    "nameEn": "Sharkerhat",
+    "lat": 22.5539471408739,
+    "lng": 91.7904756044952
+  },
+  "সিঙ্গারবিল (Shingarbil)": {
+    "id": 1572,
+    "code": "N1572",
+    "nameBn": "সিঙ্গারবিল",
+    "nameEn": "Shingarbil",
+    "lat": 23.9058671,
+    "lng": 91.2247818
+  },
+  "তেলিয়াপাড়া (Teliapara)": {
+    "id": 1573,
+    "code": "N1573",
+    "nameBn": "তেলিয়াপাড়া",
+    "nameEn": "Teliapara",
+    "lat": 24.1304817199707,
+    "lng": 91.3664169311523
+  },
+  "শ্যামপুর বড়ইতলা (Shyampur Boroitola)": {
+    "id": 1852,
+    "code": "N1852",
+    "nameBn": "শ্যামপুর বড়ইতলা",
+    "nameEn": "Shyampur Boroitola",
+    "lat": 23.6847157,
+    "lng": 90.442518
+  }
+}
