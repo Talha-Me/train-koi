@@ -195,6 +195,8 @@ const TrainSchedule = () => {
           min-height: 100vh;
           font-family: 'Hind Siliguri', sans-serif;
           padding-bottom: 70px;
+          overflow-x: hidden;
+          width: 100%;
         }
         .ts-page *, .ts-page *::before, .ts-page *::after {
           box-sizing: border-box;
@@ -203,7 +205,7 @@ const TrainSchedule = () => {
         /* Mobile Header */
         .ts-mobile-header {
           background: linear-gradient(135deg, #005a43 0%, #003d2d 100%);
-          padding: 16px 20px;
+          padding: 14px 16px;
           color: white;
           display: flex;
           align-items: center;
@@ -211,6 +213,8 @@ const TrainSchedule = () => {
           top: 0;
           z-index: 100;
           box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+          width: 100%;
+          overflow: hidden;
         }
         @media (min-width: 769px) {
           .ts-mobile-header {
@@ -225,16 +229,23 @@ const TrainSchedule = () => {
           margin: 0 auto;
           padding: 24px 16px 40px;
         }
+        @media (max-width: 768px) {
+          .ts-main-container {
+            width: 100%;
+            padding: 12px 10px 40px;
+          }
+        }
 
-        /* Trains Grid (Desktop 2-3 cols) */
+        /* Trains Grid (Desktop 2-3 cols, Mobile 1 col) */
         .ts-trains-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 16px;
+          gap: 14px;
         }
         @media (min-width: 640px) {
           .ts-trains-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
           }
         }
         @media (min-width: 1100px) {
@@ -246,8 +257,8 @@ const TrainSchedule = () => {
         /* Train Card */
         .ts-train-card {
           background-color: white;
-          padding: 20px;
-          border-radius: 22px;
+          padding: 18px;
+          border-radius: 20px;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -255,6 +266,12 @@ const TrainSchedule = () => {
           box-shadow: 0 4px 14px rgba(0,0,0,0.03);
           border: 1px solid #eef2f0;
           transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+        }
+        @media (max-width: 480px) {
+          .ts-train-card {
+            padding: 15px 14px;
+            border-radius: 16px;
+          }
         }
         .ts-train-card:hover {
           transform: translateY(-3px);
@@ -266,35 +283,148 @@ const TrainSchedule = () => {
           box-shadow: 0 4px 18px rgba(255, 77, 79, 0.12);
         }
 
-        /* Selected Train 2-Column Desktop Layout */
-        .ts-detail-layout {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 24px;
+        /* Responsive Content Card */
+        .ts-card {
+          background-color: white;
+          border-radius: 24px;
+          padding: 24px;
+          border: 1px solid #edf2ef;
+          box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+          max-width: 100%;
+          overflow: hidden;
         }
-        @media (min-width: 992px) {
-          .ts-detail-layout {
-            grid-template-columns: 420px minmax(0, 1fr);
-            align-items: start;
+        @media (max-width: 640px) {
+          .ts-card {
+            padding: 16px 14px !important;
+            border-radius: 18px !important;
           }
         }
 
-        /* Animation Keyframes */
-        @keyframes ts-fade {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
+        /* Responsive Train Title */
+        .ts-train-title {
+          font-size: 24px;
+          color: #0f1f1a;
+          margin: 8px 0 14px;
+          font-weight: 900;
+          word-break: break-word;
         }
-        @keyframes ts-pulse {
-          0% { transform: scale(0.95); opacity: 0.7; }
-          50% { transform: scale(1.18); opacity: 1; }
-          100% { transform: scale(0.95); opacity: 0.7; }
+        @media (max-width: 640px) {
+          .ts-train-title {
+            font-size: 19px !important;
+            margin: 6px 0 10px !important;
+          }
         }
-        .ts-pulse-red {
-          animation: ts-pulse 1.4s infinite ease-in-out;
+
+        /* Responsive Detail Layout */
+        .ts-detail-layout {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 18px;
         }
-        .ts-pulse-white {
-          animation: ts-pulse 1.2s infinite ease-in-out;
+        @media (min-width: 992px) {
+          .ts-detail-layout {
+            grid-template-columns: 400px minmax(0, 1fr);
+            align-items: start;
+            gap: 24px;
+          }
         }
+
+        /* Table Wrappers & Responsive Tables */
+        .ts-table-box {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          border-radius: 16px;
+          border: 1px solid #eef2f0;
+          width: 100%;
+          max-width: 100%;
+        }
+        .ts-timetable {
+          width: 100%;
+          min-width: 500px;
+          border-collapse: collapse;
+          text-align: left;
+        }
+        @media (max-width: 640px) {
+          .ts-timetable {
+            min-width: 440px;
+          }
+          .ts-timetable th, .ts-timetable td {
+            padding: 9px 8px !important;
+            font-size: 12px !important;
+          }
+        }
+
+        .ts-inter-table {
+          width: 100%;
+          min-width: 400px;
+          border-collapse: collapse;
+          font-size: 13px;
+        }
+        @media (max-width: 640px) {
+          .ts-inter-table {
+            min-width: 340px;
+            font-size: 12px !important;
+          }
+          .ts-inter-table th, .ts-inter-table td {
+            padding: 8px 8px !important;
+          }
+        }
+
+        /* Responsive Grids */
+        .ts-fare-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 14px;
+          margin-bottom: 20px;
+        }
+        @media (max-width: 640px) {
+          .ts-fare-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+          }
+        }
+
+        .ts-amenities-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 14px;
+        }
+        @media (max-width: 640px) {
+          .ts-amenities-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+          }
+        }
+
+        .ts-policy-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 8px;
+          font-size: 12px;
+        }
+        @media (max-width: 640px) {
+          .ts-policy-grid {
+            grid-template-columns: 1fr;
+            gap: 8px;
+          }
+        }
+
+        .ts-scroll-hint {
+          display: none;
+        }
+        @media (max-width: 640px) {
+          .ts-scroll-hint {
+            display: inline-block;
+            font-size: 11px;
+            color: #006a4e;
+            background-color: #e8f5ef;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+          }
+        }
+
         .ts-live-dot {
           width: 9px;
           height: 9px;
@@ -326,7 +456,7 @@ const TrainSchedule = () => {
           <ChevronLeft size={26} />
         </button>
         <div>
-          <h1 style={{ margin: 0, fontSize: '17px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h1 style={{ margin: 0, fontSize: '16px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', maxWidth: 'calc(100vw - 85px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {selectedTrain ? selectedTrain.name : 'বাংলাদেশ রেলওয়ে ট্রেন শিডিউল'}
           </h1>
           <p style={{ margin: 0, fontSize: '11px', opacity: 0.85 }}>ট্রেনকই • ফ্রি লাইভ ট্রেন ট্র্যাকিং প্ল্যাটফর্ম</p>
@@ -515,11 +645,11 @@ const TrainSchedule = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                 
                 {/* Train Card Header */}
-                <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                <div className="ts-card">
                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     TRAIN #{selectedTrain.id} • বন্ধের দিন: {selectedTrain.offDay || 'কোন সাপ্তাহিক বন্ধ নেই'}
                   </div>
-                  <h1 style={{ fontSize: '24px', color: '#0f1f1a', margin: '8px 0 14px', fontWeight: '900' }}>
+                  <h1 className="ts-train-title">
                     {selectedTrain.name}
                   </h1>
 
@@ -655,7 +785,7 @@ const TrainSchedule = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 
                 {/* ১. স্টেশনভিত্তিক অফিসিয়াল সময়সূচী টেবিল */}
-                <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                <div className="ts-card">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                     <h3 style={{ fontSize: '18px', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
                       <MapPin size={20} color="#006a4e" /> স্টেশনভিত্তিক অফিসিয়াল সময়সূচী
@@ -672,8 +802,9 @@ const TrainSchedule = () => {
                     </div>
                   </div>
 
-                  <div style={{ overflowX: 'auto', borderRadius: '16px', border: '1px solid #eef2f0' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <span className="ts-scroll-hint">← ডানে-বামে স্ক্রোল করে সময়সূচী দেখুন →</span>
+                  <div className="ts-table-box">
+                    <table className="ts-timetable">
                       <thead>
                         <tr style={{ backgroundColor: '#005a43', color: 'white' }}>
                           <th style={{ padding: '12px 14px', fontSize: '13.5px' }}>#</th>
@@ -716,7 +847,7 @@ const TrainSchedule = () => {
                     : 'কোনো সাপ্তাহিক বন্ধ নেই (সপ্তাহের ৭ দিনই চলাচল করে)';
 
                   return (
-                    <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '28px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                    <div className="ts-card">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px' }}>
                         <div style={{ backgroundColor: '#e6f4ee', padding: '10px', borderRadius: '12px', display: 'flex' }}>
                           <Sparkles size={22} color="#006a4e" />
@@ -831,7 +962,7 @@ const TrainSchedule = () => {
                   const intermediateStops = getMajorIntermediateStops(selectedTrain);
 
                   return (
-                    <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                    <div className="ts-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                         <div>
                           <h3 style={{ fontSize: '18px', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
@@ -847,7 +978,7 @@ const TrainSchedule = () => {
                       </div>
 
                       {/* ক্লাস ভিত্তিক মূল ভাড়া কার্ড */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+                      <div className="ts-fare-grid">
                         <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                           <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>শোভন চেয়ার (S_CHAIR)</span>
                           <div style={{ fontSize: '22px', fontWeight: '900', color: '#006a4e', margin: '4px 0' }}>
@@ -879,8 +1010,8 @@ const TrainSchedule = () => {
                           <h4 style={{ fontSize: '14px', color: '#334155', margin: '0 0 10px', fontWeight: '800' }}>
                             {selectedTrain.stations[0]?.name.split('(')[0]} থেকে প্রধান মধ্যবর্তী স্টেশনসমূহের আনুমানিক ভাড়া:
                           </h4>
-                          <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid #eef2f0' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                          <div className="ts-table-box">
+                            <table className="ts-inter-table">
                               <thead>
                                 <tr style={{ backgroundColor: '#f8fafc', color: '#475569', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
                                   <th style={{ padding: '10px 14px' }}>গন্তব্য স্টেশন</th>
@@ -944,7 +1075,7 @@ const TrainSchedule = () => {
                             বাংলাদেশ রেলওয়ে টিকিট বাতিল ও অনলাইন রিফান্ড নীতি:
                           </h5>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', fontSize: '12px' }}>
+                        <div className="ts-policy-grid">
                           <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #eef2f0' }}>
                             <strong style={{ color: '#15803d' }}>যাত্রার ৪৮+ ঘণ্টা পূর্বে:</strong>
                             <p style={{ margin: '2px 0 0', color: '#64748b' }}>মাত্র ২৫% বা শ্রেণি অনুযায়ী সার্ভিস চার্জ কর্তন হয়।</p>
@@ -971,11 +1102,11 @@ const TrainSchedule = () => {
                 })()}
 
                 {/* ৪. ট্রেনের সুযোগ-সুবিধা ও কোচ গাইড */}
-                <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                <div className="ts-card">
                   <h3 style={{ fontSize: '18px', color: '#1e293b', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
                     <Train size={20} color="#006a4e" /> ট্রেনের বগির ধরন ও সুযোগ-সুবিধাসমূহ
                   </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+                  <div className="ts-amenities-grid">
                     <div style={{ backgroundColor: '#fbfcfb', padding: '16px', borderRadius: '16px', border: '1px solid #eef2f0' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <Compass size={18} color="#006a4e" />
@@ -1025,7 +1156,7 @@ const TrainSchedule = () => {
                         বিনা খরচে মালামাল ও লাগেজ বহনের অনুমোদন সীমা (Luggage Allowance):
                       </h4>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '12.5px' }}>
+                    <div className="ts-policy-grid">
                       <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #dcfce7' }}>
                         <span style={{ color: '#166534', fontWeight: 'bold' }}>শোভন / শোভন চেয়ার:</span>
                         <p style={{ margin: '3px 0 0', color: '#475569' }}>একজন পূর্ণবয়স্ক যাত্রী সর্বোচ্চ <strong>৩৭.৫ কেজি</strong> মালামাল কোনো মাশুল ছাড়াই বহন করতে পারেন।</p>
@@ -1077,7 +1208,7 @@ const TrainSchedule = () => {
                   ];
 
                   return (
-                    <div style={{ backgroundColor: 'white', borderRadius: '24px', padding: '24px', border: '1px solid #edf2ef', boxShadow: '0 4px 18px rgba(0,0,0,0.03)' }}>
+                    <div className="ts-card">
                       <h3 style={{ fontSize: '18px', color: '#1e293b', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
                         <HelpCircle size={20} color="#006a4e" /> {selectedTrain.name} — সাধারণ প্রশ্নোত্তর (FAQ)
                       </h3>
