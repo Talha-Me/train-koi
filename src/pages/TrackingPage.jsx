@@ -226,22 +226,7 @@ const RecenterMap = ({ center }) => {
 // =========================================================================
 const TrackingPage = () => {
   const { trainId } = useParams();
-  const [liveData, setLiveData] = useState(() => {
-    if (Number(trainId) === 740) {
-      return {
-        trainId: 740,
-        lat: 24.3000,
-        lng: 91.6500,
-        speed: 50,
-        delay: 31,
-        index: 6,
-        mode: 'LIVE',
-        source: 'LOCAL',
-        updatedAt: new Date().toISOString()
-      };
-    }
-    return null;
-  });
+  const [liveData, setLiveData] = useState(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [isTraveler, setIsTraveler] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
@@ -422,17 +407,47 @@ const TrackingPage = () => {
           }
           lastGpsRef.current = { lat: latitude, lng: longitude, ts: currentTs };
 
+          // ২. ট্রেনের শিডিউল টাইম উইন্ডো চেক
+          const now = new Date();
+          const currentMin = now.getHours() * 60 + now.getMinutes();
+          const startMin = scheduleData[0].effectiveMin;
+          const endMin = scheduleData[scheduleData.length - 1].effectiveMin;
+          const isCrossDay = endMin < startMin;
+
+          let isWithinTime = false;
+          if (isCrossDay) {
+            isWithinTime = (currentMin >= (startMin - 60) || currentMin <= (endMin + 600));
+          } else {
+            isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + 600));
+          }
+
+          if (!isWithinTime) {
+            setShareStatusText('⚠️ ট্রেনের নির্ধারিত সময়সূচীর বাইরে');
+            return;
+          }
+
+          // ৩. নিকটতম স্টেশন ও রেলওয়ে ট্র্যাক দূরত্ব চেক (জিও-ফেন্সিং ফিল্টার)
+          let minStationDist = Infinity;
+          scheduleData.forEach((st) => {
+            if (st.coords) {
+              const d = calculateDistance(latitude, longitude, st.coords[0], st.coords[1]);
+              if (d < minStationDist) minStationDist = d;
+            }
+          });
+
           const { point: snappedCoords, distance: trackDistance } = getTrackSnapAndDistance(
             latitude,
             longitude,
             railData
           );
 
-          if (trackDistance > 0.45) {
-            setShareStatusText('আপনি রেললাইনের বাইরে আছেন');
+          const isOnRailTrack = trackDistance <= 0.45 || minStationDist <= 0.6;
+          if (!isOnRailTrack) {
+            setShareStatusText('⚠️ আপনি রেললাইনের বাইরে আছেন (ফেক ডাটা সুরক্ষা সক্রিয়)');
             return;
           }
 
+          // ৪. সঠিক সেগমেন্ট নির্ণয়
           let bestSegment = 0;
           let minErr = Infinity;
           for (let i = 0; i < scheduleData.length - 1; i++) {
@@ -449,10 +464,13 @@ const TrackingPage = () => {
             }
           }
 
-          const finalLat = snappedCoords[0] || latitude;
-          const finalLng = snappedCoords[1] || longitude;
-
-          setShareStatusText(`ট্রেন চলছে (${toBn(currentSpeed)} কিমি/ঘণ্টা) - লোকেশন শেয়ার হচ্ছে`);
+          // ৫. ট্রেন কি গতিশীল নাকি স্টেশনে অপেক্ষমাণ?
+          const isMoving = currentSpeed >= 5;
+          if (isMoving) {
+            setShareStatusText(`✓ ট্রেন চলছে (${toBn(currentSpeed)} কিমি/ঘণ্টা) - লাইভ সিঙ্ক সচল`);
+          } else {
+            setShareStatusText(`✓ ট্রেন স্টেশনে অপেক্ষমাণ - প্ল্যাটফর্ম লোকেশন সচল`);
+          }
 
           const locationData = {
             trainId: parseInt(trainId, 10),
@@ -615,17 +633,27 @@ const TrackingPage = () => {
     const rawLng = Number(liveData?.lng || liveData?.lastLocation?.lng);
     const updateTime = liveData?.updatedAt || liveData?.lastLocation?.updatedAt;
 
-    if (liveData && !isNaN(rawLat) && !isNaN(rawLng) && rawLat !== 0 && rawLng !== 0) {
+    if (liveData && liveData.source !== 'SCHEDULED' && liveData.mode !== 'SCHEDULED' && !isNaN(rawLat) && !isNaN(rawLng) && rawLat !== 0 && rawLng !== 0) {
       const lastUpdateTs = updateTime ? new Date(updateTime).getTime() : currentTime;
       const diffInMin = Math.max(0, (currentTime - lastUpdateTs) / (1000 * 60));
 
-      if (diffInMin > 180) {
+      let mode = 'LIVE';
+      let baseSpeed = liveData.speed || 50;
+      let currentSpeed = baseSpeed;
+
+      if (diffInMin <= 10) {
+        mode = 'LIVE';
+      } else if (diffInMin <= 120) {
+        mode = 'PREDICTED';
+        if (diffInMin > 30) {
+          const reductionProgress = Math.min(1, (diffInMin - 30) / 60);
+          currentSpeed = Math.max(15, baseSpeed - (baseSpeed - 15) * reductionProgress);
+        }
+      } else {
         return getScheduledState();
       }
 
-      const mode = diffInMin <= 15 ? 'LIVE' : 'PREDICTED';
       const delay = liveData.delay || 0;
-      let currentSpeed = liveData.speed || (diffInMin <= 15 ? 54 : 42);
 
       let bestSeg = 0;
       let minErr = Infinity;
@@ -964,7 +992,7 @@ const TrackingPage = () => {
                     background: activeState.mode === 'LIVE' ? '#16a34a' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#0284c7'),
                     boxShadow: '0 0 6px currentColor'
                   }}></span>
-                  {activeState.mode === 'LIVE' ? 'লাইভ লোকেশন' : (activeState.mode === 'PREDICTED' ? 'সম্ভাব্য অবস্থান' : 'নির্ধারিত সময়সূচী')}
+                  {activeState.mode === 'LIVE' ? 'লাইভ মোড (LIVE)' : (activeState.mode === 'PREDICTED' ? 'প্রেডিকশন মোড (PREDICTED)' : 'শিডিউল মোড (SCHEDULED)')}
                 </span>
 
                 {activeState.lastSeen !== null && activeState.lastSeen !== undefined && (
@@ -986,6 +1014,28 @@ const TrackingPage = () => {
               }}>
                 {stats?.delayFormatted}
               </div>
+            </div>
+
+            {/* ৩ স্তরের ট্র্যাকিং মোড নোটিফিকেশন বার */}
+            <div style={{
+              padding: '10px 14px',
+              borderRadius: '12px',
+              marginBottom: '14px',
+              fontSize: '13px',
+              lineHeight: '1.5',
+              background: activeState.mode === 'LIVE' ? '#f0fdf4' : (activeState.mode === 'PREDICTED' ? '#fffbeb' : '#f0f9ff'),
+              borderLeft: `4px solid ${activeState.mode === 'LIVE' ? '#16a34a' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#0284c7')}`,
+              color: activeState.mode === 'LIVE' ? '#166534' : (activeState.mode === 'PREDICTED' ? '#92400e' : '#0369a1')
+            }}>
+              {activeState.mode === 'LIVE' && (
+                <span>✓ এই ট্রেনটির <b>লাইভ জিপিএস লোকেশন</b> সচল রয়েছে। সহযাত্রী বা ট্র্যাকার থেকে সরাসরি ডেটা আসছে।</span>
+              )}
+              {activeState.mode === 'PREDICTED' && (
+                <span>⚠️ ট্রেনটির লাইভ লোকেশন কিছুক্ষণ আগে আপডেট করা হয়েছিল, তাই গতি ও সময় মিলিয়ে <b>সম্ভাব্য প্রেডিকশন</b> করে অবস্থান দেখানো হচ্ছে।</span>
+              )}
+              {activeState.mode === 'SCHEDULED' && (
+                <span>📅 ট্রেনটির কোনো সাম্প্রতিক লাইভ জিপিএস পাওয়া যায়নি, তাই বাংলাদেশ রেলওয়ের <b>অফিশিয়াল সময়সূচী (Schedule Mode)</b> অনুযায়ী সম্ভাব্য অবস্থান দেখানো হচ্ছে।</span>
+              )}
             </div>
 
             {/* পরবর্তী স্টেশন বড় হেডিং */}
