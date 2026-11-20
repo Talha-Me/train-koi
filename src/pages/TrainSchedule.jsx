@@ -5,7 +5,8 @@ import { getTrainProfile } from '../data/trainProfiles';
 import { 
   ChevronLeft, Search, Clock, Navigation, ChevronDown, MapPin, 
   Info, Send, ArrowRightLeft, Locate, Radio, AlertCircle, Zap, ShieldCheck, Train,
-  Ticket, HelpCircle, Utensils, ExternalLink, Sparkles, ChevronUp, AlertTriangle, Coffee, Compass, PhoneCall, Wind
+  Ticket, HelpCircle, Utensils, ExternalLink, Sparkles, ChevronUp, AlertTriangle, Coffee, Compass, PhoneCall, Wind,
+  Luggage, RefreshCw
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 
@@ -595,29 +596,58 @@ const TrainSchedule = () => {
                 </div>
 
                 {/* কুইক ফ্যাক্টস */}
-                <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', border: '1px solid #eef2f0' }}>
-                  <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
-                    ট্রেন তথ্যের সারসংক্ষেপ
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: '#475569' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>মোট স্টপ:</span>
-                      <b>{selectedTrain.stations.length}টি স্টেশন</b>
+                {(() => {
+                  const startSt = selectedTrain.stations[0];
+                  const endSt = selectedTrain.stations[selectedTrain.stations.length - 1];
+                  const duration = calculateJourneyDuration(startSt?.departure, endSt?.arrival);
+                  const totalKm = endSt?.km || 0;
+
+                  return (
+                    <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '20px', border: '1px solid #eef2f0' }}>
+                      <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
+                        ট্রেন তথ্যের সারসংক্ষেপ
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', fontSize: '13px', color: '#475569' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>মোট স্টপ:</span>
+                          <b>{selectedTrain.stations.length}টি স্টেশন</b>
+                        </div>
+                        {totalKm > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>রেল দূরত্ব:</span>
+                            <b>{totalKm} কিমি</b>
+                          </div>
+                        )}
+                        {duration && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>গড় ভ্রমণ সময়:</span>
+                            <b style={{ color: '#006a4e' }}>{duration.text}</b>
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>প্রারম্ভিক:</span>
+                          <b>{startSt?.name.split('(')[0]}</b>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>গন্তব্য:</span>
+                          <b>{endSt?.name.split('(')[0]}</b>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>সাপ্তাহিক বন্ধ:</span>
+                          <b>{selectedTrain.offDay || 'নেই'}</b>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #e2e8f0', paddingTop: '8px' }}>
+                          <span>ফ্রি লাগেজ সীমা:</span>
+                          <b style={{ color: '#166534' }}>৩৭.৫ — ৫৬ কেজি</b>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>রেলওয়ে হেল্পলাইন:</span>
+                          <b style={{ color: '#006a4e' }}>১৬৪৫৯</b>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>প্রারম্ভিক:</span>
-                      <b>{selectedTrain.stations[0]?.name.split('(')[0]}</b>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>গন্তব্য:</span>
-                      <b>{selectedTrain.stations[selectedTrain.stations.length - 1]?.name.split('(')[0]}</b>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>সাপ্তাহিক বন্ধ:</span>
-                      <b>{selectedTrain.offDay || 'নেই'}</b>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
               </div>
 
@@ -873,6 +903,37 @@ const TrainSchedule = () => {
                           <ExternalLink size={15} />
                         </a>
                       </div>
+
+                      {/* অফিসিয়াল টিকিট বাতিল ও রিফান্ড নীতি */}
+                      <div style={{ marginTop: '16px', backgroundColor: '#f8fafc', padding: '16px 18px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                          <RefreshCw size={17} color="#006a4e" />
+                          <h5 style={{ margin: 0, fontSize: '13.5px', color: '#1e293b', fontWeight: '800' }}>
+                            বাংলাদেশ রেলওয়ে টিকিট বাতিল ও অনলাইন রিফান্ড নীতি:
+                          </h5>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', fontSize: '12px' }}>
+                          <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #eef2f0' }}>
+                            <strong style={{ color: '#15803d' }}>যাত্রার ৪৮+ ঘণ্টা পূর্বে:</strong>
+                            <p style={{ margin: '2px 0 0', color: '#64748b' }}>মাত্র ২৫% বা শ্রেণি অনুযায়ী সার্ভিস চার্জ কর্তন হয়।</p>
+                          </div>
+                          <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #eef2f0' }}>
+                            <strong style={{ color: '#d97706' }}>যাত্রার ৪৮–২৪ ঘণ্টা পূর্বে:</strong>
+                            <p style={{ margin: '2px 0 0', color: '#64748b' }}>মূল ভাড়ার ৫০% কর্তন করে বাকি অর্থ ফেরত দেওয়া হয়।</p>
+                          </div>
+                          <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #eef2f0' }}>
+                            <strong style={{ color: '#b91c1c' }}>যাত্রার ২৪–১২ ঘণ্টা পূর্বে:</strong>
+                            <p style={{ margin: '2px 0 0', color: '#64748b' }}>মূল ভাড়ার ৭৫% কর্তন করে বাকি ২৫% ফেরতযোগ্য।</p>
+                          </div>
+                          <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #eef2f0' }}>
+                            <strong style={{ color: '#64748b' }}>যাত্রার ১২ ঘণ্টার কম সময়ে:</strong>
+                            <p style={{ margin: '2px 0 0', color: '#64748b' }}>কোনো প্রকার অর্থ ফেরত বা রিফান্ড প্রযোজ্য নয়।</p>
+                          </div>
+                        </div>
+                        <p style={{ margin: '8px 0 0', fontSize: '11.5px', color: '#64748b', fontStyle: 'italic' }}>
+                          * অনলাইন টিকেটের ক্ষেত্রে অফিসিয়াল সাইটের 'Purchase History' থেকে সহজেই সেলফ-রিফান্ড আবেদন করা যায়।
+                        </p>
+                      </div>
                     </div>
                   );
                 })()}
@@ -921,6 +982,30 @@ const TrainSchedule = () => {
                       <p style={{ margin: 0, fontSize: '12.5px', color: '#64748b', lineHeight: '1.6' }}>
                         পরিবেশবান্ধব বায়ো-টয়লেট, জিআরপি রেল পুলিশ নিরাপত্তা ও সার্বক্ষণিক ট্রেনকই লাইভ ট্র্যাকিং।
                       </p>
+                    </div>
+                  </div>
+
+                  {/* লাগেজ ও মালামাল পরিবহন নীতিমালা */}
+                  <div style={{ marginTop: '18px', backgroundColor: '#f0fdf4', padding: '16px 18px', borderRadius: '16px', border: '1px solid #bbf7d0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                      <Luggage size={18} color="#006a4e" />
+                      <h4 style={{ margin: 0, fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
+                        বিনা খরচে মালামাল ও লাগেজ বহনের অনুমোদন সীমা (Luggage Allowance):
+                      </h4>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '12.5px' }}>
+                      <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #dcfce7' }}>
+                        <span style={{ color: '#166534', fontWeight: 'bold' }}>শোভন / শোভন চেয়ার:</span>
+                        <p style={{ margin: '3px 0 0', color: '#475569' }}>একজন পূর্ণবয়স্ক যাত্রী সর্বোচ্চ <strong>৩৭.৫ কেজি</strong> মালামাল কোনো মাশুল ছাড়াই বহন করতে পারেন।</p>
+                      </div>
+                      <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #dcfce7' }}>
+                        <span style={{ color: '#166534', fontWeight: 'bold' }}>স্নিগ্ধা ও এসি চেয়ার:</span>
+                        <p style={{ margin: '3px 0 0', color: '#475569' }}>যাত্রীপ্রতি সর্বোচ্চ <strong>৫৬ কেজি</strong> মালামাল ফ্রি বহনের সুযোগ রয়েছে।</p>
+                      </div>
+                      <div style={{ backgroundColor: 'white', padding: '10px 12px', borderRadius: '10px', border: '1px solid #dcfce7' }}>
+                        <span style={{ color: '#166534', fontWeight: 'bold' }}>অতিরিক্ত লাগেজ ও পার্সেল:</span>
+                        <p style={{ margin: '3px 0 0', color: '#475569' }}>অনুমোদিত ওজনের বেশি মালামাল থাকলে স্টেশনের লাগেজ ভ্যানে বুকিং করতে হবে।</p>
+                      </div>
                     </div>
                   </div>
                 </div>
