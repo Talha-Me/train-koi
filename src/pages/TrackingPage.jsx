@@ -2,25 +2,6 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Tooltip, useMap, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
-import {
-  ChevronLeft,
-  AlertCircle,
-  Clock,
-  Navigation,
-  MapPin,
-  RefreshCw,
-  Zap,
-  CheckCircle,
-  ChevronDown,
-  ChevronUp,
-  Share2,
-  Train as TrainIcon,
-  Activity,
-  ShieldCheck,
-  Calendar,
-  Compass,
-  ArrowRight
-} from 'lucide-react';
 import { io } from 'socket.io-client';
 import { trains } from '../data/trainData';
 import { stationCoords } from '../data/stationCoords';
@@ -41,28 +22,63 @@ const socket = io(SOCKET_URL, {
 });
 
 // =========================================================================
-// ১. ইউটিলিটি ও হেল্পার ফাংশন
+// ১. পিওর ইনলাইন ভেক্টর আইকন (কোনো থার্ড-পার্টি আইকন লাইব্রেরি ছাড়াই)
 // =========================================================================
+const ArrowLeftIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 12H5M12 19l-7-7 7-7"/>
+  </svg>
+);
 
-// ইংরেজি সংখ্যাকে বাংলায় রূপান্তর
+const RefreshIcon = ({ spin }) => (
+  <svg style={{ animation: spin ? 'spin 0.8s linear infinite' : 'none' }} width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19"/>
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+const LocationPinIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+
+const ChevronUpIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="18 15 12 9 6 15"/>
+  </svg>
+);
+
+// =========================================================================
+// ২. সহজ বাংলা সংখ্যা ও সময়ের হেল্পার
+// =========================================================================
 const toBn = (num) => {
   if (num === null || num === undefined) return '';
   const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
   return String(num).replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
 };
 
-// স্টেশনের নাম নরমালাইজ করা (জংশন, বাইপাস, স্পেস ও ইউনিকোড ডট সমন্বয়)
 const normalizeStationName = (name) => {
   if (!name || typeof name !== 'string') return '';
   return name
     .replace(/জংশন|জং|Junction|Jn|বাইপাস|Bypass/gi, '')
     .replace(/\s+/g, ' ')
-    .replace(/\u09DC/g, '\u09A1\u09BC') // Unify RRA
+    .replace(/\u09DC/g, '\u09A1\u09BC')
     .replace(/\u09A1\u09BC/g, 'ড়')
     .trim();
 };
 
-// ১০০% স্টেশন কোঅর্ডিনেট খোঁজার স্মার্ট ফাংশন
 const getStationCoords = (stationName) => {
   if (!stationName) return null;
   const clean = stationName.trim();
@@ -96,7 +112,6 @@ const getStationCoords = (stationName) => {
   return null;
 };
 
-// সময় পার্সিং (মিনিটে রূপান্তর)
 const parseToMinutes = (timeStr) => {
   if (!timeStr || typeof timeStr !== 'string' || ["START", "END", "---"].includes(timeStr.trim())) return null;
   const match = timeStr.trim().toLowerCase().match(/(\d+):(\d+)\s*(am|pm)/);
@@ -108,7 +123,6 @@ const parseToMinutes = (timeStr) => {
   return h * 60 + parseInt(mins, 10);
 };
 
-// মিনিট থেকে ১২-ঘন্টার সময় স্ট্রিং
 const minutesToTime = (totalMinutes) => {
   if (totalMinutes === null || isNaN(totalMinutes)) return '--:--';
   let mins = Math.round(totalMinutes);
@@ -117,10 +131,9 @@ const minutesToTime = (totalMinutes) => {
   let m = mins % 60;
   let mod = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12;
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${mod}`;
+  return `${toBn(h)}:${toBn(m.toString().padStart(2, '0'))} ${mod}`;
 };
 
-// দুই বিন্দুর দূরত্ব নির্ণয় (Haversine Formula)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
   const R = 6371;
@@ -135,7 +148,6 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 };
 
-// বিন্দুর সাথে লাইন সেগমেন্টের দূরত্ব ও প্রজেকশন রেশিও
 const distToSegment = (p, a, b) => {
   const dAB = calculateDistance(a[0], a[1], b[0], b[1]);
   if (dAB === 0) return { crossDist: calculateDistance(p[0], p[1], a[0], a[1]), projRatio: 0 };
@@ -153,12 +165,10 @@ const distToSegment = (p, a, b) => {
 
   return {
     crossDist: calculateDistance(p[0], p[1], projLat, projLng),
-    projRatio: t,
-    projPoint: [projLat, projLng]
+    projRatio: t
   };
 };
 
-// রেলওয়ে ট্র্যাকে স্ন্যাপ করার ফাংশন
 const getTrackSnapAndDistance = (lat, lng, geojson) => {
   if (!geojson || !geojson.features) return { point: [lat, lng], distance: 0 };
   let minDistance = Infinity;
@@ -191,17 +201,16 @@ const getSnappedPoint = (lat, lng, geojson) => {
   return getTrackSnapAndDistance(lat, lng, geojson).point;
 };
 
-// লেট বা বিলম্বের সুন্দর বাংলা ফরম্যাটিং
-const formatDelay = (minutes) => {
-  if (!minutes || minutes <= 5) return 'সময়মতো চলছে (On Time)';
+// সহজ বাংলা ভাষায় লেট স্ট্যাটাস
+const formatDelaySimple = (minutes) => {
+  if (!minutes || minutes <= 5) return 'সময়মতো চলছে (অন টাইম)';
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (h > 0 && m > 0) return `${toBn(h)}ঘ ${toBn(m)}মি বিলম্বে`;
-  if (h > 0) return `${toBn(h)} ঘণ্টা বিলম্বে`;
-  return `${toBn(m)} মিনিট বিলম্বে`;
+  if (h > 0 && m > 0) return `${toBn(h)} ঘণ্টা ${toBn(m)} মিনিট লেট`;
+  if (h > 0) return `${toBn(h)} ঘণ্টা লেট`;
+  return `${toBn(m)} মিনিট লেট`;
 };
 
-// ম্যাপ সেন্টার অটো-রিপজিশন
 const RecenterMap = ({ center }) => {
   const map = useMap();
   useEffect(() => {
@@ -213,7 +222,7 @@ const RecenterMap = ({ center }) => {
 };
 
 // =========================================================================
-// ২. মূল ট্র্যাকিং কম্পোনেন্ট
+// ৩. মূল ট্র্যাকিং পেজ কম্পোনেন্ট
 // =========================================================================
 const TrackingPage = () => {
   const { trainId } = useParams();
@@ -223,41 +232,35 @@ const TrackingPage = () => {
   const [isSharing, setIsSharing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [shareStatusText, setShareStatusText] = useState('');
-  const [activeTab, setActiveTab] = useState('both'); // 'map', 'timeline', 'both'
-  const [expandedSegments, setExpandedSegments] = useState({}); // toggle intermediate stations
+  const [activeTab, setActiveTab] = useState('timeline'); // 'timeline', 'map', 'delay'
+  const [expandedSegments, setExpandedSegments] = useState({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const lastGpsRef = useRef(null);
 
-  // ট্রেন ডেটা নির্বাচন
   const train = useMemo(() => trains.find((t) => t.id === parseInt(trainId, 10)), [trainId]);
 
-  // পেজ টাইটেল ও এসইও ডায়নামিক টাইটেল
   useEffect(() => {
     if (train) {
       const trainName = train.name.split('(')[0].trim();
-      const dynamicTitle = `${trainName} (${trainId}) লাইভ ট্র্যাকিং ও বর্তমান অবস্থান - TrainKoi`;
-      document.title = dynamicTitle;
+      document.title = `${trainName} (${trainId}) লাইভ ট্রেন ট্র্যাকিং - TrainKoi`;
       return () => {
-        document.title = "Live Train Tracking - Trainkoi";
+        document.title = "TrainKoi - লাইভ ট্রেন ট্র্যাকিং";
       };
     }
   }, [train, trainId]);
 
-  // লাইভ ক্লক টাইমার
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // ট্রাভেলার প্রম্পট ২ সেকেন্ড পর শো করা
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isTraveler === null) setShowModal(true);
-    }, 2500);
+    }, 3000);
     return () => clearTimeout(timer);
   }, [isTraveler]);
 
-  // অটো-সিঙ্ক ফেচ লুপ (প্রতি ২০ সেকেন্ডে ব্যাকগ্রাউন্ড আপডেট)
   const fetchLiveStatus = async () => {
     if (!trainId) return;
     setIsRefreshing(true);
@@ -292,7 +295,6 @@ const TrackingPage = () => {
     };
   }, [trainId]);
 
-  // স্টপ ও শিডিউল টাইমলাইন প্রস্তুতি
   const scheduleData = useMemo(() => {
     if (!train) return [];
     return train.stations.map((st, i) => {
@@ -312,7 +314,6 @@ const TrackingPage = () => {
     });
   }, [train]);
 
-  // রুট বরাবর মধ্যবর্তী নন-স্টপ স্টেশন স্বয়ংক্রিয় গণনা (Intermediate Stations Engine)
   const intermediateStationsMap = useMemo(() => {
     if (!train || scheduleData.length < 2) return {};
     const stoppingNormalized = new Set(
@@ -330,18 +331,17 @@ const TrackingPage = () => {
 
       const inter = [];
       const kmStart = st1.km || 0;
-      const kmEnd = st2.km || kmStart + 20;
+      const kmEnd = st2.km || kmStart + 25;
 
       for (const [key, s] of Object.entries(allStationsData)) {
         const sNorm = normalizeStationName(s.nameBn);
         if (stoppingNormalized.has(sNorm)) continue;
 
-        // স্টেশনের কাছে থাকা বাদ দেওয়া
         if (calculateDistance(s.lat, s.lng, c1[0], c1[1]) < 2.0) continue;
         if (calculateDistance(s.lat, s.lng, c2[0], c2[1]) < 2.0) continue;
 
         const seg = distToSegment([s.lat, s.lng], c1, c2);
-        if (seg.crossDist < 3.2 && seg.projRatio > 0.08 && seg.projRatio < 0.92) {
+        if (seg.crossDist < 3.0 && seg.projRatio > 0.08 && seg.projRatio < 0.92) {
           const approxKm = Math.round(kmStart + seg.projRatio * (kmEnd - kmStart));
           inter.push({
             nameBn: s.nameBn,
@@ -362,11 +362,9 @@ const TrackingPage = () => {
     return result;
   }, [train, scheduleData]);
 
-  // ৭ দিনের বিলম্বের পরিসংখ্যান (Historical Delay Analytics Generator)
   const delayHistory = useMemo(() => {
     if (!train) return [];
     const days = [];
-    const baseDelay = liveData?.delay || 25;
     const today = new Date(currentTime);
 
     for (let i = 6; i >= 0; i--) {
@@ -374,22 +372,19 @@ const TrackingPage = () => {
       d.setDate(today.getDate() - i);
       const dayDate = `${toBn(d.getDate())}/${toBn(d.getMonth() + 1)}`;
       
-      // সিডেড রিয়েলিস্টিক ভ্যালু
-      let del = Math.round(((train.id * 17 + i * 31) % 95) + 10);
+      let del = Math.round(((train.id * 17 + i * 29) % 80) + 10);
       if (i === 0 && liveData?.delay !== undefined) {
         del = liveData.delay;
       }
       days.push({
         date: dayDate,
         dayName: ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"][d.getDay()],
-        delayMinutes: del,
-        isOnTime: del <= 5
+        delayMinutes: del
       });
     }
     return days;
   }, [train, liveData, currentTime]);
 
-  // ইউজার ট্রাভেলার জিপিএস ব্রডকাস্টিং
   useEffect(() => {
     let watchId;
     if (isSharing && isTraveler && train && scheduleData.length > 0) {
@@ -398,7 +393,6 @@ const TrackingPage = () => {
           const { latitude, longitude, speed } = pos.coords;
           const currentTs = Date.now();
 
-          // গতি হিসাব
           let currentSpeed = Math.round((speed || 0) * 3.6);
           if ((speed === null || speed === undefined || currentSpeed === 0) && lastGpsRef.current) {
             const elapsedSec = (currentTs - lastGpsRef.current.ts) / 1000;
@@ -412,7 +406,6 @@ const TrackingPage = () => {
           }
           lastGpsRef.current = { lat: latitude, lng: longitude, ts: currentTs };
 
-          // রেললাইন জিও-ফেন্সিং চেক
           const { point: snappedCoords, distance: trackDistance } = getTrackSnapAndDistance(
             latitude,
             longitude,
@@ -420,11 +413,10 @@ const TrackingPage = () => {
           );
 
           if (trackDistance > 0.45) {
-            setShareStatusText('⚠️ আপনি রেললাইনের বাইরে আছেন (ফেক ডাটা সুরক্ষা সক্রিয়)');
+            setShareStatusText('আপনি রেললাইনের বাইরে আছেন');
             return;
           }
 
-          // সঠিক সেগমেন্ট ও স্টেশন বের করা (প্রজেকশন ভিত্তিক - যাতে ভুল না হয়)
           let bestSegment = 0;
           let minErr = Infinity;
           for (let i = 0; i < scheduleData.length - 1; i++) {
@@ -444,7 +436,7 @@ const TrackingPage = () => {
           const finalLat = snappedCoords[0] || latitude;
           const finalLng = snappedCoords[1] || longitude;
 
-          setShareStatusText(`✓ ট্রেন চলছে (${currentSpeed} কিমি/ঘ) - লাইভ জিপিএস সিঙ্ক সচল`);
+          setShareStatusText(`ট্রেন চলছে (${toBn(currentSpeed)} কিমি/ঘণ্টা) - লোকেশন শেয়ার হচ্ছে`);
 
           const locationData = {
             trainId: parseInt(trainId, 10),
@@ -464,7 +456,7 @@ const TrackingPage = () => {
         },
         (err) => {
           console.error("GPS Error:", err);
-          setShareStatusText('⚠️ জিপিএস সিগন্যাল পেতে সমস্যা হচ্ছে');
+          setShareStatusText('জিপিএস সিগন্যাল পাওয়া যাচ্ছে না');
         },
         { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
       );
@@ -474,9 +466,6 @@ const TrackingPage = () => {
     };
   }, [isSharing, isTraveler, trainId, train, scheduleData]);
 
-  // =========================================================================
-  // ৩. নির্ভুল ট্রেন অবস্থান ও সেগমেন্ট গণনা ইঞ্জিন (Active State Engine)
-  // =========================================================================
   const activeState = useMemo(() => {
     if (!train || scheduleData.length === 0) {
       return {
@@ -500,7 +489,6 @@ const TrackingPage = () => {
     const isCrossDay = endMin < startMin;
     const totalKm = scheduleData[scheduleData.length - 1].km || 450;
 
-    // ছুটির দিন চেক
     const daysInBangla = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
     const todayName = daysInBangla[nowObj.getDay()];
     const yesterdayDate = new Date(currentTime);
@@ -509,7 +497,6 @@ const TrackingPage = () => {
     const isTodayOff = train.offDay.includes(todayName);
     const startedYesterday = isCrossDay && !train.offDay.includes(yesterdayName);
 
-    // ৩.১ শিডিউল মোড ফলব্যাক
     const getScheduledState = () => {
       let inSchedule = false;
       if (isCrossDay) {
@@ -540,7 +527,6 @@ const TrackingPage = () => {
         };
       }
 
-      // কোন স্টপেজে আছে তা খুঁজে বের করা
       let segIdx = 0;
       let ratio = 0;
       let isAtStation = false;
@@ -570,7 +556,6 @@ const TrackingPage = () => {
           isAtStation = true;
           break;
         } else if (i > 0) {
-          // বিরতির সময় স্টেশনে দাঁড়িয়ে থাকা
           const prevArr = s1.arrMin !== null ? s1.arrMin : s1.effectiveMin;
           let evalPrevArr = prevArr;
           if (isCrossDay && evalPrevArr < 500) evalPrevArr += 1440;
@@ -597,7 +582,7 @@ const TrackingPage = () => {
       return {
         lat: sLat,
         lng: sLng,
-        speed: isAtStation ? 0 : 54,
+        speed: isAtStation ? 0 : 52,
         mode: 'SCHEDULED',
         isRunning: true,
         segmentIndex: segIdx,
@@ -610,7 +595,6 @@ const TrackingPage = () => {
       };
     };
 
-    // ৩.২ লাইভ / প্রেডিকশন ডেটা যাচাই
     const rawLat = Number(liveData?.lat || liveData?.lastLocation?.lat);
     const rawLng = Number(liveData?.lng || liveData?.lastLocation?.lng);
     const updateTime = liveData?.updatedAt || liveData?.lastLocation?.updatedAt;
@@ -625,9 +609,8 @@ const TrackingPage = () => {
 
       const mode = diffInMin <= 15 ? 'LIVE' : 'PREDICTED';
       const delay = liveData.delay || 0;
-      let currentSpeed = liveData.speed || (diffInMin <= 15 ? 52 : 40);
+      let currentSpeed = liveData.speed || (diffInMin <= 15 ? 54 : 42);
 
-      // সবচেয়ে নির্ভুল সেগমেন্ট প্রজেকশন
       let bestSeg = 0;
       let minErr = Infinity;
       let bestRatio = 0;
@@ -647,7 +630,6 @@ const TrackingPage = () => {
         }
       }
 
-      // পরবর্তী স্টেশনে পৌঁছে গেছে কিনা চেক (দূরত্ব < ৮০০ মিটার ও কম গতি)
       const nextStCoords = scheduleData[bestSeg + 1]?.coords;
       const distToNext = nextStCoords ? calculateDistance(rawLat, rawLng, nextStCoords[0], nextStCoords[1]) : 0;
       const isAtStation = distToNext < 0.8 && currentSpeed < 15;
@@ -678,9 +660,6 @@ const TrackingPage = () => {
     return getScheduledState();
   }, [train, scheduleData, liveData, currentTime]);
 
-  // =========================================================================
-  // ৪. রিয়েল-টাইম পরিসংখ্যান ও পরবর্তী স্টেশন মেট্রিক্স
-  // =========================================================================
   const stats = useMemo(() => {
     if (!train || scheduleData.length === 0 || !activeState.isRunning) return null;
 
@@ -689,7 +668,6 @@ const TrackingPage = () => {
     const nextSt = scheduleData[segIdx + 1] || currentSt;
     const lastSt = scheduleData[scheduleData.length - 1];
 
-    // দূরত্ব হিসাব
     const dNext = activeState.distToNextKm !== undefined
       ? activeState.distToNextKm
       : (nextSt.coords
@@ -700,19 +678,16 @@ const TrackingPage = () => {
       ? calculateDistance(activeState.lat, activeState.lng, lastSt.coords[0], lastSt.coords[1])
       : 0;
 
-    // পরবর্তী স্টেশনের ইটিএ (শিডিউল + বিলম্ব)
     const nextArrivalMin = nextSt.arrMin !== null ? nextSt.arrMin : nextSt.depMin;
     const etaNext = nextArrivalMin !== null
       ? minutesToTime(nextArrivalMin + (activeState.delay || 0))
       : '--:--';
 
-    // গন্তব্যে পৌঁছানোর ইটিএ
     const destArrivalMin = lastSt.arrMin !== null ? lastSt.arrMin : lastSt.depMin;
     const etaDest = destArrivalMin !== null
       ? minutesToTime(destArrivalMin + (activeState.delay || 0))
       : '--:--';
 
-    // নিকটবর্তী মধ্যবর্তী স্টেশন বা ল্যান্ডমার্ক খোঁজা (যেমন: লাহিড়ী মোহনপুর ৬.৪ কিমি)
     let closestLandmark = null;
     let minLandmarkDist = Infinity;
 
@@ -741,19 +716,20 @@ const TrackingPage = () => {
       etaNext,
       etaDest,
       closestLandmark,
-      delayFormatted: formatDelay(activeState.delay)
+      delayFormatted: formatDelaySimple(activeState.delay)
     };
   }, [train, scheduleData, activeState, intermediateStationsMap]);
 
   if (!train) {
     return (
-      <div style={{ padding: '40px 20px', textAlign: 'center', minHeight: '100vh', background: '#f8fafc' }}>
-        <AlertCircle size={48} color="#ef4444" style={{ margin: '0 auto 16px' }} />
-        <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b' }}>ট্রেন তথ্য পাওয়া যায়নি</h3>
-        <p style={{ color: '#64748b', fontSize: '13px', margin: '8px 0 20px' }}>
-          অনুরোধকৃত ট্রেনের সঠিক সময়সূচী বা রুট রেকর্ড খুঁজে পাওয়া যায়নি।
+      <div style={{ padding: '60px 20px', textAlign: 'center', minHeight: '100vh', background: '#f8fafc' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#1e293b', marginBottom: '8px' }}>
+          ট্রেনের তথ্য পাওয়া যায়নি
+        </h2>
+        <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '24px' }}>
+          অনুগ্রহ করে ট্রেনের সঠিক নম্বর বা নাম দিয়ে পুনরায় চেষ্টা করুন।
         </p>
-        <Link to="/" style={{ background: '#006a4e', color: 'white', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
+        <Link to="/" style={{ background: '#006a4e', color: 'white', padding: '12px 24px', borderRadius: '12px', textDecoration: 'none', fontWeight: '700', fontSize: '15px' }}>
           হোমে ফিরে যান
         </Link>
       </div>
@@ -764,304 +740,340 @@ const TrackingPage = () => {
   const destName = train.stations[train.stations.length - 1].name.split('(')[0].trim();
 
   return (
-    <div className="track-container" style={{ backgroundColor: '#f1f5f9', minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#0f172a' }}>
+    <div style={{ backgroundColor: '#f4f7f6', minHeight: '100vh', width: '100%', maxWidth: '100vw', overflowX: 'hidden', fontFamily: "'Hind Siliguri', system-ui, sans-serif", color: '#0f172a' }}>
+      
+      {/* গ্লোবাল ক্লীন ও প্রিমিয়াম অ্যানিমেশন সিএসএস */}
       <style>{`
-        .leaflet-marker-icon { transition: transform 1.2s linear !important; }
-        .live-dot { width: 22px; height: 22px; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 15px rgba(0,0,0,0.3); position: relative; } 
-        .pulse { position: absolute; inset: -10px; border-radius: 50%; animation: p 2s infinite ease-out; } 
-        @keyframes p { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } } 
-        .station-tooltip { background: white !important; border: 1.5px solid #006a4e !important; color: #006a4e !important; border-radius: 6px !important; padding: 2px 7px !important; font-size: 11px !important; font-weight: 700 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.12); }
-        .track-card { background: white; border-radius: 18px; box-shadow: 0 4px 18px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; overflow: hidden; }
-        .tab-btn { flex: 1; padding: 10px 14px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; border-radius: 10px; text-align: center; }
-        .tab-btn.active { background: #006a4e; color: white; box-shadow: 0 2px 8px rgba(0,106,78,0.25); }
-        .tab-btn:not(.active) { background: #f1f5f9; color: #475569; }
-        .delay-bar { transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 6px 6px 0 0; }
-        @media (max-width: 640px) {
-          .track-hero-grid { grid-template-columns: 1fr !important; }
-          .track-stat-grid { grid-template-columns: 1fr 1fr !important; }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes livePulse {
+          0% { transform: scale(0.9); opacity: 0.9; }
+          50% { transform: scale(1.6); opacity: 0.3; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+        @keyframes rippleDot {
+          0% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.5); }
+          70% { box-shadow: 0 0 0 10px rgba(0, 106, 78, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0); }
+        }
+        .clean-card {
+          background: #ffffff;
+          border-radius: 20px;
+          border: 1px solid #e5e9eb;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .tab-button {
+          flex: 1;
+          padding: 12px 16px;
+          font-size: 15px;
+          font-weight: 700;
+          border: none;
+          background: transparent;
+          color: #475569;
+          border-radius: 14px;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+        .tab-button.active {
+          background: #006a4e;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(0, 106, 78, 0.25);
+        }
+        .tab-button:hover:not(.active) {
+          background: #e9ecef;
+          color: #0f172a;
+        }
+        .station-tooltip {
+          background: #ffffff !important;
+          border: 1.5px solid #006a4e !important;
+          color: #006a4e !important;
+          border-radius: 8px !important;
+          padding: 4px 10px !important;
+          font-size: 13px !important;
+          font-weight: 800 !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
         }
       `}</style>
 
       {/* =========================================================================
-          টপ স্টিকি হেডার বার
+          টপ প্রিমিয়াম হেডার বার
       ========================================================================= */}
       <header style={{
-        background: 'linear-gradient(135deg, #00563f 0%, #006a4e 100%)',
-        color: 'white',
-        padding: '14px 16px',
+        background: '#006a4e',
+        color: '#ffffff',
+        padding: '16px 20px',
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
+        boxShadow: '0 4px 18px rgba(0, 106, 78, 0.2)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Link to="/" style={{ color: 'white', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-              <ChevronLeft size={24} />
+        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <Link to="/" style={{ color: '#ffffff', display: 'flex', alignItems: 'center', textDecoration: 'none', padding: '4px', borderRadius: '8px' }}>
+              <ArrowLeftIcon />
             </Link>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h1 style={{ margin: 0, fontSize: '16px', fontWeight: '800', letterSpacing: '-0.2px' }}>
+                <h1 style={{ margin: 0, fontSize: '19px', fontWeight: '800', letterSpacing: '-0.2px' }}>
                   {train.name.split('(')[0]}
                 </h1>
-                <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.2)', padding: '2px 7px', borderRadius: '6px', fontWeight: '700' }}>
-                  #{trainId}
+                <span style={{ fontSize: '13px', background: 'rgba(255, 255, 255, 0.2)', padding: '2px 8px', borderRadius: '6px', fontWeight: '700' }}>
+                  #{toBn(trainId)}
                 </span>
               </div>
-              <div style={{ fontSize: '11px', opacity: 0.85, marginTop: '2px' }}>
-                {originName} ➔ {destName}
+              <div style={{ fontSize: '13px', opacity: 0.9, marginTop: '2px' }}>
+                {originName} থেকে {destName}
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              onClick={fetchLiveStatus}
-              title="রিফ্রেশ করুন"
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: 'none',
-                color: 'white',
-                padding: '7px 10px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                fontSize: '11px',
-                fontWeight: '700',
-                cursor: 'pointer'
-              }}
-            >
-              <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
-              <span>{isRefreshing ? 'সিঙ্ক...' : 'এখনই'}</span>
-            </button>
-          </div>
+          <button
+            onClick={fetchLiveStatus}
+            style={{
+              background: 'rgba(255, 255, 255, 0.18)',
+              border: 'none',
+              color: '#ffffff',
+              padding: '9px 14px',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              fontWeight: '700',
+              cursor: 'pointer'
+            }}
+          >
+            <RefreshIcon spin={isRefreshing} />
+            <span>{isRefreshing ? 'সিঙ্ক হচ্ছে...' : 'রিফ্রেশ'}</span>
+          </button>
         </div>
       </header>
 
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '14px 14px 40px' }}>
+      {/* =========================================================================
+          মূল পেজ কনটেন্ট
+      ========================================================================= */}
+      <main style={{ maxWidth: '960px', margin: '0 auto', padding: '18px 16px 50px' }}>
 
         {/* =========================================================================
-            হিরো লাইভ কার্ড (পরবর্তী স্টেশন ও বর্তমান অবস্থান)
+            হিরো লাইভ কার্ড (পরবর্তী স্টেশন ও বর্তমান গতি)
         ========================================================================= */}
         {activeState.isRunning ? (
-          <div className="track-card" style={{ padding: '20px', marginBottom: '14px', borderTop: '4px solid #006a4e' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+          <div className="clean-card" style={{ padding: '24px 22px', marginBottom: '18px', borderTop: '5px solid #006a4e' }}>
+            
+            {/* স্ট্যাটাস পিল */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: activeState.mode === 'LIVE' ? '#dcfce7' : (activeState.mode === 'PREDICTED' ? '#fef3c7' : '#e0f2fe'),
+                  color: activeState.mode === 'LIVE' ? '#166534' : (activeState.mode === 'PREDICTED' ? '#92400e' : '#075985'),
+                  padding: '5px 12px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: '800'
+                }}>
                   <span style={{
-                    fontSize: '10px',
-                    padding: '3px 8px',
-                    borderRadius: '5px',
-                    fontWeight: '800',
-                    color: 'white',
-                    background: activeState.mode === 'LIVE' ? '#ef4444' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#2563eb'),
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'white' }}></span>
-                    {activeState.mode === 'LIVE' ? 'লাইভ জিপিএস' : (activeState.mode === 'PREDICTED' ? 'সম্ভাব্য অবস্থান' : 'নির্ধারিত শিডিউল')}
-                  </span>
-                  {activeState.lastSeen !== null && activeState.lastSeen !== undefined && (
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>
-                      • {activeState.lastSeen === 0 ? 'এইমাত্র আপডেট' : `${toBn(activeState.lastSeen)} মি আগে`}
-                    </span>
-                  )}
-                </div>
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: activeState.mode === 'LIVE' ? '#16a34a' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#0284c7'),
+                    boxShadow: '0 0 6px currentColor'
+                  }}></span>
+                  {activeState.mode === 'LIVE' ? 'লাইভ লোকেশন' : (activeState.mode === 'PREDICTED' ? 'সম্ভাব্য অবস্থান' : 'নির্ধারিত সময়সূচী')}
+                </span>
 
-                <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span>পরবর্তী <span style={{ color: '#006a4e' }}>{stats?.nextStName}</span></span>
-                  <span style={{ fontSize: '14px', fontWeight: '700', color: '#64748b' }}>
-                    ({toBn(stats?.distNext)} কিমি)
+                {activeState.lastSeen !== null && activeState.lastSeen !== undefined && (
+                  <span style={{ fontSize: '13px', color: '#64748b' }}>
+                    • {activeState.lastSeen === 0 ? 'এইমাত্র আপডেট' : `${toBn(activeState.lastSeen)} মিনিট আগে`}
                   </span>
-                  <span style={{ fontSize: '14px', fontWeight: '800', color: '#0284c7' }}>
-                    • {toBn(activeState.speed)} কি/ঘ
-                  </span>
-                </div>
+                )}
               </div>
 
-              {/* বিলম্ব ব্যাজ */}
-              <div style={{ textAlign: 'right' }}>
-                <div style={{
-                  display: 'inline-block',
-                  background: activeState.delay > 5 ? '#fef2f2' : '#f0fdf4',
-                  border: `1px solid ${activeState.delay > 5 ? '#fecaca' : '#bbf7d0'}`,
-                  color: activeState.delay > 5 ? '#dc2626' : '#16a34a',
-                  padding: '6px 12px',
-                  borderRadius: '10px',
-                  fontWeight: '800',
-                  fontSize: '13px'
-                }}>
-                  {stats?.delayFormatted}
-                </div>
+              {/* লেট ব্যাজ */}
+              <div style={{
+                background: activeState.delay > 5 ? '#fef2f2' : '#f0fdf4',
+                color: activeState.delay > 5 ? '#dc2626' : '#16a34a',
+                border: `1px solid ${activeState.delay > 5 ? '#fecaca' : '#bbf7d0'}`,
+                padding: '7px 16px',
+                borderRadius: '12px',
+                fontSize: '15px',
+                fontWeight: '800'
+              }}>
+                {stats?.delayFormatted}
               </div>
             </div>
 
-            {/* ল্যান্ডমার্ক বা বর্তমান নিকটবর্তী মাইলফলক */}
+            {/* পরবর্তী স্টেশন বড় হেডিং */}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '14px', color: '#64748b', fontWeight: '600', marginBottom: '2px' }}>
+                পরবর্তী স্টেশন
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '10px' }}>
+                <span style={{ fontSize: '26px', fontWeight: '900', color: '#006a4e' }}>
+                  {stats?.nextStName}
+                </span>
+                <span style={{ fontSize: '16px', fontWeight: '700', color: '#475569' }}>
+                  ({toBn(stats?.distNext)} কিমি বাকি)
+                </span>
+                <span style={{ fontSize: '16px', fontWeight: '800', color: '#0284c7' }}>
+                  • গতি {toBn(activeState.speed)} কিমি/ঘণ্টা
+                </span>
+              </div>
+            </div>
+
+            {/* নিকটবর্তী ল্যান্ডমার্ক */}
             {stats?.closestLandmark && (
               <div style={{
-                marginTop: '12px',
-                padding: '8px 12px',
+                padding: '12px 16px',
                 background: '#f8fafc',
-                borderRadius: '10px',
-                border: '1px dashed #cbd5e1',
+                borderRadius: '14px',
+                border: '1px solid #e2e8f0',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                fontSize: '12px',
-                color: '#475569'
+                gap: '10px',
+                fontSize: '14px',
+                color: '#334155',
+                marginBottom: '18px'
               }}>
-                <MapPin size={15} color="#006a4e" />
+                <div style={{ color: '#006a4e' }}><LocationPinIcon /></div>
                 <span>
                   বর্তমান অবস্থান: <b>{stats.closestLandmark.nameBn}</b> স্টেশনের কাছাকাছি ({toBn(stats.closestLandmark.dist)} কিমি দূরে)
                 </span>
               </div>
             )}
 
-            {/* জার্নি প্রগ্রেস বার ও অ্যাকুরেসি গ্রিড */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }} className="track-stat-grid">
-              {/* যাত্রার অগ্রগতি */}
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', color: '#64748b', marginBottom: '6px' }}>
-                  <span>যাত্রার অগ্রগতি</span>
-                  <span style={{ color: '#006a4e', fontWeight: '800' }}>{toBn(activeState.progressPct)}%</span>
+            {/* যাত্রার অগ্রগতি বার */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>
+                <span>যাত্রার অগ্রগতি ({toBn(activeState.currentKm)} / {toBn(activeState.totalKm)} কিমি)</span>
+                <span style={{ color: '#006a4e', fontWeight: '800', fontSize: '15px' }}>{toBn(activeState.progressPct)}% সম্পন্ন</span>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: '#e2e8f0', borderRadius: '6px', overflow: 'hidden' }}>
+                <div style={{
+                  width: `${activeState.progressPct}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #10b981, #006a4e)',
+                  borderRadius: '6px',
+                  transition: 'width 0.8s ease'
+                }}></div>
+              </div>
+            </div>
+
+            {/* ইটিএ বক্স (বড় ও স্পষ্ট ফন্ট) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '16px', border: '1px solid #dcfce7' }}>
+                <div style={{ fontSize: '13px', color: '#166534', fontWeight: '700' }}>
+                  {stats?.nextStName} স্টেশনে পৌঁছাবে
                 </div>
-                <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{
-                    width: `${activeState.progressPct}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg, #10b981, #006a4e)',
-                    borderRadius: '4px',
-                    transition: 'width 0.8s ease'
-                  }}></div>
-                </div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px', textAlign: 'right' }}>
-                  {toBn(activeState.currentKm)} / {toBn(activeState.totalKm)} কিমি
+                <div style={{ fontSize: '20px', fontWeight: '900', color: '#14532d', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ClockIcon /> {stats?.etaNext}
                 </div>
               </div>
 
-              {/* ট্র্যাকিং নির্ভুলতা */}
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '700', color: '#64748b', marginBottom: '6px' }}>
-                  <span>ট্র্যাকিং নির্ভুলতা</span>
-                  <span style={{ color: activeState.mode === 'LIVE' ? '#16a34a' : '#2563eb', fontWeight: '800' }}>
-                    {activeState.mode === 'LIVE' ? '১০০% নিশ্চিত' : '৯২% সম্ভাব্য'}
-                  </span>
+              <div style={{ background: '#f0f9ff', padding: '16px', borderRadius: '16px', border: '1px solid #e0f2fe' }}>
+                <div style={{ fontSize: '13px', color: '#0369a1', fontWeight: '700' }}>
+                  গন্তব্য {stats?.destName} পৌঁছাবে
                 </div>
-                <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{
-                    width: activeState.mode === 'LIVE' ? '100%' : '92%',
-                    height: '100%',
-                    background: activeState.mode === 'LIVE' ? '#16a34a' : '#2563eb',
-                    borderRadius: '4px'
-                  }}></div>
-                </div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '6px', textAlign: 'right' }}>
-                  {activeState.mode === 'LIVE' ? 'স্যাটেলাইট ও ক্রাউড সোর্সড' : 'শিডিউল ক্যালকুলেশন'}
+                <div style={{ fontSize: '20px', fontWeight: '900', color: '#0c4a6e', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ClockIcon /> {stats?.etaDest}
                 </div>
               </div>
             </div>
 
-            {/* ইটিএ বক্স */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px' }}>
-              <div style={{ background: '#ecfdf5', padding: '10px 14px', borderRadius: '12px', border: '1px solid #d1fae5' }}>
-                <div style={{ fontSize: '10px', color: '#047857', fontWeight: '700' }}>পরবর্তী: {stats?.nextStName}</div>
-                <div style={{ fontWeight: '900', fontSize: '15px', color: '#065f46', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <Clock size={14} /> {stats?.etaNext}
-                </div>
-              </div>
-              <div style={{ background: '#eff6ff', padding: '10px 14px', borderRadius: '12px', border: '1px solid #dbeafe' }}>
-                <div style={{ fontSize: '10px', color: '#1d4ed8', fontWeight: '700' }}>গন্তব্য: {stats?.destName}</div>
-                <div style={{ fontWeight: '900', fontSize: '15px', color: '#1e40af', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <Navigation size={14} /> {stats?.etaDest}
-                </div>
-              </div>
-            </div>
           </div>
         ) : (
-          <div className="track-card" style={{ padding: '24px', textAlign: 'center', marginBottom: '14px' }}>
-            <AlertCircle size={44} color="#f59e0b" style={{ margin: '0 auto 10px' }} />
-            <h3 style={{ margin: '0 0 6px', fontWeight: '800', fontSize: '17px', color: '#1e293b' }}>
+          <div className="clean-card" style={{ padding: '36px 20px', textAlign: 'center', marginBottom: '18px' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#fef3c7', color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '24px' }}>
+              ⏳
+            </div>
+            <h2 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: '800', color: '#1e293b' }}>
               ট্রেনটি বর্তমানে রুটে চলাচল করছে না
-            </h3>
-            <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: '1.6' }}>
-              আজ এই ট্রেনের সাপ্তাহিক ছুটি হতে পারে ({train.offDay}) অথবা ট্রেনটি নির্ধারিত যাত্রার সময় হয়নি বা যাত্রা সম্পন্ন করেছে।
+            </h2>
+            <p style={{ margin: '0 auto', maxWidth: '520px', fontSize: '15px', color: '#64748b', lineHeight: '1.6' }}>
+              আজ এই ট্রেনের সাপ্তাহিক ছুটি হতে পারে (বন্ধের দিন: {train.offDay}) অথবা ট্রেনটি এখনো যাত্রা শুরু করেনি বা আজকের যাত্রা সম্পন্ন করেছে।
             </p>
           </div>
         )}
 
         {/* =========================================================================
-            যাত্রী লোকেশন শেয়ারিং প্রম্পট বার
+            যাত্রী সাহায্য / লোকেশন শেয়ার অপশন
         ========================================================================= */}
-        <div style={{ marginBottom: '14px' }}>
+        <div style={{ marginBottom: '18px' }}>
           {isTraveler === true ? (
             <div style={{
-              background: isSharing ? '#ecfdf5' : '#fff7ed',
-              padding: '12px 16px',
-              borderRadius: '14px',
-              border: `1px solid ${isSharing ? '#10b981' : '#f97316'}`,
+              background: isSharing ? '#f0fdf4' : '#fffbeb',
+              padding: '16px 20px',
+              borderRadius: '16px',
+              border: `1px solid ${isSharing ? '#86efac' : '#fde68a'}`,
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '12px'
             }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>
-                  {isSharing ? '📍 আপনি লাইভ লোকেশন শেয়ার করছেন' : '⏸️ শেয়ারিং বন্ধ আছে'}
+                <div style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
+                  {isSharing ? 'আপনার ফোনের লোকেশন শেয়ার হচ্ছে' : 'লোকেশন শেয়ারিং বন্ধ আছে'}
                 </div>
-                <div style={{ fontSize: '11px', color: isSharing && shareStatusText && shareStatusText.startsWith('⚠️') ? '#b45309' : '#047857', marginTop: '2px', fontWeight: '600' }}>
-                  {isSharing && shareStatusText ? shareStatusText : 'আপনার অবদানে সহযাত্রীরা উপকৃত হচ্ছেন।'}
+                <div style={{ fontSize: '14px', color: isSharing ? '#15803d' : '#b45309', marginTop: '3px', fontWeight: '600' }}>
+                  {isSharing && shareStatusText ? shareStatusText : 'আপনার অবদানে ট্রেনের হাজারো সহযাত্রী সঠিক লাইভ অবস্থান জানতে পারছেন।'}
                 </div>
               </div>
               <button
                 onClick={() => setIsSharing(!isSharing)}
                 style={{
-                  background: isSharing ? '#ef4444' : '#10b981',
-                  color: 'white',
+                  background: isSharing ? '#ef4444' : '#006a4e',
+                  color: '#ffffff',
                   border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '10px',
-                  fontSize: '12px',
+                  padding: '10px 20px',
+                  borderRadius: '12px',
+                  fontSize: '14px',
                   fontWeight: '800',
                   cursor: 'pointer'
                 }}
               >
-                {isSharing ? 'বন্ধ করুন' : 'চালু করুন'}
+                {isSharing ? 'শেয়ার বন্ধ করুন' : 'চালু করুন'}
               </button>
             </div>
           ) : (
             <div style={{
-              background: 'white',
-              padding: '12px 16px',
-              borderRadius: '14px',
-              border: '1px solid #e2e8f0',
+              background: '#ffffff',
+              padding: '16px 20px',
+              borderRadius: '16px',
+              border: '1px solid #e5e9eb',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
-              gap: '10px'
+              gap: '12px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px' }}>🚆</span>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#1e293b' }}>
-                    আপনি কি এই মুহূর্তে <b>{train.name.split('(')[0]}</b> ট্রেনে আছেন?
-                  </div>
-                  <div style={{ fontSize: '10px', color: '#64748b' }}>
-                    লোকেশন শেয়ার করে হাজারো যাত্রীকে সঠিক তথ্য দিন।
-                  </div>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b' }}>
+                  আপনি কি এই মুহূর্তে <b>{train.name.split('(')[0]}</b> ট্রেনে আছেন?
+                </div>
+                <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                  লোকেশন শেয়ার করে সহযাত্রীদের সঠিক তথ্য জানতে সাহায্য করুন।
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   onClick={() => { setIsTraveler(true); setIsSharing(true); setShowModal(false); }}
                   style={{
                     background: '#006a4e',
-                    color: 'white',
+                    color: '#ffffff',
                     border: 'none',
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    fontSize: '11px',
+                    padding: '9px 18px',
+                    borderRadius: '10px',
+                    fontSize: '14px',
                     fontWeight: '800',
                     cursor: 'pointer'
                   }}
@@ -1072,11 +1084,11 @@ const TrackingPage = () => {
                   onClick={() => { setIsTraveler(false); setShowModal(false); }}
                   style={{
                     background: '#f1f5f9',
-                    color: '#64748b',
+                    color: '#475569',
                     border: 'none',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    fontSize: '11px',
+                    padding: '9px 16px',
+                    borderRadius: '10px',
+                    fontSize: '14px',
                     fontWeight: '700',
                     cursor: 'pointer'
                   }}
@@ -1089,178 +1101,49 @@ const TrackingPage = () => {
         </div>
 
         {/* =========================================================================
-            ট্যাব সুইচিং বার (ম্যাপ ভিউ vs টাইমলাইন)
+            ট্যাব সুইচিং (পরিষ্কার ও প্রিমিয়াম ডিজাইন)
         ========================================================================= */}
-        <div style={{ display: 'flex', gap: '8px', background: 'white', padding: '6px', borderRadius: '12px', marginBottom: '14px', border: '1px solid #e2e8f0' }}>
+        <div style={{
+          background: '#e9ecef',
+          padding: '6px',
+          borderRadius: '18px',
+          display: 'flex',
+          gap: '6px',
+          marginBottom: '18px'
+        }}>
           <button
-            className={`tab-btn ${activeTab === 'both' || activeTab === 'timeline' ? 'active' : ''}`}
-            onClick={() => setActiveTab(activeTab === 'timeline' ? 'both' : 'timeline')}
+            className={`tab-button ${activeTab === 'timeline' ? 'active' : ''}`}
+            onClick={() => setActiveTab('timeline')}
           >
-            📋 স্টেশন টাইমলাইন
+            স্টেশনের তালিকা
           </button>
           <button
-            className={`tab-btn ${activeTab === 'both' || activeTab === 'map' ? 'active' : ''}`}
-            onClick={() => setActiveTab(activeTab === 'map' ? 'both' : 'map')}
+            className={`tab-button ${activeTab === 'map' ? 'active' : ''}`}
+            onClick={() => setActiveTab('map')}
           >
-            🗺️ লাইভ ম্যাপ
+            লাইভ ম্যাপ
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'delay' ? 'active' : ''}`}
+            onClick={() => setActiveTab('delay')}
+          >
+            লেট হিস্ট্রি
           </button>
         </div>
 
         {/* =========================================================================
-            লাইভ ম্যাপ ভিউ
+            ট্যাব ১: স্টেশনের তালিকা (Vertical Station Timeline)
         ========================================================================= */}
-        {(activeTab === 'both' || activeTab === 'map') && (
-          <div className="track-card" style={{ height: '360px', width: '100%', marginBottom: '14px', position: 'relative' }}>
-            <MapContainer
-              center={[activeState.lat, activeState.lng]}
-              zoom={10}
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              {railData && railData.features && (
-                <GeoJSON
-                  data={railData}
-                  style={() => ({ color: '#006a4e', weight: 2.5, opacity: 0.85 })}
-                />
-              )}
-              <RecenterMap center={[activeState.lat, activeState.lng]} />
-
-              {/* স্টপেজ মার্কার */}
-              {scheduleData.map((st, i) => {
-                if (!st.coords) return null;
-                const isPassed = activeState.isRunning ? i < activeState.segmentIndex : false;
-                const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
-
-                return (
-                  <Marker
-                    key={i}
-                    position={st.coords}
-                    icon={L.divIcon({
-                      html: `<div style="width: 10px; height: 10px; background: ${isPassed ? '#94a3b8' : (isNext ? '#ef4444' : '#006a4e')}; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.4);"></div>`,
-                      iconSize: [10, 10],
-                      iconAnchor: [5, 5]
-                    })}
-                  >
-                    <Tooltip permanent={isNext} direction="top" className="station-tooltip" offset={[0, -8]}>
-                      {st.name.split('(')[0]}
-                    </Tooltip>
-                  </Marker>
-                );
-              })}
-
-              {/* ট্রেন আইকন লাইভ মার্কার */}
-              {activeState.isRunning && (
-                <Marker
-                  position={[activeState.lat, activeState.lng]}
-                  icon={L.divIcon({
-                    html: `
-                      <div class="pulse" style="background:${activeState.speed < 5 ? 'rgba(239,68,68,0.4)' : (activeState.mode === 'LIVE' ? 'rgba(0,106,78,0.35)' : 'rgba(37,99,235,0.3)')}"></div>
-                      <div class="live-dot" style="background:${activeState.speed < 5 ? '#ef4444' : (activeState.mode === 'LIVE' ? '#006a4e' : '#2563eb')}"></div>
-                    `,
-                    iconSize: [22, 22],
-                    iconAnchor: [11, 11]
-                  })}
-                />
-              )}
-            </MapContainer>
-          </div>
-        )}
-
-        {/* =========================================================================
-            ৭-দিনের বিলম্বের পরিসংখ্যান (Delay History Chart - BD Train Tracking Style)
-        ========================================================================= */}
-        <div className="track-card" style={{ padding: '20px', marginBottom: '14px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-            <div>
-              <div style={{ fontSize: '10px', color: '#dc2626', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                {activeState.delay > 60 ? 'মারাত্মক বিলম্বিত ট্রেন' : (activeState.delay > 15 ? 'মাঝারি বিলম্ব' : 'সময়মতো ট্রেন')}
-              </div>
-              <h3 style={{ margin: '2px 0 0', fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
-                গত ৭ দিনের বিলম্বের পরিসংখ্যান (Delay History)
-              </h3>
-            </div>
-            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700' }}>
-              সময়মতো সীমা: ৫ মিনিট
-            </div>
-          </div>
-
-          {/* পরিসংখ্যান সামারি বার */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '18px', textAlign: 'center' }}>
-            <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ fontSize: '10px', color: '#64748b', fontWeight: '600' }}>গড় বিলম্ব</div>
-              <div style={{ fontSize: '14px', fontWeight: '900', color: '#dc2626', marginTop: '2px' }}>
-                {toBn(Math.round(delayHistory.reduce((acc, cur) => acc + cur.delayMinutes, 0) / 7))} মি
-              </div>
-            </div>
-            <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ fontSize: '10px', color: '#64748b', fontWeight: '600' }}>সর্বোচ্চ বিলম্ব</div>
-              <div style={{ fontSize: '14px', fontWeight: '900', color: '#b91c1c', marginTop: '2px' }}>
-                {toBn(Math.max(...delayHistory.map((d) => d.delayMinutes)))} মি
-              </div>
-            </div>
-            <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <div style={{ fontSize: '10px', color: '#64748b', fontWeight: '600' }}>সর্বনিম্ন</div>
-              <div style={{ fontSize: '14px', fontWeight: '900', color: '#16a34a', marginTop: '2px' }}>
-                {toBn(Math.min(...delayHistory.map((d) => d.delayMinutes)))} মি
-              </div>
-            </div>
-          </div>
-
-          {/* বার চার্ট ভিজ্যুয়ালাইজেশন */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '140px', paddingTop: '20px', borderBottom: '2px solid #e2e8f0', position: 'relative' }}>
-            {/* ৫ মিনিট ড্যাশড অন-টাইম লাইন */}
-            <div style={{ position: 'absolute', bottom: '15px', left: 0, right: 0, borderBottom: '1.5px dashed #10b981', zIndex: 1 }}></div>
-
-            {delayHistory.map((item, idx) => {
-              const maxVal = Math.max(...delayHistory.map((d) => d.delayMinutes), 60);
-              const heightPct = Math.min(100, Math.max(12, Math.round((item.delayMinutes / maxVal) * 100)));
-              const barColor = item.delayMinutes <= 15 ? '#10b981' : (item.delayMinutes <= 45 ? '#f59e0b' : '#ef4444');
-
-              return (
-                <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', padding: '0 4px', zIndex: 2 }}>
-                  <span style={{ fontSize: '10px', fontWeight: '800', color: barColor, marginBottom: '4px' }}>
-                    {toBn(item.delayMinutes)}মি
-                  </span>
-                  <div
-                    className="delay-bar"
-                    style={{
-                      width: '70%',
-                      maxWidth: '28px',
-                      height: `${heightPct}%`,
-                      background: barColor
-                    }}
-                  ></div>
-                  <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', marginTop: '6px' }}>
-                    {item.date}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* =========================================================================
-            উল্লম্ব স্টেশন টাইমলাইন (Vertical Station Timeline - BD Train Tracking & TrainKothay)
-        ========================================================================= */}
-        {(activeTab === 'both' || activeTab === 'timeline') && (
-          <div className="track-card" style={{ padding: '22px 18px', marginBottom: '14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        {activeTab === 'timeline' && (
+          <div className="clean-card" style={{ padding: '24px 20px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
-                  স্টপ ও রুট নির্দেশিকা
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+                  স্টপ ও সময়সূচী
                 </h3>
-                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                <div style={{ fontSize: '14px', color: '#64748b', marginTop: '3px' }}>
                   মোট {toBn(scheduleData.length)}টি স্টপেজ • {toBn(train.stations[train.stations.length - 1].km || '---')} কিমি
                 </div>
-              </div>
-
-              <div style={{ fontSize: '11px', color: '#475569', display: 'flex', gap: '10px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#006a4e' }}></span> অতিক্রান্ত
-                </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }}></span> বর্তমান
-                </span>
               </div>
             </div>
 
@@ -1271,80 +1154,77 @@ const TrackingPage = () => {
                 const isCurrentSegment = activeState.isRunning ? i === activeState.segmentIndex : false;
                 const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
 
-                // শিডিউল ও বিলম্বিত সময়
                 const schedMin = st.arrMin !== null ? st.arrMin : st.depMin;
                 const actualMin = schedMin !== null ? schedMin + (activeState.delay || 0) : null;
                 const actualTimeStr = actualMin !== null ? minutesToTime(actualMin) : '--:--';
 
-                // প্ল্যাটফর্ম নম্বর
                 const platformNo = toBn(((i * 3 + train.id) % 4) + 1);
 
-                // মধ্যবর্তী নন-স্টপ স্টেশন আছে কিনা
                 const intermediateList = intermediateStationsMap[i] || [];
                 const hasIntermediate = intermediateList.length > 0;
-                const isIntermediateExpanded = expandedSegments[i] !== false; // ডিফল্ট ওপেন
+                const isIntermediateExpanded = expandedSegments[i] || false;
 
                 return (
                   <div key={i}>
-                    <div style={{ display: 'flex', gap: '14px', opacity: isPassed ? 0.7 : 1 }}>
-                      {/* উল্লম্ব লাইন ও ডট */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '24px' }}>
+                    <div style={{ display: 'flex', gap: '16px', opacity: isPassed ? 0.65 : 1 }}>
+                      {/* উল্লম্ব টাইমলাইন লাইন ও ডট */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '28px' }}>
                         <div style={{
-                          width: isCurrentSegment ? 18 : 12,
-                          height: isCurrentSegment ? 18 : 12,
+                          width: isCurrentSegment ? '20px' : '14px',
+                          height: isCurrentSegment ? '20px' : '14px',
                           borderRadius: '50%',
-                          background: isCurrentSegment ? '#ef4444' : (isPassed ? '#006a4e' : '#cbd5e1'),
-                          border: isCurrentSegment ? '3px solid #fecaca' : '2px solid white',
-                          boxShadow: isCurrentSegment ? '0 0 10px rgba(239,68,68,0.5)' : 'none',
+                          background: isCurrentSegment ? '#006a4e' : (isPassed ? '#006a4e' : '#cbd5e1'),
+                          border: isCurrentSegment ? '4px solid #bbf7d0' : '2px solid #ffffff',
+                          boxShadow: isCurrentSegment ? '0 0 12px rgba(0, 106, 78, 0.4)' : 'none',
                           zIndex: 3,
                           transition: 'all 0.3s'
                         }}></div>
 
                         {i < scheduleData.length - 1 && (
                           <div style={{
-                            width: 3,
+                            width: '3px',
                             flex: 1,
-                            background: isPassed ? '#006a4e' : (isCurrentSegment ? 'linear-gradient(to bottom, #ef4444, #cbd5e1)' : '#e2e8f0'),
-                            minHeight: hasIntermediate && isIntermediateExpanded ? '40px' : '65px'
+                            background: isPassed ? '#006a4e' : (isCurrentSegment ? 'linear-gradient(to bottom, #006a4e, #cbd5e1)' : '#e2e8f0'),
+                            minHeight: '65px'
                           }}></div>
                         )}
                       </div>
 
-                      {/* স্টেশনের বিস্তারিত */}
-                      <div style={{ flex: 1, paddingBottom: '16px' }}>
+                      {/* স্টেশনের তথ্য */}
+                      <div style={{ flex: 1, paddingBottom: '20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
+                              <span style={{ fontWeight: '800', fontSize: '17px', color: '#0f172a' }}>
                                 {st.name.split('(')[0]}
                               </span>
-                              <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#475569', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>
-                                PF {platformNo}
+                              <span style={{ fontSize: '12px', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '6px', fontWeight: '700' }}>
+                                প্ল্যাটফর্ম {platformNo}
                               </span>
                               {st.km !== undefined && (
-                                <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                                <span style={{ fontSize: '13px', color: '#94a3b8' }}>
                                   • {toBn(st.km)} কিমি
                                 </span>
                               )}
                             </div>
 
-                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>
+                            <div style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
                               শিডিউল: {st.arrival !== 'START' ? st.arrival : 'প্রারম্ভিক'} / {st.departure !== 'END' ? st.departure : 'গন্তব্য'}
                             </div>
                           </div>
 
-                          {/* আগমন ও প্রস্থান সময় */}
+                          {/* আগমন সময় */}
                           <div style={{ textAlign: 'right' }}>
                             <div style={{
                               fontWeight: '900',
-                              fontSize: '13px',
+                              fontSize: '16px',
                               color: activeState.delay > 5 && !isPassed ? '#dc2626' : '#006a4e'
                             }}>
                               {isPassed ? (st.arrival !== 'START' ? st.arrival : st.departure) : actualTimeStr}
                             </div>
                             {!isPassed && activeState.delay > 5 && (
-                              <div style={{ fontSize: '10px', color: '#dc2626', fontWeight: '700' }}>
-                                ইটিএ (+{toBn(activeState.delay)}মি)
+                              <div style={{ fontSize: '13px', color: '#dc2626', fontWeight: '700', marginTop: '2px' }}>
+                                +{toBn(activeState.delay)} মিনিট লেট
                               </div>
                             )}
                           </div>
@@ -1352,72 +1232,58 @@ const TrackingPage = () => {
                       </div>
                     </div>
 
-                    {/* রানিং ট্রেন পজিশন ইন্ডিকেটর (যদি ট্রেন বর্তমানে এই সেগমেন্টে থাকে) */}
+                    {/* চলমান ট্রেনের লাইভ স্ট্যাটাস স্ট্রিপ */}
                     {isCurrentSegment && activeState.isRunning && (
                       <div style={{
+                        margin: '-8px 0 16px 24px',
+                        background: '#ecfdf5',
+                        border: '1.5px solid #a7f3d0',
+                        borderRadius: '14px',
+                        padding: '12px 16px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px',
-                        margin: '-6px 0 10px 18px',
-                        background: '#fef2f2',
-                        border: '1.5px solid #fecaca',
-                        borderRadius: '12px',
-                        padding: '8px 12px'
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '10px'
                       }}>
-                        <div style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: '50%',
-                          background: '#ef4444',
-                          color: 'white',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 0 10px rgba(239,68,68,0.4)'
-                        }}>
-                          <TrainIcon size={16} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#006a4e', animation: 'rippleDot 1.5s infinite' }}></span>
+                          <span style={{ fontSize: '15px', fontWeight: '800', color: '#065f46' }}>
+                            ট্রেনটি এখন এই পথে চলছে
+                          </span>
                         </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#991b1b' }}>
-                            ট্রেনটি বর্তমানে এই সেগমেন্টে চলছে
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#b91c1c' }}>
-                            গতি: <b>{toBn(activeState.speed)} কিমি/ঘ</b> • পরবর্তী স্টেশনে পৌঁছাতে বাকি <b>{toBn(stats?.distNext)} কিমি</b>
-                          </div>
+                        <div style={{ fontSize: '14px', color: '#047857', fontWeight: '700' }}>
+                          গতি: {toBn(activeState.speed)} কিমি/ঘণ্টা • বাকি: {toBn(stats?.distNext)} কিমি
                         </div>
                       </div>
                     )}
 
-                    {/* মধ্যবর্তী নন-স্টপ স্টেশন স্ট্রিপ (BD Train Tracking Style Dark Strip) */}
+                    {/* মধ্যবর্তী স্টেশন ড্রয়ার */}
                     {hasIntermediate && i < scheduleData.length - 1 && (
-                      <div style={{ marginLeft: '24px', marginBottom: '14px' }}>
-                        <div
+                      <div style={{ marginLeft: '28px', marginBottom: '16px' }}>
+                        <button
                           onClick={() => setExpandedSegments((prev) => ({ ...prev, [i]: !isIntermediateExpanded }))}
                           style={{
-                            background: '#1e293b',
-                            color: '#94a3b8',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            color: '#475569',
                             borderRadius: '10px',
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            fontWeight: '600',
+                            padding: '8px 14px',
+                            fontSize: '13px',
+                            fontWeight: '700',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
+                            gap: '6px',
                             cursor: 'pointer'
                           }}
                         >
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#cbd5e1' }}>
-                            <span>🛤️</span> মধ্যবর্তী নন-স্টপ স্টেশন ({toBn(intermediateList.length)}টি)
-                          </span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            {isIntermediateExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                          </span>
-                        </div>
+                          <span>মাঝের {toBn(intermediateList.length)}টি ছোট স্টেশন {isIntermediateExpanded ? 'লুকান' : 'দেখুন'}</span>
+                          {isIntermediateExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        </button>
 
                         {isIntermediateExpanded && (
-                          <div style={{ background: '#0f172a', borderRadius: '0 0 10px 10px', padding: '8px 12px' }}>
+                          <div style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '10px 16px', marginTop: '8px' }}>
                             {intermediateList.map((im, imIdx) => {
-                              // আনুমানিক পার হওয়ার সময়
                               const stStartMin = st.depMin !== null ? st.depMin : st.effectiveMin;
                               const stEndMin = scheduleData[i + 1].arrMin !== null ? scheduleData[i + 1].arrMin : scheduleData[i + 1].effectiveMin;
                               let approxPassMin = null;
@@ -1432,19 +1298,18 @@ const TrackingPage = () => {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    padding: '5px 0',
-                                    borderBottom: imIdx < intermediateList.length - 1 ? '1px solid #1e293b' : 'none',
-                                    fontSize: '11px',
-                                    color: '#94a3b8'
+                                    padding: '7px 0',
+                                    borderBottom: imIdx < intermediateList.length - 1 ? '1px solid #e2e8f0' : 'none',
+                                    fontSize: '14px',
+                                    color: '#475569'
                                   }}
                                 >
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#64748b' }}></span>
-                                    <span style={{ color: '#e2e8f0', fontWeight: '600' }}>{im.nameBn}</span>
-                                    <span style={{ fontSize: '10px', color: '#64748b' }}>({toBn(im.approxKm)} কিমি)</span>
+                                  <div>
+                                    <span style={{ color: '#0f172a', fontWeight: '700' }}>{im.nameBn}</span>
+                                    <span style={{ fontSize: '13px', color: '#94a3b8', marginLeft: '6px' }}>({toBn(im.approxKm)} কিমি)</span>
                                   </div>
-                                  <div style={{ color: '#38bdf8', fontSize: '10px', fontWeight: '700' }}>
-                                    ≈ {approxPassMin !== null ? minutesToTime(approxPassMin) : '--:--'}
+                                  <div style={{ color: '#0284c7', fontSize: '13px', fontWeight: '700' }}>
+                                    আনুমানিক {approxPassMin !== null ? minutesToTime(approxPassMin) : '--:--'}
                                   </div>
                                 </div>
                               );
@@ -1461,59 +1326,178 @@ const TrackingPage = () => {
         )}
 
         {/* =========================================================================
-            অ্যাডসেন্স ফ্রেন্ডলি FAQ এবং ট্রাভেল গাইড (TrainKothay Web Style)
+            ট্যাব ২: লাইভ ম্যাপ (Interactive Map)
         ========================================================================= */}
-        <section className="track-card" style={{ padding: '22px 18px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-            <span style={{ fontSize: '20px' }}>💡</span>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
-                উত্তর এখানেই ({train.name.split('(')[0]} লাইভ ট্র্যাকিং তথ্য)
-              </h3>
-              <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
-                ট্রেন চলাচল, লেট স্ট্যাটাস এবং ভ্রমণ নির্দেশিকা সংক্রান্ত সাধারণ প্রশ্নাবলী
-              </p>
+        {activeTab === 'map' && (
+          <div className="clean-card" style={{ height: '480px', width: '100%', marginBottom: '20px', overflow: 'hidden' }}>
+            <MapContainer
+              center={[activeState.lat, activeState.lng]}
+              zoom={10}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {railData && railData.features && (
+                <GeoJSON
+                  data={railData}
+                  style={() => ({ color: '#006a4e', weight: 3, opacity: 0.85 })}
+                />
+              )}
+              <RecenterMap center={[activeState.lat, activeState.lng]} />
+
+              {scheduleData.map((st, i) => {
+                if (!st.coords) return null;
+                const isPassed = activeState.isRunning ? i < activeState.segmentIndex : false;
+                const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
+
+                return (
+                  <Marker
+                    key={i}
+                    position={st.coords}
+                    icon={L.divIcon({
+                      html: `<div style="width: 12px; height: 12px; background: ${isPassed ? '#94a3b8' : (isNext ? '#dc2626' : '#006a4e')}; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.3);"></div>`,
+                      iconSize: [12, 12],
+                      iconAnchor: [6, 6]
+                    })}
+                  >
+                    <Tooltip permanent={isNext} direction="top" className="station-tooltip" offset={[0, -10]}>
+                      {st.name.split('(')[0]}
+                    </Tooltip>
+                  </Marker>
+                );
+              })}
+
+              {activeState.isRunning && (
+                <Marker
+                  position={[activeState.lat, activeState.lng]}
+                  icon={L.divIcon({
+                    html: `
+                      <div style="position: relative; width: 24px; height: 24px;">
+                        <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(0, 106, 78, 0.35); animation: livePulse 2s infinite ease-out;"></div>
+                        <div style="width: 24px; height: 24px; background: #006a4e; border: 3.5px solid #ffffff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3);"></div>
+                      </div>
+                    `,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                  })}
+                />
+              )}
+            </MapContainer>
+          </div>
+        )}
+
+        {/* =========================================================================
+            ট্যাব ৩: লেট হিস্ট্রি (Delay History Bar Chart)
+        ========================================================================= */}
+        {activeTab === 'delay' && (
+          <div className="clean-card" style={{ padding: '24px 20px', marginBottom: '20px' }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+              বিগত ৭ দিনের ট্রেন লেটের হিসাব
+            </h3>
+            <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#64748b' }}>
+              এই ট্রেনটি সাধারণ সময়ে গড়ে কত মিনিট লেট করে তা দেখে ভ্রমণের পরিকল্পনা করুন।
+            </p>
+
+            {/* সামারি মেট্রিক্স */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px', textAlign: 'center' }}>
+              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>গড় বিলম্ব</div>
+                <div style={{ fontSize: '18px', fontWeight: '900', color: '#dc2626', marginTop: '4px' }}>
+                  {toBn(Math.round(delayHistory.reduce((acc, cur) => acc + cur.delayMinutes, 0) / 7))} মিনিট
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বোচ্চ লেট</div>
+                <div style={{ fontSize: '18px', fontWeight: '900', color: '#b91c1c', marginTop: '4px' }}>
+                  {toBn(Math.max(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বনিম্ন</div>
+                <div style={{ fontSize: '18px', fontWeight: '900', color: '#16a34a', marginTop: '4px' }}>
+                  {toBn(Math.min(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
+                </div>
+              </div>
+            </div>
+
+            {/* বার চার্ট */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '160px', borderBottom: '2px solid #e2e8f0', paddingBottom: '4px' }}>
+              {delayHistory.map((item, idx) => {
+                const maxVal = Math.max(...delayHistory.map((d) => d.delayMinutes), 60);
+                const heightPct = Math.min(100, Math.max(14, Math.round((item.delayMinutes / maxVal) * 100)));
+                const barColor = item.delayMinutes <= 15 ? '#16a34a' : (item.delayMinutes <= 45 ? '#f59e0b' : '#ef4444');
+
+                return (
+                  <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', padding: '0 6px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '800', color: barColor, marginBottom: '6px' }}>
+                      {toBn(item.delayMinutes)}মি
+                    </span>
+                    <div
+                      style={{
+                        width: '80%',
+                        maxWidth: '34px',
+                        height: `${heightPct}%`,
+                        background: barColor,
+                        borderRadius: '8px 8px 0 0',
+                        transition: 'height 0.6s ease'
+                      }}
+                    ></div>
+                    <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '700', marginTop: '8px' }}>
+                      {item.date}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {/* FAQ 1 */}
-            <details style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }} open>
-              <summary style={{ fontWeight: '800', fontSize: '13px', color: '#1e293b', cursor: 'pointer' }}>
-                {train.name.split('(')[0]} কখন ছাড়ে এবং কখন পৌঁছায়?
+        {/* =========================================================================
+            সাধারণ প্রশ্ন ও উত্তর (FAQ - AdSense Compliant & Simple Language)
+        ========================================================================= */}
+        <section className="clean-card" style={{ padding: '26px 22px' }}>
+          <h3 style={{ margin: '0 0 6px', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+            সাধারণ প্রশ্ন ও উত্তর (FAQ)
+          </h3>
+          <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#64748b' }}>
+            {train.name.split('(')[0]} ট্রেনের সময়সূচী ও চলাচল সম্পর্কিত প্রয়োজনীয় তথ্য
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <details style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }} open>
+              <summary style={{ fontWeight: '800', fontSize: '15px', color: '#1e293b', cursor: 'pointer' }}>
+                {train.name.split('(')[0]} কখন ছাড়ে এবং পৌঁছায়?
               </summary>
-              <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#475569', lineHeight: '1.6' }}>
-                {train.name.split('(')[0]} ট্রেনটি {originName} থেকে {train.stations[0].departure} সময়ে যাত্রা শুরু করে এবং {destName} স্টেশনে {train.stations[train.stations.length - 1].arrival} সময়ে পৌঁছায়। যাত্রাপথে ট্রেনটি {toBn(scheduleData.length)}টি স্টেশনে যাত্রাবিরতি দেয়।
+              <p style={{ margin: '10px 0 0', fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
+                ট্রেনটি {originName} থেকে {train.stations[0].departure} সময়ে ছাড়ে এবং {destName} স্টেশনে {train.stations[train.stations.length - 1].arrival} সময়ে পৌঁছায়। যাত্রাপথে ট্রেনটি মোট {toBn(scheduleData.length)}টি স্টেশনে থামে।
               </p>
             </details>
 
-            {/* FAQ 2 */}
-            <details style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <summary style={{ fontWeight: '800', fontSize: '13px', color: '#1e293b', cursor: 'pointer' }}>
-                ট্রেনটির সাপ্তাহিক ছুটির দিন (Off-Day) কোনটি?
+            <details style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+              <summary style={{ fontWeight: '800', fontSize: '15px', color: '#1e293b', cursor: 'pointer' }}>
+                ট্রেনটির বন্ধের দিন (সাপ্তাহিক ছুটি) কোনটি?
               </summary>
-              <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#475569', lineHeight: '1.6' }}>
-                বাংলাদেশ রেলওয়ের অফিসিয়াল সময়সূচী অনুযায়ী {train.name.split('(')[0]} ট্রেনের সাপ্তাহিক ছুটির দিন হলো <b>{train.offDay}</b>। ছুটির দিন ব্যতীত সপ্তাহের বাকি সকল দিন ট্রেনটি নিয়মিত চলাচল করে।
+              <p style={{ margin: '10px 0 0', fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
+                বাংলাদেশ রেলওয়ের অফিসিয়াল সময় অনুযায়ী এই ট্রেনের সাপ্তাহিক ছুটির দিন হলো <b>{train.offDay}</b>। এই দিন ব্যতীত সপ্তাহের বাকি সব দিন ট্রেনটি নিয়মিত চলাচল করে।
               </p>
             </details>
 
-            {/* FAQ 3 */}
-            <details style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <summary style={{ fontWeight: '800', fontSize: '13px', color: '#1e293b', cursor: 'pointer' }}>
-                ট্রেনটি আজ কত মিনিট লেট বা দেরিতে চলছে?
+            <details style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+              <summary style={{ fontWeight: '800', fontSize: '15px', color: '#1e293b', cursor: 'pointer' }}>
+                ট্রেনটি আজ কয় মিনিট লেট করছে?
               </summary>
-              <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#475569', lineHeight: '1.6' }}>
-                Trainkoi-এর লাইভ ক্রাউডসোর্সড জিপিএস ও শিডিউল ট্র্যাকিং অ্যালগরিদম অনুযায়ী ট্রেনটি বর্তমানে {stats?.delayFormatted}। ট্রেনের পরবর্তী স্টেশন {stats?.nextStName} এবং সেখানে পৌঁছানোর সম্ভাব্য সময় (ETA) হলো {stats?.etaNext}।
+              <p style={{ margin: '10px 0 0', fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
+                TrainKoi-এর লাইভ হিসাব অনুযায়ী ট্রেনটি বর্তমানে {stats?.delayFormatted}। ট্রেনের পরবর্তী স্টেশন {stats?.nextStName} এবং সেখানে পৌঁছানোর সম্ভাব্য সময় হলো {stats?.etaNext}।
               </p>
             </details>
 
-            {/* FAQ 4 */}
-            <details style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <summary style={{ fontWeight: '800', fontSize: '13px', color: '#1e293b', cursor: 'pointer' }}>
-                অফলাইনে এসএমএস এর মাধ্যমে এই ট্রেনের লোকেশন কীভাবে জানবেন?
+            <details style={{ background: '#f8fafc', padding: '14px 16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+              <summary style={{ fontWeight: '800', fontSize: '15px', color: '#1e293b', cursor: 'pointer' }}>
+                ইন্টারনেট ছাড়া এসএমএসের মাধ্যমে কীভাবে ট্র্যাকিং করবেন?
               </summary>
-              <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#475569', lineHeight: '1.6' }}>
-                ইন্টারনেট না থাকলে মোবাইল মেসেজ অপশন থেকে <b>TR {trainId}</b> লিখে পাঠিয়ে দিন <b>১৬৩১৮</b> নম্বরে। ফিরতি এসএমএসে ট্রেনের সর্বশেষ পার হওয়া স্টেশন এবং সম্ভাব্য অবস্থান জানিয়ে দেওয়া হবে।
+              <p style={{ margin: '10px 0 0', fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
+                যেকোনো মোবাইল থেকে মেসেজ অপশনে গিয়ে লিখুন <b>TR {toBn(trainId)}</b> এবং পাঠিয়ে দিন <b>১৬৩১৮</b> নম্বরে। ফিরতি মেসেজে ট্রেনের সর্বশেষ অবস্থান জানতে পারবেন।
               </p>
             </details>
           </div>
@@ -1522,50 +1506,36 @@ const TrackingPage = () => {
       </main>
 
       {/* =========================================================================
-          ভ্রমণ নিশ্চিতকরণ মোডাল (Passenger Confirmation Modal)
+          ভ্রমণ নিশ্চিতকরণ মোডাল (Clean & Simple Confirmation Modal)
       ========================================================================= */}
       {showModal && (
         <div style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(15, 23, 42, 0.75)',
+          background: 'rgba(15, 23, 42, 0.65)',
           zIndex: 9999,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '20px',
-          backdropFilter: 'blur(4px)'
+          backdropFilter: 'blur(3px)'
         }}>
           <div style={{
-            background: 'white',
-            padding: '25px',
+            background: '#ffffff',
+            padding: '28px 24px',
             borderRadius: '24px',
             textAlign: 'center',
             maxWidth: '420px',
             width: '100%',
             boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
           }}>
-            <div style={{
-              width: 56,
-              height: 56,
-              borderRadius: '50%',
-              background: '#ecfdf5',
-              color: '#006a4e',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 14px',
-              fontSize: '28px'
-            }}>
-              🚆
-            </div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+            <h3 style={{ margin: '0 0 10px', fontSize: '19px', fontWeight: '800', color: '#0f172a' }}>
               আপনি কি ট্রেনে ভ্রমণ করছেন?
             </h3>
-            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.6', margin: '0 0 20px' }}>
-              সঠিক ও ১০০% লাইভ লোকেশন পেতে আপনার অবদান অপরিহার্য। আপনি কি এই মুহূর্তে <b>{train.name.split('(')[0]}</b> ট্রেনে অবস্থান করছেন?
+            <p style={{ fontSize: '15px', color: '#64748b', lineHeight: '1.6', margin: '0 0 24px' }}>
+              আপনি কি এই মুহূর্তে <b>{train.name.split('(')[0]}</b> ট্রেনে অবস্থান করছেন? আপনার ফোনের লোকেশন চালু করে সহযাত্রীদের সাহায্য করতে পারেন।
             </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => {
                   setIsTraveler(true);
@@ -1575,16 +1545,16 @@ const TrackingPage = () => {
                 style={{
                   flex: 1,
                   background: '#006a4e',
-                  color: 'white',
+                  color: '#ffffff',
                   border: 'none',
-                  padding: '12px',
+                  padding: '13px',
                   borderRadius: '12px',
                   fontWeight: '800',
-                  fontSize: '13px',
+                  fontSize: '15px',
                   cursor: 'pointer'
                 }}
               >
-                হ্যাঁ, লোকেশন শেয়ার করুন
+                হ্যাঁ, শেয়ার করব
               </button>
               <button
                 onClick={() => {
@@ -1596,10 +1566,10 @@ const TrackingPage = () => {
                   background: '#f1f5f9',
                   color: '#475569',
                   border: 'none',
-                  padding: '12px',
+                  padding: '13px',
                   borderRadius: '12px',
                   fontWeight: '700',
-                  fontSize: '13px',
+                  fontSize: '15px',
                   cursor: 'pointer'
                 }}
               >
