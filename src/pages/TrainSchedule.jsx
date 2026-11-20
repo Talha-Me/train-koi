@@ -5,7 +5,7 @@ import { getTrainProfile } from '../data/trainProfiles';
 import { 
   ChevronLeft, Search, Clock, Navigation, ChevronDown, MapPin, 
   Info, Send, ArrowRightLeft, Locate, Radio, AlertCircle, Zap, ShieldCheck, Train,
-  Ticket, HelpCircle, Utensils, ExternalLink, Sparkles, ChevronUp, AlertTriangle, Coffee, Compass, PhoneCall
+  Ticket, HelpCircle, Utensils, ExternalLink, Sparkles, ChevronUp, AlertTriangle, Coffee, Compass, PhoneCall, Wind
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 
