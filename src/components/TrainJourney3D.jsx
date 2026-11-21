@@ -840,6 +840,7 @@ export default function TrainJourney3D({
   const smoothCamBearingRef = useRef(null);
   const lastRenderDistRef = useRef(-1);
   const latestTrainDataRef = useRef(null);
+  const lastCardUpdateRef = useRef(0);
 
   useEffect(() => {
     if (Math.abs(trainDistRef.current - targetDist) > 1500) {
@@ -1211,35 +1212,73 @@ export default function TrainJourney3D({
       const dt = Math.min(0.1, (now - lastTime) / 1000);
       lastTime = now;
 
-      const segs = stationDistancesRef.current;
-      const segIdx = Math.max(0, Math.min(segs.length - 2, currentIdxRef.current));
-      const endM = segs[segIdx + 1] || totalDist;
-      const startM = segs[segIdx] || 0;
-
+      const segs = stationDistancesRef.current || [];
       const curSpeed = speedRef.current;
       const curIsAtStation = isAtStationRef.current;
       const curIsRunning = isRunningRef.current;
 
       if (!curIsRunning || curIsAtStation || curSpeed === 0) {
         // ট্রেন স্টেশনে থেমে আছে বা অফলাইন - কোনো কৃত্রিম নড়াচড়া হবে না
-        trainDistRef.current = startM || trainDistRef.current;
       } else {
         // বাস্তব পদার্থবিজ্ঞান অনুযায়ী মিটার দূরত্ব অতিক্রম
         // speed km/h => (speed * 1000 / 3600) meters per second
         const metersPerSec = (curSpeed * 1000) / 3600;
         trainDistRef.current += metersPerSec * dt;
 
-        // পরবর্তী স্টেশনের প্ল্যাটফর্ম অতিক্রম না করার নিরাপত্তা সীমা
-        if (trainDistRef.current >= endM - 15 && segIdx < segs.length - 2) {
-          trainDistRef.current = endM - 15;
-        } else if (trainDistRef.current >= totalDist - 30) {
+        // শুধু পুরো রুটের একদম শেষ প্রান্তে নিরাপত্তা সীমা
+        if (trainDistRef.current >= totalDist - 30) {
           trainDistRef.current = totalDist - 30;
         }
       }
 
+      // ট্রেনের বর্তমান বাস্তব মিটার দূরত্বের ভিত্তিতে সক্রিয় সেগমেন্ট স্বয়ংক্রিয়ভাবে নির্ধারণ
+      let segIdx = 0;
+      for (let i = 0; i < segs.length - 1; i++) {
+        if (trainDistRef.current >= segs[i] && trainDistRef.current < segs[i + 1]) {
+          segIdx = i;
+          break;
+        }
+      }
+      if (trainDistRef.current >= segs[segs.length - 1]) {
+        segIdx = Math.max(0, segs.length - 2);
+      }
+      const startM = segs[segIdx] || 0;
+      const endM = segs[segIdx + 1] || totalDist;
+
       // গতিশীল দূরত্ব (পরবর্তী স্টেশন পর্যন্ত কিমি)
       const distRemainingMeters = Math.max(0, endM - trainDistRef.current);
       const distRemainingKm = Math.round((distRemainingMeters / 1000) * 10) / 10;
+
+      const curPrevSt = scheduleData[segIdx] || scheduleData[0];
+      const curNextSt = scheduleData[segIdx + 1] || scheduleData[scheduleData.length - 1];
+
+      // বটম কার্ড তথ্য থ্রটলিং আপডেট (প্রতি ২৫০ মিলি-সেকেন্ড পর পর ডম সিঙ্ক)
+      if (now - lastCardUpdateRef.current > 250) {
+        lastCardUpdateRef.current = now;
+        const curProgPct = totalDist > 0 ? Math.min(100, Math.max(0, Math.round((trainDistRef.current / totalDist) * 100))) : 0;
+        const nextName = curNextSt?.name?.split('(')[0] || 'গন্তব্য';
+        const prevName = curPrevSt?.name?.split('(')[0] || 'পূর্ববর্তী';
+        const distStr = `(${toBangla(Math.round(distRemainingKm))} কি)`;
+        const barDistStr = `${nextName} ${toBangla(Math.round(distRemainingKm))} কি`;
+
+        const titleEl = document.querySelector('.dyn-next-title');
+        if (titleEl && titleEl.textContent !== nextName) titleEl.textContent = nextName;
+        
+        const distEl = document.querySelector('.dyn-next-dist');
+        if (distEl && distEl.textContent !== distStr) distEl.textContent = distStr;
+
+        const prevEl = document.querySelector('.dyn-prev-name');
+        if (prevEl && prevEl.textContent !== prevName) prevEl.textContent = prevName;
+
+        const barDistEl = document.querySelector('.dyn-bar-next-dist');
+        if (barDistEl && barDistEl.textContent !== barDistStr) barDistEl.textContent = barDistStr;
+
+        const fillEl = document.querySelector('.dyn-progress-fill');
+        if (fillEl) fillEl.style.width = `${curProgPct}%`;
+
+        const trainEl = document.querySelector('.dyn-progress-train');
+        if (trainEl) trainEl.style.left = `${curProgPct}%`;
+      }
 
       if (mapRef.current && mapRef.current.getSource('train-3d-boxes')) {
         const trainData = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
@@ -1271,8 +1310,8 @@ export default function TrainJourney3D({
           if (el) {
             const span = el.querySelector('.ahead-text');
             const txt = curIsAtStation
-              ? `${prevStationRef.current?.name?.split('(')[0] || 'স্টেশন'} স্টপেজে অবস্থান করছে`
-              : `${nextStationRef.current?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(Math.round(distRemainingKm))} কি`;
+              ? `${curPrevSt?.name?.split('(')[0] || 'স্টেশন'} স্টপেজে অবস্থান করছে`
+              : `${curNextSt?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(Math.round(distRemainingKm))} কি`;
             if (span && span.textContent !== txt) {
               span.textContent = txt;
             }
@@ -1682,10 +1721,10 @@ export default function TrainJourney3D({
               ) : (
                 <>
                   পরবর্তী{' '}
-                  <span style={{ fontWeight: '900', color: '#0f172a' }}>
+                  <span className="dyn-next-title" style={{ fontWeight: '900', color: '#0f172a' }}>
                     {nextStation?.name?.split('(')[0] || 'ময়মনসিংহ'}
                   </span>{' '}
-                  <span style={{ color: '#006a4e', fontWeight: '800', fontSize: '13px' }}>
+                  <span className="dyn-next-dist" style={{ color: '#006a4e', fontWeight: '800', fontSize: '13px' }}>
                     ({toBangla(Math.round(dynamicDistToNext))} কি)
                   </span>
                 </>
@@ -1818,6 +1857,7 @@ export default function TrainJourney3D({
           >
             {/* কমপ্লিটেড ব্র্যান্ড গ্রিন লাইন */}
             <div
+              className="dyn-progress-fill"
               style={{
                 height: '100%',
                 width: `${progressPercent}%`,
@@ -1829,6 +1869,7 @@ export default function TrainJourney3D({
 
             {/* ট্রেনের আইকন (চলমান গ্রিন সার্কেল ও পালসিং হ্যালো) */}
             <div
+              className="dyn-progress-train"
               style={{
                 position: 'absolute',
                 top: '50%',
@@ -1862,8 +1903,8 @@ export default function TrainJourney3D({
               marginTop: '10px'
             }}
           >
-            <span>{prevStation?.name?.split('(')[0] || 'পূর্ববর্তী'}</span>
-            <span style={{ color: '#006a4e', fontWeight: '800' }}>
+            <span className="dyn-prev-name">{prevStation?.name?.split('(')[0] || 'পূর্ববর্তী'}</span>
+            <span className="dyn-bar-next-dist" style={{ color: '#006a4e', fontWeight: '800' }}>
               {nextStation?.name?.split('(')[0]} {toBangla(Math.round(dynamicDistToNext))} কি
             </span>
             <span style={{ color: '#006a4e', fontWeight: '800' }}>

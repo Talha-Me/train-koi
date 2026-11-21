@@ -738,15 +738,45 @@ const TrackingPage = () => {
         }
       }
 
-      const nextStCoords = scheduleData[bestSeg + 1]?.coords;
-      const distToNext = nextStCoords ? calculateDistance(rawLat, rawLng, nextStCoords[0], nextStCoords[1]) : 0;
-      const isAtStation = distToNext < 0.8 && currentSpeed < 15;
-
-      const [sLat, sLng] = getSnappedPoint(rawLat, rawLng, railData);
+      let sLat, sLng;
       const kmStart = scheduleData[bestSeg]?.km || 0;
       const kmEnd = scheduleData[bestSeg + 1]?.km || kmStart + 30;
-      const curKm = Math.round(kmStart + bestRatio * (kmEnd - kmStart));
-      const progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
+      let curKm = Math.round(kmStart + bestRatio * (kmEnd - kmStart));
+      let progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
+
+      // প্রেডিকশন মোডে গত সময় (diffInMin) অনুযায়ী ট্রেনকে রুটের সামনের দিকে অনুমান করে বাস্তবসম্মতভাবে এগিয়ে নেওয়া
+      if (diffInMin > 1 && currentSpeed > 0) {
+        const advancedKm = (currentSpeed / 60) * diffInMin;
+        const targetKm = Math.min(totalKm, curKm + advancedKm);
+
+        for (let i = 0; i < scheduleData.length - 1; i++) {
+          const s1Km = scheduleData[i]?.km || 0;
+          const s2Km = scheduleData[i + 1]?.km || (s1Km + 30);
+          if (targetKm >= s1Km && targetKm <= s2Km) {
+            bestSeg = i;
+            bestRatio = s2Km > s1Km ? (targetKm - s1Km) / (s2Km - s1Km) : 0;
+            break;
+          }
+        }
+
+        const c1 = scheduleData[bestSeg]?.coords || [rawLat, rawLng];
+        const c2 = scheduleData[bestSeg + 1]?.coords || c1;
+        const interpLat = c1[0] + bestRatio * (c2[0] - c1[0]);
+        const interpLng = c1[1] + bestRatio * (c2[1] - c1[1]);
+        const [snappedLat, snappedLng] = getSnappedPoint(interpLat, interpLng, railData);
+        sLat = snappedLat;
+        sLng = snappedLng;
+        curKm = Math.round(targetKm);
+        progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
+      } else {
+        const [snappedLat, snappedLng] = getSnappedPoint(rawLat, rawLng, railData);
+        sLat = snappedLat;
+        sLng = snappedLng;
+      }
+
+      const nextStCoords = scheduleData[bestSeg + 1]?.coords;
+      const distToNext = nextStCoords ? calculateDistance(sLat, sLng, nextStCoords[0], nextStCoords[1]) : 0;
+      const isAtStation = distToNext < 0.8 && currentSpeed < 15;
 
       return {
         lat: sLat,
