@@ -86,7 +86,6 @@ const toBangla = (num) => {
 
 // মিটার দূরত্ব গণনা
 function getDistanceMeters(p1, p2) {
-  // p: [lng, lat]
   const R = 6371000;
   const dLat = ((p2[1] - p1[1]) * Math.PI) / 180;
   const dLng = ((p2[0] - p1[0]) * Math.PI) / 180;
@@ -99,16 +98,42 @@ function getDistanceMeters(p1, p2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// ৩ডি বক্স পলিগন তৈরি (দৈর্ঘ্য, প্রস্থ ও কোণ অনুযায়ী)
+function createBoxPolygon(centerLng, centerLat, lengthM, widthM, bearingDeg) {
+  const halfL = lengthM / 2;
+  const halfW = widthM / 2;
+  const rad = (bearingDeg * Math.PI) / 180;
+  const cosB = Math.cos(rad);
+  const sinB = Math.sin(rad);
+
+  const mToLat = 1 / 111000;
+  const mToLng = 1 / (111000 * Math.cos((centerLat * Math.PI) / 180));
+
+  const corners = [
+    [halfW, halfL],
+    [-halfW, halfL],
+    [-halfW, -halfL],
+    [halfW, -halfL]
+  ];
+
+  const coords = corners.map(([x, y]) => {
+    const rotX = x * cosB + y * sinB;
+    const rotY = -x * sinB + y * cosB;
+    return [centerLng + rotX * mToLng, centerLat + rotY * mToLat];
+  });
+
+  coords.push(coords[0]);
+  return coords;
+}
+
 // =========================================================================
-// ২. সংযুক্ত রেললাইন পাথ ট্রেসার (Continuous Track Polyline Tracer)
-// কোনো অবস্থাতেই ট্রেন লাইন থেকে বের হবে না এবং সব বাঁক নিখুঁতভাবে ফলো করবে
+// ২. স্মার্ট রুট ট্রেসার (গন্তব্য স্টেশন অনুযায়ী মূল লাইনে থাকা)
 // =========================================================================
-function buildContinuousTrackPath(startLat, startLng, destLat, destLng, segments) {
+function smartTraceRoute(startLat, startLng, destLat, destLng, segments) {
   if (!segments || !segments.length) {
     return [[startLng, startLat], [destLng || startLng + 0.01, destLat || startLat + 0.01]];
   }
 
-  // ১. নিকটবর্তী সেগমেন্ট অনুসন্ধান
   let minDistanceSq = Infinity;
   let bestIdx = 0;
   let bestT = 0;
@@ -135,35 +160,33 @@ function buildContinuousTrackPath(startLat, startLng, destLat, destLng, segments
     }
   }
 
-  // ২. গন্তব্য স্টেশন অনুযায়ী সেগমেন্টের ডিরেকশন ওরিয়েন্টেড করা
-  const firstSeg = segments[bestIdx];
-  const pA = [firstSeg[1], firstSeg[0]]; // [lng, lat]
-  const pB = [firstSeg[3], firstSeg[2]]; // [lng, lat]
+  const s0 = segments[bestIdx];
+  const pA = [s0[1], s0[0]];
+  const pB = [s0[3], s0[2]];
 
-  const vDx = pB[0] - pA[0];
-  const vDy = pB[1] - pA[1];
-  const dDx = (destLng || pB[0]) - pA[0];
-  const dDy = (destLat || pB[1]) - pA[1];
+  const dToDestA = Math.hypot(pA[0] - destLng, pA[1] - destLat);
+  const dToDestB = Math.hypot(pB[0] - destLng, pB[1] - destLat);
 
-  let forwardSeg;
+  let forwardStart, forwardEnd;
   let initPoint;
-  if (vDx * dDx + vDy * dDy >= 0) {
-    forwardSeg = { p1: pA, p2: pB, idx: bestIdx };
+  if (dToDestB <= dToDestA) {
+    forwardStart = pA;
+    forwardEnd = pB;
     initPoint = [pA[0] + bestT * (pB[0] - pA[0]), pA[1] + bestT * (pB[1] - pA[1])];
   } else {
-    forwardSeg = { p1: pB, p2: pA, idx: bestIdx };
+    forwardStart = pB;
+    forwardEnd = pA;
     initPoint = [pB[0] + (1 - bestT) * (pA[0] - pB[0]), pB[1] + (1 - bestT) * (pA[1] - pB[1])];
   }
 
-  // ৩. সামনের দিকে সংযুক্ত ২০০টি সেগমেন্ট ট্রেস করা (বাঁক অনুযায়ী)
-  const polyline = [forwardSeg.p1, forwardSeg.p2];
+  const polyline = [forwardStart, forwardEnd];
   const used = new Set([bestIdx]);
-  let currEnd = forwardSeg.p2;
-  let currVec = [forwardSeg.p2[0] - forwardSeg.p1[0], forwardSeg.p2[1] - forwardSeg.p1[1]];
+  let currEnd = forwardEnd;
 
-  for (let step = 0; step < 200; step++) {
+  // সামনের দিকে গন্তব্যের অভিমুখে ২০০টি সেগমেন্ট ট্রেস
+  for (let step = 0; step < 250; step++) {
     let bestCand = null;
-    let bestDot = -Infinity;
+    let bestScore = Infinity;
 
     for (let i = 0; i < segments.length; i++) {
       if (used.has(i)) continue;
@@ -172,75 +195,66 @@ function buildContinuousTrackPath(startLat, startLng, destLat, destLng, segments
       const d1 = Math.hypot(s[1] - currEnd[0], s[0] - currEnd[1]);
       const d2 = Math.hypot(s[3] - currEnd[0], s[2] - currEnd[1]);
 
-      if (d1 < 0.003) {
-        const cdx = s[3] - s[1];
-        const cdy = s[2] - s[0];
-        const dot = currVec[0] * cdx + currVec[1] * cdy;
-        if (dot > bestDot) {
-          bestDot = dot;
-          bestCand = { p1: [s[1], s[0]], p2: [s[3], s[2]], idx: i, vec: [cdx, cdy] };
+      if (d1 < 0.005) {
+        const distDest = Math.hypot(s[3] - destLng, s[2] - destLat);
+        if (distDest < bestScore) {
+          bestScore = distDest;
+          bestCand = { pNext: [s[3], s[2]], idx: i };
         }
-      } else if (d2 < 0.003) {
-        const cdx = s[1] - s[3];
-        const cdy = s[0] - s[2];
-        const dot = currVec[0] * cdx + currVec[1] * cdy;
-        if (dot > bestDot) {
-          bestDot = dot;
-          bestCand = { p1: [s[3], s[2]], p2: [s[1], s[0]], idx: i, vec: [cdx, cdy] };
+      } else if (d2 < 0.005) {
+        const distDest = Math.hypot(s[1] - destLng, s[0] - destLat);
+        if (distDest < bestScore) {
+          bestScore = distDest;
+          bestCand = { pNext: [s[1], s[0]], idx: i };
         }
       }
     }
 
-    if (bestCand && bestDot > -0.5) {
+    if (bestCand) {
       used.add(bestCand.idx);
-      polyline.push(bestCand.p2);
-      currEnd = bestCand.p2;
-      currVec = bestCand.vec;
+      polyline.push(bestCand.pNext);
+      currEnd = bestCand.pNext;
+
+      if (Math.hypot(currEnd[0] - destLng, currEnd[1] - destLat) < 0.005) {
+        break;
+      }
     } else {
       break;
     }
   }
 
-  // ৪. পেছনের দিকে সংযুক্ত ৩০টি সেগমেন্ট ট্রেস করা (যাতে পেছনের বগি ট্র্যাকে থাকে)
-  const backwardUsed = new Set([bestIdx]);
-  let currStart = forwardSeg.p1;
-  let currBackVec = [forwardSeg.p1[0] - forwardSeg.p2[0], forwardSeg.p1[1] - forwardSeg.p2[1]];
-
-  for (let step = 0; step < 30; step++) {
+  // পেছনের দিকে ৪০টি সেগমেন্ট ট্রেস
+  let currStart = forwardStart;
+  for (let step = 0; step < 40; step++) {
     let bestCand = null;
-    let bestDot = -Infinity;
+    let maxDistDest = -Infinity;
 
     for (let i = 0; i < segments.length; i++) {
-      if (used.has(i) || backwardUsed.has(i)) continue;
+      if (used.has(i)) continue;
       const s = segments[i];
 
       const d1 = Math.hypot(s[1] - currStart[0], s[0] - currStart[1]);
       const d2 = Math.hypot(s[3] - currStart[0], s[2] - currStart[1]);
 
-      if (d1 < 0.003) {
-        const cdx = s[3] - s[1];
-        const cdy = s[2] - s[0];
-        const dot = currBackVec[0] * cdx + currBackVec[1] * cdy;
-        if (dot > bestDot) {
-          bestDot = dot;
-          bestCand = { pNext: [s[3], s[2]], idx: i, vec: [cdx, cdy] };
+      if (d1 < 0.005) {
+        const distDest = Math.hypot(s[3] - destLng, s[2] - destLat);
+        if (distDest > maxDistDest) {
+          maxDistDest = distDest;
+          bestCand = { pPrev: [s[3], s[2]], idx: i };
         }
-      } else if (d2 < 0.003) {
-        const cdx = s[1] - s[3];
-        const cdy = s[0] - s[2];
-        const dot = currBackVec[0] * cdx + currBackVec[1] * cdy;
-        if (dot > bestDot) {
-          bestDot = dot;
-          bestCand = { pNext: [s[1], s[0]], idx: i, vec: [cdx, cdy] };
+      } else if (d2 < 0.005) {
+        const distDest = Math.hypot(s[1] - destLng, s[0] - destLat);
+        if (distDest > maxDistDest) {
+          maxDistDest = distDest;
+          bestCand = { pPrev: [s[1], s[0]], idx: i };
         }
       }
     }
 
-    if (bestCand && bestDot > -0.5) {
-      backwardUsed.add(bestCand.idx);
-      polyline.unshift(bestCand.pNext);
-      currStart = bestCand.pNext;
-      currBackVec = bestCand.vec;
+    if (bestCand) {
+      used.add(bestCand.idx);
+      polyline.unshift(bestCand.pPrev);
+      currStart = bestCand.pPrev;
     } else {
       break;
     }
@@ -249,20 +263,19 @@ function buildContinuousTrackPath(startLat, startLng, destLat, destLng, segments
   return { polyline, initPoint };
 }
 
-// পলিলিনের নির্দিষ্ট দূরত্বের সাব-স্লাইস তৈরি (ট্রেন বডি বাঁকানোর জন্য)
-function sliceTrackPolyline(points, cumDists, headDist, trainLength) {
+// পলিলিনের নির্দিষ্ট দূরত্বের সাব-পয়েন্ট ও এঙ্গেল খোঁজা
+function getPolylinePointAndAngle(points, cumDists, d) {
   const totalDist = cumDists[cumDists.length - 1];
-  const clampedHead = Math.max(0, Math.min(totalDist, headDist));
-  const clampedTail = Math.max(0, clampedHead - trainLength);
+  const clampedD = Math.max(0, Math.min(totalDist, d));
 
-  function getPointAt(d) {
-    if (d <= 0) return points[0];
-    if (d >= totalDist) return points[points.length - 1];
+  function interpolateAt(dist) {
+    if (dist <= 0) return points[0];
+    if (dist >= totalDist) return points[points.length - 1];
 
     for (let i = 1; i < cumDists.length; i++) {
-      if (cumDists[i] >= d) {
+      if (cumDists[i] >= dist) {
         const segLen = cumDists[i] - cumDists[i - 1];
-        const fraction = segLen > 0 ? (d - cumDists[i - 1]) / segLen : 0;
+        const fraction = segLen > 0 ? (dist - cumDists[i - 1]) / segLen : 0;
         const pA = points[i - 1];
         const pB = points[i];
         return [
@@ -274,20 +287,83 @@ function sliceTrackPolyline(points, cumDists, headDist, trainLength) {
     return points[points.length - 1];
   }
 
-  const result = [getPointAt(clampedTail)];
+  const center = interpolateAt(clampedD);
+  const ahead = interpolateAt(clampedD + 2.5);
+  const dx = ahead[0] - center[0];
+  const dy = ahead[1] - center[1];
+  const angle = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
 
-  for (let i = 0; i < points.length; i++) {
-    if (cumDists[i] > clampedTail && cumDists[i] < clampedHead) {
-      result.push(points[i]);
-    }
+  return { center, angle, interpolateAt };
+}
+
+// ৯টি আলাদা ৩ডি কোচের ফিচার কালেকশন তৈরি
+function generate3DTrainFeatures(points, cumDists, headDist) {
+  const features = [];
+  const { interpolateAt } = getPolylinePointAndAngle(points, cumDists, headDist);
+
+  // ১. লাল লোকোমোটিভ ইঞ্জিন (Locomotive)
+  const locoD = headDist - 12;
+  const { center: locoCenter, angle: locoAngle } = getPolylinePointAndAngle(points, cumDists, locoD);
+
+  // ইঞ্জিন বডি (লাল)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#dc2626', height: 5.2, base: 0.8 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 24, 4.4, locoAngle)] }
+  });
+  // ইঞ্জিন মেটাল ছাদ (সাদা)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#f8fafc', height: 5.6, base: 5.15 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 20, 3.4, locoAngle)] }
+  });
+  // ইঞ্জিন উইন্ডশিল্ড (নীল ক্যাব)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#38bdf8', height: 4.8, base: 3.5 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 8, 4.45, locoAngle)] }
+  });
+
+  // ২. ৮টি প্যাসেঞ্জার বগি (Bangladesh Railway Green Coaches)
+  // প্রতিটি বগি ট্র্যাকে নিজস্ব পজিশনে বসে খাঁটি ট্রেনের মতো বাঁক নেয়
+  for (let i = 1; i <= 8; i++) {
+    const coachD = headDist - 24 - (i - 1) * 22 - 11;
+    const { center: cCenter, angle: cAngle } = getPolylinePointAndAngle(points, cumDists, coachD);
+
+    // কোচের সবুজ বডি
+    features.push({
+      type: 'Feature',
+      properties: { color: '#006a4e', height: 4.6, base: 0.6 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 20, 4.2, cAngle)] }
+    });
+    // কোচের সাদা মেটাল ছাদ
+    features.push({
+      type: 'Feature',
+      properties: { color: '#f8fafc', height: 5.0, base: 4.55 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19, 3.3, cAngle)] }
+    });
+    // কোচের লাল স্ট্রাইপ বেল্ট
+    features.push({
+      type: 'Feature',
+      properties: { color: '#ef4444', height: 2.8, base: 2.3 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 20.08, 4.28, cAngle)] }
+    });
+    // অন্ধকার কাঁচের জানালা ব্যান্ড
+    features.push({
+      type: 'Feature',
+      properties: { color: '#0f172a', height: 3.8, base: 2.8 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.5, 4.24, cAngle)] }
+    });
   }
 
-  result.push(getPointAt(clampedHead));
+  const headPos = interpolateAt(headDist);
+  const tailPos = interpolateAt(headDist - 200);
+
   return {
-    slice: result,
-    head: getPointAt(clampedHead),
-    tail: getPointAt(clampedTail),
-    getPointAt
+    geojson: { type: 'FeatureCollection', features },
+    headPos,
+    tailPos,
+    locoAngle
   };
 }
 
@@ -397,7 +473,7 @@ export default function TrainJourney3D({
 
   // ট্রেনের সংযুক্ত রুট পলিলিন বিল্ড করা
   const routeData = useMemo(() => {
-    return buildContinuousTrackPath(rawLat, rawLng, destCoords[0], destCoords[1], railSegmentsData);
+    return smartTraceRoute(rawLat, rawLng, destCoords[0], destCoords[1], railSegmentsData);
   }, [rawLat, rawLng, destCoords]);
 
   // পলিলিনের কিউমুলেটিভ ডিসটেন্স তৈরি
@@ -410,7 +486,7 @@ export default function TrainJourney3D({
     return d;
   }, [routeData]);
 
-  // প্রারম্ভিক ট্রেন অবস্থান (পলিলিনে)
+  // প্রারম্ভিক ট্রেন অবস্থান
   const initialDist = useMemo(() => {
     const pts = routeData.polyline;
     const pInit = routeData.initPoint;
@@ -424,7 +500,7 @@ export default function TrainJourney3D({
         bestIdx = i;
       }
     }
-    return Math.max(180, cumDists[bestIdx] || 180);
+    return Math.max(220, cumDists[bestIdx] || 220);
   }, [routeData, cumDists]);
 
   // রিয়েলটাইম ডিস্ট্যান্স স্টেট (Dead-reckoning)
@@ -481,17 +557,13 @@ export default function TrainJourney3D({
     setIsFollowing(nextFollow);
     if (nextFollow && mapRef.current) {
       const pts = routeData.polyline;
-      const { head, getPointAt } = sliceTrackPolyline(pts, cumDists, trainDistRef.current, 160);
-      const aheadPt = getPointAt(trainDistRef.current + 30);
-      const dx = aheadPt[0] - head[0];
-      const dy = aheadPt[1] - head[1];
-      const bearing = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+      const { headPos, locoAngle } = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
 
       mapRef.current.easeTo({
-        center: head,
-        pitch: is2DMode ? 0 : 58,
-        bearing: is2DMode ? 0 : bearing,
-        zoom: is2DMode ? 14 : 16.5,
+        center: headPos,
+        pitch: is2DMode ? 0 : 60,
+        bearing: is2DMode ? 0 : locoAngle,
+        zoom: is2DMode ? 14 : 17.3,
         duration: 800
       });
     }
@@ -502,44 +574,34 @@ export default function TrainJourney3D({
     setIsFollowing(true);
     if (mapRef.current) {
       const pts = routeData.polyline;
-      const { head, getPointAt } = sliceTrackPolyline(pts, cumDists, trainDistRef.current, 160);
-      const aheadPt = getPointAt(trainDistRef.current + 30);
-      const dx = aheadPt[0] - head[0];
-      const dy = aheadPt[1] - head[1];
-      const bearing = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+      const { headPos, locoAngle } = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
 
       mapRef.current.easeTo({
-        center: head,
-        pitch: is2DMode ? 0 : 58,
-        bearing: is2DMode ? 0 : bearing,
-        zoom: 16.5,
+        center: headPos,
+        pitch: is2DMode ? 0 : 60,
+        bearing: is2DMode ? 0 : locoAngle,
+        zoom: 17.3,
         duration: 900
       });
     }
   };
 
   // =========================================================================
-  // ৫. ম্যাপ ও বাস্তবসম্মত ৩ডি রেললাইন এবং ৩ডি বাঁকা ট্রেন লেয়ারসমূহ
+  // ৫. ম্যাপ ও বাস্তবসম্মত ৩ডি রেললাইন এবং ৩ডি সলিড ট্রেনের লেয়ারসমূহ
   // =========================================================================
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
     const pts = routeData.polyline;
-    const initialSlice = sliceTrackPolyline(pts, cumDists, trainDistRef.current, 160);
-    const initialLoco = sliceTrackPolyline(pts, cumDists, trainDistRef.current, 24);
-
-    const aheadPt = initialSlice.getPointAt(trainDistRef.current + 30);
-    const dx = aheadPt[0] - initialSlice.head[0];
-    const dy = aheadPt[1] - initialSlice.head[1];
-    const initialBearing = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+    const initialTrain = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: MAP_STYLES[currentStyle].style,
-      center: initialSlice.head,
-      zoom: is2DMode ? 14 : 16.5,
-      pitch: is2DMode ? 0 : 58,
-      bearing: is2DMode ? 0 : initialBearing,
+      center: initialTrain.headPos,
+      zoom: is2DMode ? 14 : 17.3,
+      pitch: is2DMode ? 0 : 60,
+      bearing: is2DMode ? 0 : initialTrain.locoAngle,
       maxPitch: 75,
       antialias: true
     });
@@ -651,114 +713,42 @@ export default function TrainJourney3D({
       });
 
       // =====================================================================
-      // ৩ডি কার্ভড ট্রেন লেয়ারসমূহ (রেললাইনের বাঁক অনুযায়ী নিখুঁতভাবে বাঁক নেয়)
+      // ৩ডি সলিড এক্সট্রুডেড ট্রেন লেয়ার (Real 3D Solid Coaches in WebGL)
+      // প্রতিটি বগি আলাদা আলাদা উচ্চতায় ৩ডি বক্সে রেন্ডার হয় এবং রেললাইনে বাঁক নেয়
       // =====================================================================
-      // ১. ট্রেনের সম্পূর্ণ বডি সোর্স (পেছনের ১৬০ মিটার)
-      map.addSource('train-body-src', {
+      map.addSource('train-3d-boxes', {
         type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: initialSlice.slice }
+        data: initialTrain.geojson
+      });
+
+      map.addLayer({
+        id: 'train-3d-extrusion',
+        type: 'fill-extrusion',
+        source: 'train-3d-boxes',
+        paint: {
+          'fill-extrusion-color': ['get', 'color'],
+          'fill-extrusion-height': ['get', 'height'],
+          'fill-extrusion-base': ['get', 'base'],
+          'fill-extrusion-opacity': 0.98
         }
       });
 
-      // ২. ট্রেনের লাল লোকোমোটিভ সোর্স (সামনের ২৪ মিটার)
-      map.addSource('train-loco-src', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: initialLoco.slice }
-        }
-      });
-
-      // ৩. ট্রেনের হেডলাইট সোর্স (ইঞ্জিনের সম্মুখভাগ)
+      // হেডলাইট পয়েন্ট সোর্স ও লেয়ার
       map.addSource('train-headlight-src', {
         type: 'geojson',
         data: {
           type: 'Feature',
-          geometry: { type: 'Point', coordinates: initialSlice.head }
+          geometry: { type: 'Point', coordinates: initialTrain.headPos }
         }
       });
 
-      // লেয়ার ৬: ট্রেনের শ্যাডো (Soft Drop Shadow beneath coaches)
-      map.addLayer({
-        id: 'train-shadow',
-        type: 'line',
-        source: 'train-body-src',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': 'rgba(0, 0, 0, 0.45)',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 4, 15, 10, 16.5, 14, 18, 18],
-          'line-offset': 2
-        }
-      });
-
-      // লেয়ার ৭: বাংলাদেশ রেলওয়ে সবুজ কোচ বডি (BR Green Coaches)
-      map.addLayer({
-        id: 'train-body-green',
-        type: 'line',
-        source: 'train-body-src',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': '#006a4e',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 3.5, 15, 8.5, 16.5, 12, 18, 16]
-        }
-      });
-
-      // লেয়ার ৮: কোচের রূপালী/সাদা মেটাল ছাদ (Silver-White Roof)
-      map.addLayer({
-        id: 'train-roof-white',
-        type: 'line',
-        source: 'train-body-src',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': '#f8fafc',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 2.2, 15, 5.2, 16.5, 7.5, 18, 10]
-        }
-      });
-
-      // লেয়ার ৯: কোচের লাল ব্যান্ড স্ট্রাইপ (Red Coach Stripe)
-      map.addLayer({
-        id: 'train-stripe-red',
-        type: 'line',
-        source: 'train-body-src',
-        paint: {
-          'line-color': '#dc2626',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.8, 15, 1.8, 16.5, 2.5, 18, 3.5]
-        }
-      });
-
-      // লেয়ার ১০: লাল লোকোমোটিভ ইঞ্জিন (Vibrant Red Locomotive Head)
-      map.addLayer({
-        id: 'train-loco-red',
-        type: 'line',
-        source: 'train-loco-src',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: {
-          'line-color': '#ef4444',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 4, 15, 9.5, 16.5, 13, 18, 17]
-        }
-      });
-
-      // লেয়ার ১১: লোকোমোটিভ উইন্ডশিল্ড (Sky-blue Windshield)
-      map.addLayer({
-        id: 'train-loco-windshield',
-        type: 'line',
-        source: 'train-loco-src',
-        paint: {
-          'line-color': '#38bdf8',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1.5, 15, 3.5, 16.5, 5, 18, 7]
-        }
-      });
-
-      // লেয়ার ১২: উজ্জ্বল হেডলাইট গ্লো (Glowing Yellow Headlight)
       map.addLayer({
         id: 'train-headlight-glow',
         type: 'circle',
         source: 'train-headlight-src',
         paint: {
           'circle-color': '#fef08a',
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 2.5, 15, 5, 16.5, 7, 18, 9],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 3, 15, 6, 16.5, 8.5, 18, 11],
           'circle-blur': 0.35,
           'circle-opacity': 0.95
         }
@@ -766,7 +756,7 @@ export default function TrainJourney3D({
 
       // =====================================================================
       // ভাসমান নির্দেশক মার্কারসমূহ (পরবর্তী স্টেশন ও শেষ বগি)
-      // =====================================================================
+      // =========================================================================
       // ট্রেনের সামনের স্টেশন মার্কার: ↑ ময়মনসিংহ ১৯ কি
       const aheadEl = document.createElement('div');
       aheadEl.className = 'floating-ahead-marker';
@@ -789,7 +779,9 @@ export default function TrainJourney3D({
         <span>${nextStation?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(distanceToNext)} কি</span>
       `;
 
-      const aheadPtPos = initialSlice.getPointAt(trainDistRef.current + 250);
+      const { interpolateAt } = getPolylinePointAndAngle(pts, cumDists, trainDistRef.current);
+      const aheadPtPos = interpolateAt(trainDistRef.current + 250);
+
       const aheadMarker = new maplibregl.Marker({
         element: aheadEl,
         anchor: 'bottom'
@@ -826,7 +818,7 @@ export default function TrainJourney3D({
         element: tailEl,
         anchor: 'top'
       })
-        .setLngLat(initialSlice.tail)
+        .setLngLat(initialTrain.tailPos)
         .addTo(map);
 
       tailCoachMarkerRef.current = tailMarker;
@@ -858,46 +850,33 @@ export default function TrainJourney3D({
 
       // পলিলিনের শেষ প্রান্তে পৌঁছালে লুপ
       if (trainDistRef.current >= totalDist - 50) {
-        trainDistRef.current = 180;
+        trainDistRef.current = 220;
       }
 
-      if (mapRef.current && mapRef.current.getSource('train-body-src')) {
-        const trainSlice = sliceTrackPolyline(pts, cumDists, trainDistRef.current, 160);
-        const locoSlice = sliceTrackPolyline(pts, cumDists, trainDistRef.current, 24);
+      if (mapRef.current && mapRef.current.getSource('train-3d-boxes')) {
+        const trainData = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
 
-        // ১. ট্রেনের সম্পূর্ণ বডি আপডেট (বাঁক অনুযায়ী রেন্ডার হয়)
-        mapRef.current.getSource('train-body-src').setData({
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: trainSlice.slice }
-        });
+        // ১. ৩ডি সলিড বগিগুলোর জ্যামিতি আপডেট (প্রতিটি বগি লাইনের বাঁক অনুযায়ী ঘুরে যায়)
+        mapRef.current.getSource('train-3d-boxes').setData(trainData.geojson);
 
-        // ২. ট্রেনের লাল ইঞ্জিন আপডেট
-        mapRef.current.getSource('train-loco-src').setData({
-          type: 'Feature',
-          geometry: { type: 'LineString', coordinates: locoSlice.slice }
-        });
-
-        // ৩. হেডলাইট আপডেট
-        mapRef.current.getSource('train-headlight-src').setData({
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: trainSlice.head }
-        });
-
-        // ৪. শেষ বগি মার্কার পজিশন আপডেট
-        if (tailCoachMarkerRef.current) {
-          tailCoachMarkerRef.current.setLngLat(trainSlice.tail);
+        // ২. হেডলাইট পজিশন আপডেট
+        if (mapRef.current.getSource('train-headlight-src')) {
+          mapRef.current.getSource('train-headlight-src').setData({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: trainData.headPos }
+          });
         }
 
-        // ৫. ক্যামেরা ট্রেনের পেছনের এঙ্গেল বজায় রেখে ফলো করে
-        if (isFollowing) {
-          const aheadPt = trainSlice.getPointAt(trainDistRef.current + 35);
-          const dx = aheadPt[0] - trainSlice.head[0];
-          const dy = aheadPt[1] - trainSlice.head[1];
-          const bearing = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+        // ৩. শেষ বগি মার্কার পজিশন আপডেট
+        if (tailCoachMarkerRef.current) {
+          tailCoachMarkerRef.current.setLngLat(trainData.tailPos);
+        }
 
+        // ৪. ক্যামেরা ট্রেনের মুখ অনুযায়ী স্মুথলি ফলো করে
+        if (isFollowing) {
           mapRef.current.easeTo({
-            center: trainSlice.head,
-            bearing: is2DMode ? 0 : bearing,
+            center: trainData.headPos,
+            bearing: is2DMode ? 0 : trainData.locoAngle,
             duration: 0
           });
         }
@@ -924,7 +903,7 @@ export default function TrainJourney3D({
       }}
     >
       {/* =====================================================================
-          ১. টপ-লেফট ক্যাপসুল (হুবহু স্ক্রিনশট ১: তিস্তা এক্সপ্রেস ৭০৭ পঞ্চগড় - ঢাকা)
+          ১. টপ-লেফট ক্যাপসুল
       ===================================================================== */}
       <div
         style={{
