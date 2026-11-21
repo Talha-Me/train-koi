@@ -8,6 +8,7 @@ import { stationCoords } from '../data/stationCoords';
 import { trainProfiles } from '../data/trainProfiles';
 import allStationsData from '../data/allStations.json';
 import railData from '../data/railway.json';
+const TrainJourney3D = React.lazy(() => import('../components/TrainJourney3D'));
 
 // প্রোডাকশন ও লোকাল ডায়নামিক URL
 const SOCKET_URL = window.location.hostname === "localhost"
@@ -290,6 +291,7 @@ const TrackingPage = () => {
   const [activeTab, setActiveTab] = useState('timeline'); // 'timeline', 'delay'
   const [expandedSegments, setExpandedSegments] = useState({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [show3DView, setShow3DView] = useState(false);
   const lastGpsRef = useRef(null);
 
   const train = useMemo(() => trains.find((t) => t.id === parseInt(trainId, 10)), [trainId]);
@@ -977,6 +979,36 @@ const TrackingPage = () => {
             ১. লাইভ ম্যাপ (ইউজারের চাহিদামতো সবার উপরে স্থাপন করা হয়েছে)
         ========================================================================= */}
         <div className="clean-card" style={{ height: '380px', width: '100%', marginBottom: '18px', overflow: 'hidden', position: 'relative' }}>
+          {/* ৩ডি ভিউ এক্সপেরিমেন্ট বাটন */}
+          <button
+            onClick={() => setShow3DView(true)}
+            style={{
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              zIndex: 1000,
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              color: '#ffffff',
+              border: '1.5px solid rgba(255, 255, 255, 0.25)',
+              borderRadius: '24px',
+              padding: '7px 14px',
+              fontSize: '12px',
+              fontWeight: '800',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+              cursor: 'pointer',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.2s ease'
+            }}
+            title="বাস্তবসম্মত ৩ডি ট্রেন ভিউ দেখুন"
+          >
+            <span style={{ fontSize: '15px' }}>🚆</span>
+            <span style={{ letterSpacing: '0.3px' }}>3D ভিউ</span>
+            <span style={{ background: '#22c55e', color: '#064e3b', fontSize: '9px', fontWeight: '900', padding: '1px 5px', borderRadius: '4px' }}>NEW</span>
+          </button>
+
           <MapContainer
             center={[activeState.lat, activeState.lng]}
             zoom={10}
@@ -1961,6 +1993,27 @@ const TrackingPage = () => {
             </div>
           </div>
         </div>
+      )}
+      {/* =========================================================================
+          এক্সপেরিমেন্টাল ৩ডি জার্নি ভিউ (সম্পূর্ণ ফুলস্ক্রিন ও ইন্টারঅ্যাক্টিভ)
+      ========================================================================= */}
+      {show3DView && (
+        <React.Suspense
+          fallback={
+            <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: '#0a0f1d', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ fontSize: '36px', animation: 'bounce 1s infinite' }}>🚆</div>
+              <div style={{ fontSize: '16px', fontWeight: '800' }}>3D ভিউ লোড হচ্ছে...</div>
+            </div>
+          }
+        >
+          <TrainJourney3D
+            train={train}
+            activeState={activeState}
+            scheduleData={scheduleData}
+            railData={railData}
+            onClose={() => setShow3DView(false)}
+          />
+        </React.Suspense>
       )}
     </div>
   );

@@ -18,8 +18,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        // ফাইল সাইজ লিমিট বাড়িয়ে ৫ এমবি (৫ * ১০২৪ * ১০২৪) করে দেওয়া হলো
-        maximumFileSizeToCacheInBytes: 5242880, 
+        // ফাইল সাইজ লিমিট বাড়িয়ে ৮ এমবি করা হলো
+        maximumFileSizeToCacheInBytes: 8388608, 
       },
       manifest: {
         name: 'TrainKoi - Bangladesh Train Tracker',
