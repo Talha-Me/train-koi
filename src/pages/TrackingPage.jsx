@@ -202,13 +202,38 @@ const getSnappedPoint = (lat, lng, geojson) => {
   return getTrackSnapAndDistance(lat, lng, geojson).point;
 };
 
-const formatDelaySimple = (minutes) => {
+const formatDelay = (minutes, short = false) => {
   if (!minutes || minutes <= 5) return 'সময়মতো চলছে (অন টাইম)';
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
+  if (short) {
+    if (h > 0 && m > 0) return `+${toBn(h)}ঘ ${toBn(m)}মি`;
+    if (h > 0) return `+${toBn(h)}ঘ`;
+    return `+${toBn(m)}মি`;
+  }
   if (h > 0 && m > 0) return `${toBn(h)} ঘণ্টা ${toBn(m)} মিনিট লেট`;
   if (h > 0) return `${toBn(h)} ঘণ্টা লেট`;
   return `${toBn(m)} মিনিট লেট`;
+};
+
+const formatDelaySimple = (minutes) => formatDelay(minutes, false);
+
+const formatMinutesHuman = (minutes) => {
+  if (!minutes || minutes === 0) return '০ মিনিট';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0 && m > 0) return `${toBn(h)} ঘণ্টা ${toBn(m)} মিনিট`;
+  if (h > 0) return `${toBn(h)} ঘণ্টা`;
+  return `${toBn(m)} মিনিট`;
+};
+
+const formatMinutesToBanglaTime = (totalMinutes) => {
+  if (totalMinutes === null || isNaN(totalMinutes)) return '--:--';
+  let mins = Math.round(totalMinutes);
+  mins = ((mins % 1440) + 1440) % 1440;
+  let h = Math.floor(mins / 60);
+  let m = mins % 60;
+  return `${toBn(h.toString().padStart(2, '0'))}:${toBn(m.toString().padStart(2, '0'))}`;
 };
 
 const RecenterMap = ({ center }) => {
@@ -620,6 +645,7 @@ const TrackingPage = () => {
         mode: 'SCHEDULED',
         isRunning: true,
         segmentIndex: segIdx,
+        segmentRatio: ratio,
         delay: 0,
         currentKm: curKm,
         totalKm,
@@ -692,6 +718,7 @@ const TrackingPage = () => {
         lastSeen: Math.floor(diffInMin),
         isRunning: true,
         segmentIndex: bestSeg,
+        segmentRatio: bestRatio,
         delay,
         currentKm: curKm,
         totalKm,
@@ -1253,14 +1280,35 @@ const TrackingPage = () => {
         ========================================================================= */}
         {activeTab === 'timeline' && (
           <div className="clean-card" style={{ padding: '24px 20px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
-                  স্টপ ও সময়সূচী
+                  স্টপ ও লাইভ সময়সূচী
                 </h3>
                 <div style={{ fontSize: '14px', color: '#64748b', marginTop: '3px' }}>
-                  মোট {toBn(scheduleData.length)}টি স্টপেজ • {toBn(train.stations[train.stations.length - 1].km || '---')} কিমি
+                  মোট {toBn(scheduleData.length)}টি নির্ধারিত স্টপেজ • {toBn(train.stations[train.stations.length - 1].km || '---')} কিমি
                 </div>
+              </div>
+            </div>
+
+            {/* টাইমলাইন হেডার: আগমন ও প্রস্থান কলাম */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '10px 16px',
+              background: '#f8fafc',
+              borderRadius: '12px',
+              marginBottom: '20px',
+              border: '1px solid #e2e8f0',
+              fontSize: '13px',
+              fontWeight: '800',
+              color: '#475569'
+            }}>
+              <div>স্টেশন ও প্ল্যাটফর্ম</div>
+              <div style={{ display: 'flex', gap: '32px', textAlign: 'center' }}>
+                <span style={{ width: '64px' }}>আগমন</span>
+                <span style={{ width: '64px' }}>প্রস্থান</span>
               </div>
             </div>
 
@@ -1271,11 +1319,21 @@ const TrackingPage = () => {
                 const isCurrentSegment = activeState.isRunning ? i === activeState.segmentIndex : false;
                 const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
 
-                const schedMin = st.arrMin !== null ? st.arrMin : st.depMin;
-                const actualMin = schedMin !== null ? schedMin + (activeState.delay || 0) : null;
-                const actualTimeStr = actualMin !== null ? minutesToTime(actualMin) : '--:--';
-
                 const platformNo = toBn(((i * 3 + train.id) % 4) + 1);
+
+                // সময়সূচী ক্যালকুলেশন
+                const schedArrMin = st.arrMin;
+                const schedDepMin = st.depMin;
+
+                const schedArrStr = st.arrival === 'START' ? 'প্রারম্ভিক' : (schedArrMin !== null ? formatMinutesToBanglaTime(schedArrMin) : '--:--');
+                const schedDepStr = st.departure === 'END' ? 'গন্তব্য' : (schedDepMin !== null ? formatMinutesToBanglaTime(schedDepMin) : '--:--');
+
+                const delay = activeState.delay || 0;
+                const actualArrMin = schedArrMin !== null ? schedArrMin + delay : null;
+                const actualDepMin = schedDepMin !== null ? schedDepMin + delay : null;
+
+                const actualArrStr = st.arrival === 'START' ? 'প্রারম্ভিক' : (actualArrMin !== null ? formatMinutesToBanglaTime(actualArrMin) : '--:--');
+                const actualDepStr = st.departure === 'END' ? 'গন্তব্য' : (actualDepMin !== null ? formatMinutesToBanglaTime(actualDepMin) : '--:--');
 
                 const intermediateList = intermediateStationsMap[i] || [];
                 const hasIntermediate = intermediateList.length > 0;
@@ -1307,7 +1365,7 @@ const TrackingPage = () => {
                         )}
                       </div>
 
-                      {/* স্টেশনের তথ্য */}
+                      {/* স্টেশনের বিস্তারিত তথ্য */}
                       <div style={{ flex: 1, paddingBottom: '20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
@@ -1325,25 +1383,89 @@ const TrackingPage = () => {
                               )}
                             </div>
 
-                            <div style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
-                              শিডিউল: {st.arrival !== 'START' ? st.arrival : 'প্রারম্ভিক'} / {st.departure !== 'END' ? st.departure : 'গন্তব্য'}
-                            </div>
-                          </div>
-
-                          {/* আগমন সময় */}
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{
-                              fontWeight: '900',
-                              fontSize: '16px',
-                              color: activeState.delay > 5 && !isPassed ? '#dc2626' : '#006a4e'
-                            }}>
-                              {isPassed ? (st.arrival !== 'START' ? st.arrival : st.departure) : actualTimeStr}
-                            </div>
-                            {!isPassed && activeState.delay > 5 && (
-                              <div style={{ fontSize: '13px', color: '#dc2626', fontWeight: '700', marginTop: '2px' }}>
-                                +{toBn(activeState.delay)} মিনিট লেট
+                            {/* আসন্ন স্টেশনের জন্য হাইলাইটেড ইটিএ পিল */}
+                            {isNext && activeState.isRunning && (
+                              <div style={{
+                                marginTop: '8px',
+                                background: '#eff6ff',
+                                border: '1px solid #bfdbfe',
+                                borderRadius: '8px',
+                                padding: '6px 12px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: '8px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                color: '#1d4ed8'
+                              }}>
+                                <span>⏱ ইটিএ: {actualArrStr}</span>
+                                {delay > 5 && (
+                                  <span style={{ color: '#dc2626' }}>({formatDelay(delay, true)})</span>
+                                )}
+                                {stats?.distNext !== undefined && (
+                                  <span style={{ color: '#475569' }}>• {toBn(stats.distNext)} কিমি বাকি</span>
+                                )}
+                                {activeState.speed > 0 ? (
+                                  <span style={{ color: '#059669' }}>• গতি {toBn(activeState.speed)} কিমি/ঘ</span>
+                                ) : (
+                                  <span style={{ color: '#d97706' }}>• দাঁড়িয়ে আছে</span>
+                                )}
                               </div>
                             )}
+
+                            {/* স্টেশনে দাঁড়িয়ে থাকলে নোটিফিকেশন */}
+                            {isCurrentSegment && activeState.isAtStation && (
+                              <div style={{
+                                marginTop: '8px',
+                                background: '#f0fdf4',
+                                border: '1px solid #bbf7d0',
+                                borderRadius: '8px',
+                                padding: '6px 12px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                color: '#16a34a'
+                              }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a', animation: 'rippleDot 1.5s infinite' }}></span>
+                                <span>ট্রেনটি এখন এই স্টেশনে দাঁড়িয়ে আছে</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* আগমন ও প্রস্থান সময় (শিডিউল vs লাইভ) */}
+                          <div style={{ display: 'flex', gap: '32px', textAlign: 'center' }}>
+                            {/* আগমন */}
+                            <div style={{ width: '64px' }}>
+                              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>
+                                {schedArrStr}
+                              </div>
+                              <div style={{
+                                fontSize: '15px',
+                                fontWeight: '900',
+                                color: delay > 5 && !isPassed && st.arrival !== 'START' ? '#dc2626' : (isPassed ? '#334155' : '#059669'),
+                                marginTop: '2px'
+                              }}>
+                                {isPassed ? (delay > 5 && st.arrival !== 'START' ? actualArrStr : schedArrStr) : actualArrStr}
+                              </div>
+                            </div>
+
+                            {/* প্রস্থান */}
+                            <div style={{ width: '64px' }}>
+                              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>
+                                {schedDepStr}
+                              </div>
+                              <div style={{
+                                fontSize: '15px',
+                                fontWeight: '900',
+                                color: delay > 5 && !isPassed && st.departure !== 'END' ? '#dc2626' : (isPassed ? '#334155' : '#059669'),
+                                marginTop: '2px'
+                              }}>
+                                {isPassed ? (delay > 5 && st.departure !== 'END' ? actualDepStr : schedDepStr) : actualDepStr}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1352,7 +1474,7 @@ const TrackingPage = () => {
                     {/* চলমান ট্রেনের লাইভ স্ট্যাটাস স্ট্রিপ */}
                     {isCurrentSegment && activeState.isRunning && (
                       <div style={{
-                        margin: '-8px 0 16px 24px',
+                        margin: '-6px 0 16px 28px',
                         background: '#ecfdf5',
                         border: '1.5px solid #a7f3d0',
                         borderRadius: '14px',
@@ -1375,64 +1497,150 @@ const TrackingPage = () => {
                       </div>
                     )}
 
-                    {/* মধ্যবর্তী স্টেশন ড্রয়ার */}
-                    {hasIntermediate && i < scheduleData.length - 1 && (
-                      <div style={{ marginLeft: '28px', marginBottom: '16px' }}>
+                    {/* মধ্যবর্তী ক্রসিং/নন-স্টপ স্টেশনসমূহ (অ্যাক্টিভ সেগমেন্টে অটো ওপেন, অন্য সেগমেন্টে প্রয়োজনমতো টগল) */}
+                    {hasIntermediate && (isCurrentSegment || isIntermediateExpanded) && (
+                      <div style={{
+                        marginLeft: '36px',
+                        marginRight: '8px',
+                        marginBottom: '20px',
+                        background: '#1e293b',
+                        borderRadius: '14px',
+                        padding: '16px 18px',
+                        color: '#ffffff',
+                        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.16)',
+                        border: '1px solid #334155'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '14px',
+                          paddingBottom: '10px',
+                          borderBottom: '1px solid #334155'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isCurrentSegment ? '#22c55e' : '#94a3b8', animation: isCurrentSegment ? 'rippleDot 1.5s infinite' : 'none' }}></span>
+                            <span style={{ fontSize: '13px', fontWeight: '800', color: isCurrentSegment ? '#38bdf8' : '#e2e8f0' }}>
+                              মাঝের ক্রসিং/নন-স্টপ স্টেশন ({toBn(intermediateList.length)}টি)
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>
+                            {isCurrentSegment && activeState.isRunning
+                              ? (activeState.speed > 0 ? `গতি ${toBn(activeState.speed)} কিমি/ঘ` : 'দাঁড়িয়ে আছে')
+                              : (isPassed ? 'অতিক্রান্ত' : 'আসন্ন')}
+                          </div>
+                        </div>
+
+                        <div style={{ position: 'relative', paddingLeft: '16px' }}>
+                          {/* উল্লম্ব রেল ট্র্যাক বার */}
+                          <div style={{
+                            position: 'absolute',
+                            left: '5px',
+                            top: '6px',
+                            bottom: '6px',
+                            width: '2px',
+                            background: '#475569'
+                          }}></div>
+
+                          {intermediateList.map((im, imIdx) => {
+                            const segDepMin = st.depMin !== null ? st.depMin : st.effectiveMin;
+                            const nextArrMin = scheduleData[i + 1]?.arrMin !== null ? scheduleData[i + 1].arrMin : scheduleData[i + 1]?.effectiveMin;
+                            let approxPassMin = null;
+                            if (segDepMin !== null && nextArrMin !== null) {
+                              approxPassMin = Math.round(segDepMin + im.ratio * (nextArrMin - segDepMin)) + delay;
+                            }
+                            const approxTimeStr = approxPassMin !== null ? formatMinutesToBanglaTime(approxPassMin) : '--:--';
+
+                            const curRatio = isCurrentSegment ? (activeState.segmentRatio || 0) : (isPassed ? 1 : 0);
+                            const isImPassed = isPassed || curRatio > (im.ratio + 0.03);
+                            const isImCurrent = isCurrentSegment && Math.abs(curRatio - im.ratio) <= 0.04;
+
+                            return (
+                              <div
+                                key={imIdx}
+                                style={{
+                                  position: 'relative',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '7px 0',
+                                  opacity: isImPassed && !isImCurrent ? 0.6 : 1,
+                                  transition: 'all 0.3s'
+                                }}
+                              >
+                                {/* নোড ডট */}
+                                <div style={{
+                                  position: 'absolute',
+                                  left: '-16px',
+                                  width: isImCurrent ? '14px' : '8px',
+                                  height: isImCurrent ? '14px' : '8px',
+                                  borderRadius: '50%',
+                                  background: isImCurrent ? '#22c55e' : (isImPassed ? '#10b981' : '#cbd5e1'),
+                                  border: isImCurrent ? '3px solid #bbf7d0' : 'none',
+                                  boxShadow: isImCurrent ? '0 0 10px #22c55e' : 'none',
+                                  transform: isImCurrent ? 'translate(-3px, 0)' : 'none',
+                                  zIndex: 2,
+                                  transition: 'all 0.3s'
+                                }}></div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{
+                                    fontWeight: isImCurrent ? '800' : '700',
+                                    fontSize: '14px',
+                                    color: isImCurrent ? '#4ade80' : '#f8fafc'
+                                  }}>
+                                    {im.nameBn}
+                                  </span>
+                                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                                    {toBn(im.approxKm)} কিমি
+                                  </span>
+                                  {isImCurrent && (
+                                    <span style={{
+                                      fontSize: '11px',
+                                      background: 'rgba(34, 197, 94, 0.2)',
+                                      color: '#4ade80',
+                                      padding: '2px 6px',
+                                      borderRadius: '4px',
+                                      fontWeight: '700',
+                                      border: '1px solid rgba(34, 197, 94, 0.4)'
+                                    }}>
+                                      এখন অতিক্রম করছে
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div style={{ fontSize: '13px', color: isImCurrent ? '#38bdf8' : '#94a3b8', fontWeight: '700' }}>
+                                  ≈ {approxTimeStr}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* মধ্যবর্তী স্টেশন টগল বাটন (শুধুমাত্র যখন সেগমেন্টটি নন-অ্যাক্টিভ কিন্তু ইউজার দেখতে চায়) */}
+                    {hasIntermediate && !isCurrentSegment && (
+                      <div style={{ marginLeft: '36px', marginBottom: '14px' }}>
                         <button
                           onClick={() => setExpandedSegments((prev) => ({ ...prev, [i]: !isIntermediateExpanded }))}
                           style={{
                             background: '#f8fafc',
                             border: '1px solid #e2e8f0',
-                            color: '#475569',
-                            borderRadius: '10px',
-                            padding: '8px 14px',
-                            fontSize: '13px',
+                            color: '#64748b',
+                            borderRadius: '8px',
+                            padding: '5px 12px',
+                            fontSize: '12px',
                             fontWeight: '700',
-                            display: 'flex',
+                            display: 'inline-flex',
                             alignItems: 'center',
                             gap: '6px',
                             cursor: 'pointer'
                           }}
                         >
-                          <span>মাঝের {toBn(intermediateList.length)}টি ছোট স্টেশন {isIntermediateExpanded ? 'লুকান' : 'দেখুন'}</span>
+                          <span>মাঝের {toBn(intermediateList.length)}টি ক্রসিং স্টেশন {isIntermediateExpanded ? 'লুকান' : 'দেখুন'}</span>
                           {isIntermediateExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
                         </button>
-
-                        {isIntermediateExpanded && (
-                          <div style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '10px 16px', marginTop: '8px' }}>
-                            {intermediateList.map((im, imIdx) => {
-                              const stStartMin = st.depMin !== null ? st.depMin : st.effectiveMin;
-                              const stEndMin = scheduleData[i + 1].arrMin !== null ? scheduleData[i + 1].arrMin : scheduleData[i + 1].effectiveMin;
-                              let approxPassMin = null;
-                              if (stStartMin !== null && stEndMin !== null) {
-                                approxPassMin = Math.round(stStartMin + im.ratio * (stEndMin - stStartMin)) + (activeState.delay || 0);
-                              }
-
-                              return (
-                                <div
-                                  key={imIdx}
-                                  style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '7px 0',
-                                    borderBottom: imIdx < intermediateList.length - 1 ? '1px solid #e2e8f0' : 'none',
-                                    fontSize: '14px',
-                                    color: '#475569'
-                                  }}
-                                >
-                                  <div>
-                                    <span style={{ color: '#0f172a', fontWeight: '700' }}>{im.nameBn}</span>
-                                    <span style={{ fontSize: '13px', color: '#94a3b8', marginLeft: '6px' }}>({toBn(im.approxKm)} কিমি)</span>
-                                  </div>
-                                  <div style={{ color: '#0284c7', fontSize: '13px', fontWeight: '700' }}>
-                                    আনুমানিক {approxPassMin !== null ? minutesToTime(approxPassMin) : '--:--'}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
@@ -1462,21 +1670,21 @@ const TrackingPage = () => {
                 <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                   <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>গড় বিলম্ব</div>
                   <div style={{ fontSize: '18px', fontWeight: '900', color: '#dc2626', marginTop: '4px' }}>
-                    {toBn(avgDelayVal)} মিনিট
+                    {formatMinutesHuman(avgDelayVal)}
                   </div>
                 </div>
 
                 <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                   <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বোচ্চ লেট</div>
                   <div style={{ fontSize: '18px', fontWeight: '900', color: '#b91c1c', marginTop: '4px' }}>
-                    {toBn(Math.max(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
+                    {formatMinutesHuman(Math.max(...delayHistory.map((d) => d.delayMinutes)))}
                   </div>
                 </div>
 
                 <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                   <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>সর্বনিম্ন</div>
                   <div style={{ fontSize: '18px', fontWeight: '900', color: '#16a34a', marginTop: '4px' }}>
-                    {toBn(Math.min(...delayHistory.map((d) => d.delayMinutes)))} মিনিট
+                    {formatMinutesHuman(Math.min(...delayHistory.map((d) => d.delayMinutes)))}
                   </div>
                 </div>
               </div>
@@ -1490,8 +1698,8 @@ const TrackingPage = () => {
 
                   return (
                     <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', padding: '0 6px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '800', color: barColor, marginBottom: '6px' }}>
-                        {toBn(item.delayMinutes)}মি
+                      <span style={{ fontSize: '12px', fontWeight: '800', color: barColor, marginBottom: '6px' }}>
+                        {item.delayMinutes >= 60 ? formatDelay(item.delayMinutes, true).replace('+', '') : `${toBn(item.delayMinutes)}মি`}
                       </span>
                       <div
                         style={{
@@ -1533,7 +1741,7 @@ const TrackingPage = () => {
                 </div>
                 <p style={{ margin: 0, fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
                   {profile && profile.importance ? profile.importance : `${originName} থেকে ${destName} পর্যন্ত মোট ${toBn(scheduleData.length)}টি স্টপেজে যাত্রী ওঠানামা করায় এবং সিঙ্গেল লাইন রেল ট্র্যাকে বিপরীতমুখী ট্রেনের ক্রসিংয়ের কারণে পিক আওয়ারে ট্রেনটি কিছুটা বিলম্বিত হতে পারে।`}
-                  {' '}বিগত সপ্তাহের হিসাবে এই ট্রেনের গড় লেট প্রায় <b>{toBn(avgDelayVal)} মিনিট</b>।
+                  {' '}বিগত সপ্তাহের হিসাবে এই ট্রেনের গড় লেট প্রায় <b>{formatMinutesHuman(avgDelayVal)}</b>।
                 </p>
               </div>
 
