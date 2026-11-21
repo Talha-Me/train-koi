@@ -6889,13 +6889,13 @@ const processTrainLocationUpdate = async (data) => {
           diff = diff - recoveryFactor;
         }
 
-        calculatedDelayMinutes = diff > 0 ? Math.round(diff) : 0;
+        calculatedDelayMinutes = diff > 0 ? Math.min(210, Math.round(diff)) : 0;
       }
     }
   }
 
   const finalDelay = (manualDelay !== undefined && manualDelay !== null && manualDelay !== "") 
-                     ? parseInt(manualDelay) : calculatedDelayMinutes;
+                     ? Math.min(210, parseInt(manualDelay)) : calculatedDelayMinutes;
 
   const updateObj = {
     "lastLocation.lat": parseFloat(lat) || 0,

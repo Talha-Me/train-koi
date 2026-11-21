@@ -462,7 +462,8 @@ const TrackingPage = () => {
           }
           lastGpsRef.current = { lat: latitude, lng: longitude, ts: currentTs };
 
-          // ২. ট্রেনের শিডিউল টাইম উইন্ডো চেক
+          // ২. ট্রেনের শিডিউল টাইম উইন্ডো চেক (সর্বোচ্চ ৩.৫ ঘণ্টা লেট গ্রহণযোগ্য)
+          const MAX_DELAY_TOLERANCE_MIN = 210; // ৩.৫ ঘণ্টা (২১০ মিনিট)
           const now = new Date();
           const currentMin = now.getHours() * 60 + now.getMinutes();
           const startMin = scheduleData[0].effectiveMin;
@@ -471,13 +472,13 @@ const TrackingPage = () => {
 
           let isWithinTime = false;
           if (isCrossDay) {
-            isWithinTime = (currentMin >= (startMin - 60) || currentMin <= (endMin + 600));
+            isWithinTime = (currentMin >= (startMin - 60) || currentMin <= (endMin + MAX_DELAY_TOLERANCE_MIN));
           } else {
-            isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + 600));
+            isWithinTime = (currentMin >= (startMin - 60) && currentMin <= (endMin + MAX_DELAY_TOLERANCE_MIN));
           }
 
           if (!isWithinTime) {
-            setShareStatusText('⚠️ ট্রেনের নির্ধারিত সময়সূচীর বাইরে');
+            setShareStatusText('⚠️ ট্রেনটি বর্তমানে চলাচলের সময়সূচীর বাইরে (অফলাইন)');
             return;
           }
 
@@ -587,15 +588,16 @@ const TrackingPage = () => {
     const startedYesterday = isCrossDay && !train.offDay.includes(yesterdayName);
 
     const getScheduledState = () => {
+      const MAX_DELAY_TOLERANCE_MIN = 210; // ৩.৫ ঘণ্টা (২১০ মিনিট)
       let inSchedule = false;
       if (isCrossDay) {
         inSchedule =
           (currentMinWithSec >= startMin - 60 && !isTodayOff) ||
-          (currentMinWithSec <= endMin + 360 && startedYesterday);
+          (currentMinWithSec <= endMin + MAX_DELAY_TOLERANCE_MIN && startedYesterday);
       } else {
         inSchedule =
           currentMinWithSec >= startMin - 60 &&
-          currentMinWithSec <= endMin + 360 &&
+          currentMinWithSec <= endMin + MAX_DELAY_TOLERANCE_MIN &&
           !isTodayOff;
       }
 
@@ -607,6 +609,7 @@ const TrackingPage = () => {
           speed: 0,
           mode: 'OFFLINE',
           isRunning: false,
+          isTodayOff,
           segmentIndex: 0,
           delay: 0,
           currentKm: 0,
@@ -709,7 +712,7 @@ const TrackingPage = () => {
         return getScheduledState();
       }
 
-      const delay = liveData.delay || 0;
+      const delay = Math.min(210, liveData.delay || 0);
 
       let bestSeg = 0;
       let minErr = Infinity;
@@ -1228,6 +1231,32 @@ const TrackingPage = () => {
               >
                 {isSharing ? 'শেয়ার বন্ধ করুন' : 'চালু করুন'}
               </button>
+            </div>
+          ) : !activeState.isRunning ? (
+            <div style={{
+              background: '#f8fafc',
+              padding: '14px 20px',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <span style={{ fontSize: '20px' }}>
+                {activeState.isTodayOff ? '🚫' : '🕒'}
+              </span>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: activeState.isTodayOff ? '#b91c1c' : '#334155' }}>
+                  {activeState.isTodayOff
+                    ? `আজ ${train.name.split('(')[0]} ট্রেনের সাপ্তাহিক বন্ধ (অফ ডে)`
+                    : `${train.name.split('(')[0]} বর্তমানে অফলাইনে রয়েছে`}
+                </div>
+                <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                  {activeState.isTodayOff
+                    ? 'আজ এই রুটে ট্রেনটির কোনো যাত্রা নেই।'
+                    : `ট্রেনটির নির্ধারিত সময়সূচী অনুযায়ী যাত্রা শুরু হলে লাইভ ট্র্যাকিং ও লোকেশন শেয়ার সচল হবে।`}
+                </div>
+              </div>
             </div>
           ) : (
             <div style={{
