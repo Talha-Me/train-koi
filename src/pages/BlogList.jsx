@@ -148,6 +148,8 @@ const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onre
   };
 
   useEffect(() => {
+    document.title = "ট্রেন ভ্রমণ ব্লগ ও পূর্ণাঙ্গ নির্দেশিকা | TrainKoi";
+    window.scrollTo(0, 0);
     fetchBlogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

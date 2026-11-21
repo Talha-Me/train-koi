@@ -192,7 +192,7 @@ const Footer = () => {
           <h4 style={{ fontSize: '16.5px', marginBottom: '16px', borderBottom: '2px solid #2ecc71', display: 'inline-block', paddingBottom: '4px', fontWeight: '700' }}>পলিসি ও যোগাযোগ</h4>
           <ul style={{ listStyleType: 'none', padding: 0, margin: 0, fontSize: '13.5px', lineHeight: '2.1' }}>
             <li><a href="/about" style={{ color: '#cbd5e1', textDecoration: 'none' }}>আমাদের সম্পর্কে (About Us)</a></li>
-            <li><a href="/Contact" style={{ color: '#cbd5e1', textDecoration: 'none' }}>যোগাযোগ করুন (Contact)</a></li>
+            <li><a href="/contact" style={{ color: '#cbd5e1', textDecoration: 'none' }}>যোগাযোগ করুন (Contact)</a></li>
             <li><a href="/privacy" style={{ color: '#cbd5e1', textDecoration: 'none' }}>গোপনীয়তা নীতি (Privacy Policy)</a></li>
             <li><a href="/terms" style={{ color: '#cbd5e1', textDecoration: 'none' }}>ব্যবহারের শর্তাবলী (Terms of Service)</a></li>
             <li><a href="/disclaimer" style={{ color: '#cbd5e1', textDecoration: 'none' }}>দায়মুক্তি নোটিশ (Disclaimer)</a></li>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Search, ChevronDown, ChevronUp, 
@@ -11,6 +11,11 @@ import Navbar from './components/Navbar';
 
 const FAQ = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "সাধারণ জিজ্ঞাসা ও সাহায্য (FAQ) | TrainKoi";
+    window.scrollTo(0, 0);
+  }, []);
 
   // --- State Definitions (Crucial missing part) ---
   const [searchTerm, setSearchTerm] = useState("");

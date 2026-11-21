@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, FileText, ShieldCheck, Scale, 
@@ -8,6 +8,11 @@ import Navbar from './components/Navbar';
 
 const TermsOfService = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "ব্যবহারের শর্তাবলী (Terms of Service) | TrainKoi";
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleBack = () => {
     if (window.history.state && window.history.state.idx > 0) {

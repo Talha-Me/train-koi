@@ -833,6 +833,7 @@ const HomePage = () => {
 
   // মাউস স্ক্রল ফিক্স এবং মোবাইল ডিটেকশন
   useEffect(() => {
+    document.title = "Train Live Location | Train Tracking Bangladesh - TrainKoi";
     const handleResize = () => {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       const isMobileDevice = /android|iphone|ipad|ipod/i.test(userAgent);

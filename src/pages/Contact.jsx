@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Mail, Phone, Send, MessageSquare, 
@@ -8,6 +8,11 @@ import Navbar from './components/Navbar';
 
 const Contact = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "যোগাযোগ করুন (Contact Us) | TrainKoi";
+    window.scrollTo(0, 0);
+  }, []);
   
   // ১. প্রয়োজনীয় স্টেটগুলো এখানে ডিক্লেয়ার করা হলো
   const [loading, setLoading] = useState(false);

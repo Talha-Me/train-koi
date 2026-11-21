@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ShieldCheck, Lock, Eye, 
@@ -8,6 +8,11 @@ import Navbar from './components/Navbar';
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "গোপনীয়তা নীতি (Privacy Policy) | TrainKoi";
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleBack = () => {
     if (window.history.state && window.history.state.idx > 0) {

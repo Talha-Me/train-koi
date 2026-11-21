@@ -106,6 +106,7 @@ function AppContent() {
           <Route path="/rail-news" element={<NewsList />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/Contact" element={<Contact />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin-upload" element={<ContentUpload />} />

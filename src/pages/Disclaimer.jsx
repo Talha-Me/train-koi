@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, AlertTriangle, Info, ExternalLink, 
@@ -8,6 +8,11 @@ import Navbar from './components/Navbar';
 
 const Disclaimer = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "আইনগত দায়মুক্তি নোটিশ (Disclaimer) | TrainKoi";
+    window.scrollTo(0, 0);
+  }, []);
 
   // Smart back navigation
   const handleBack = () => {

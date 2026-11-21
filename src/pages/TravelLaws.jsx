@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, ShieldAlert, Gavel, Scale, AlertTriangle, 
@@ -11,6 +11,11 @@ import Navbar from './components/Navbar';
 const TravelLaws = () => {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
+
+  useEffect(() => {
+    document.title = "রেল ভ্রমণ আইন ও বিধিমালা ২০২৬ | TrainKoi";
+    window.scrollTo(0, 0);
+  }, []);
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
