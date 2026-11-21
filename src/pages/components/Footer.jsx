@@ -126,13 +126,21 @@ const Footer = () => {
         
         {/* কলাম ১: লোগো ও বর্ণনা */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <img 
-              src="/trainkoi-icon.png" 
-              alt="TrainKoi" 
-              style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }} 
-            />
-            <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '1px' }}>ট্রেনকই</h2>
+          <div style={{ marginBottom: '18px' }}>
+            <div style={{ 
+              background: '#ffffff', 
+              padding: '6px 14px', 
+              borderRadius: '12px', 
+              display: 'inline-flex', 
+              alignItems: 'center',
+              boxShadow: '0 3px 12px rgba(0,0,0,0.18)'
+            }}>
+              <img 
+                src="/trainkoi-logo.png" 
+                alt="TrainKoi - ট্রেনের সব তথ্য, এক জায়গায়" 
+                style={{ height: '44px', width: 'auto', display: 'block', objectFit: 'contain' }} 
+              />
+            </div>
           </div>
 
           <p style={{ fontSize: '13.5px', lineHeight: '1.65', color: '#cbd5e1', textAlign: 'justify', margin: '0 0 16px' }}>

@@ -191,20 +191,20 @@ const Navbar = ({ activePage }) => {
       <header className="tk-navbar-desktop">
         <div className="tk-nav-container">
           {/* Logo */}
-          <Link to="/" className="tk-nav-brand">
-            <div className="tk-brand-icon">
+          <Link to="/" className="tk-nav-brand" title="TrainKoi - হোম">
+            <div style={{ 
+              background: '#ffffff', 
+              padding: '5px 12px', 
+              borderRadius: '10px', 
+              display: 'flex', 
+              alignItems: 'center',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
+            }}>
               <img 
-                src="/trainkoi-icon.png" 
+                src="/trainkoi-logo.png" 
                 alt="TrainKoi" 
-                style={{ width: '100%', height: '100%', borderRadius: '12px', objectFit: 'cover' }} 
+                style={{ height: '36px', width: 'auto', display: 'block', objectFit: 'contain' }} 
               />
-            </div>
-            <div className="tk-brand-text">
-              <span className="tk-brand-title">
-                TrainKoi
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-              </span>
-              <span className="tk-brand-sub">ফ্রি লাইভ ট্রেন ট্র্যাকিং</span>
             </div>
           </Link>
 

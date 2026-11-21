@@ -1437,13 +1437,21 @@ const HomePage = () => {
           position: 'relative',
           zIndex: 1
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
-            <img 
-              src="/trainkoi-icon.png" 
-              alt="TrainKoi" 
-              style={{ width: 34, height: 34, borderRadius: 10, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }} 
-            />
-            <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.3px' }}>TrainKoi</span>
+          <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')} title="TrainKoi - হোম">
+            <div style={{ 
+              background: '#ffffff', 
+              padding: '5px 12px', 
+              borderRadius: '10px', 
+              display: 'flex', 
+              alignItems: 'center',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
+            }}>
+              <img 
+                src="/trainkoi-logo.png" 
+                alt="TrainKoi" 
+                style={{ height: '36px', width: 'auto', display: 'block', objectFit: 'contain' }} 
+              />
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
             <span className="hp-nav-link" onClick={() => navigate('/')}>হোম</span>
@@ -1483,24 +1491,17 @@ const HomePage = () => {
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <img 
-                src="/trainkoi-icon.png" 
-                alt="TrainKoi" 
-                style={{ width: 30, height: 30, borderRadius: 9, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }} 
-              />
-              <h2 style={{ 
-                margin: 0, 
-                fontWeight: 900, 
-                fontSize: '28px', 
-                background: 'linear-gradient(to right, #ffffff, #fef08a, #ffffff)', 
-                WebkitBackgroundClip: 'text', 
-                WebkitTextFillColor: 'transparent', 
-                letterSpacing: '-0.5px'
-              }}>
-                ট্রেনকই
-              </h2>
-            </div>
+            <h2 style={{ 
+              margin: 0, 
+              fontWeight: 900, 
+              fontSize: '28px', 
+              background: 'linear-gradient(to right, #ffffff, #fef08a, #ffffff)', 
+              WebkitBackgroundClip: 'text', 
+              WebkitTextFillColor: 'transparent', 
+              letterSpacing: '-0.5px'
+            }}>
+              ট্রেনকই
+            </h2>
             {/* লাইভ ট্র্যাকিং কাউন্টার ব্যাজ */}
             <div 
               className="hp-live-counter-badge"
