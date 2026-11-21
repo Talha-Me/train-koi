@@ -387,68 +387,76 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
   const { interpolateAt } = getPolylinePointAndAngle(points, cumDists, headDist);
 
   // -----------------------------------------------------------------------
-  // ১. বাংলাদেশ রেলওয়ে ক্লাস ২৯০০ / ৩০০০ ডিজেল-ইলেকট্রিক ইঞ্জিন (Locomotive Engine)
+  // ১. বাংলাদেশ রেলওয়ে ক্লাস ২৯০০ / ২৬০০ ইএমডি ডিজেল লোকোমোটিভ (Classic Blue & Cream)
   // -----------------------------------------------------------------------
   const locoD = headDist - 11;
   const { center: locoCenter, angle: locoAngle } = getPolylinePointAndAngle(points, cumDists, locoD);
 
-  // (ক) ইঞ্জিনের আন্ডারক্যারিজ চ্যাসিস ও বগি ট্রাক (Dark Steel Bogies & Fuel Tank)
+  // (ক) ডার্ক স্টিল বগি ট্রাক ও চাকা (৬-এক্সল হেভি বগি)
   const locoFrontBogieD = locoD + 6.2;
   const locoRearBogieD = locoD - 6.2;
   const { center: lfbCenter, angle: lfbAngle } = getPolylinePointAndAngle(points, cumDists, locoFrontBogieD);
   const { center: lrbCenter, angle: lrbAngle } = getPolylinePointAndAngle(points, cumDists, locoRearBogieD);
 
-  // ফ্রন্ট ৩-এক্সল বগি
   features.push({
     type: 'Feature',
     properties: { color: '#0f172a', height: 0.9, base: 0.0 },
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(lfbCenter[0], lfbCenter[1], 5.4, 3.4, lfbAngle)] }
   });
-  // রিয়ার ৩-এক্সল বগি
   features.push({
     type: 'Feature',
     properties: { color: '#0f172a', height: 0.9, base: 0.0 },
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(lrbCenter[0], lrbCenter[1], 5.4, 3.4, lrbAngle)] }
   });
-  // সেন্ট্রাল ডিজেল ফুয়েল ট্যাংক
+  // সেন্ট্রাল ফুয়েল ট্যাংক
   features.push({
     type: 'Feature',
     properties: { color: '#1e293b', height: 0.8, base: 0.05 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 6.0, 3.1, locoAngle)] }
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 6.2, 3.1, locoAngle)] }
   });
 
-  // (খ) সামনের হলুদ সেফটি পাইলট / কাউক্যাচার (Yellow Safety Cowcatcher & Buffer)
-  const pilotPos = interpolateAt(headDist - 0.9);
+  // (খ) সামনের লাল কাউক্যাচার / পাইলট বাফার (Crimson Red Cowcatcher)
+  const pilotPos = interpolateAt(headDist - 0.8);
   features.push({
     type: 'Feature',
-    properties: { color: '#eab308', height: 1.25, base: 0.1 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(pilotPos[0], pilotPos[1], 2.0, 3.8, locoAngle)] }
+    properties: { color: '#dc2626', height: 1.25, base: 0.1 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(pilotPos[0], pilotPos[1], 1.8, 3.8, locoAngle)] }
   });
 
-  // (গ) ইঞ্জিনের মূল লাল চ্যাসিস প্ল্যাটফর্ম (Locomotive Main Chassis Deck)
+  // (গ) সামনের হলুদ সেফটি হ্যান্ডরেইলিং / ডেক (Yellow Front Safety Railings)
+  const frontDeckPos = interpolateAt(headDist - 1.8);
   features.push({
     type: 'Feature',
-    properties: { color: '#991b1b', height: 1.3, base: 0.85 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 21.2, 3.7, locoAngle)] }
+    properties: { color: '#eab308', height: 2.2, base: 0.9 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(frontDeckPos[0], frontDeckPos[1], 1.2, 3.75, locoAngle)] }
   });
 
-  // (ঘ) ড্রাইভার ক্যাব - উঁচু ও এরোডাইনামিক (Locomotive Cab)
+  // (ঘ) মূল চ্যাসিস ওয়াকওয়ে প্ল্যাটফর্ম (Dark Base Platform)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#1e293b', height: 1.1, base: 0.85 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 21.4, 3.75, locoAngle)] }
+  });
+
+  // (ঙ) ড্রাইভার ক্যাব (উঁচু এরোডাইনামিক ক্যাব - নীল ও ক্রিম কালার)
   const cabD = headDist - 5.5;
   const { center: cabCenter, angle: cabAngle } = getPolylinePointAndAngle(points, cumDists, cabD);
+
+  // ক্যাবের লোয়ার ক্রিম ব্যান্ড (Lower Cream Body)
   features.push({
     type: 'Feature',
-    properties: { color: '#b91c1c', height: 4.6, base: 1.1 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabCenter[0], cabCenter[1], 5.6, 3.65, cabAngle)] }
+    properties: { color: '#e2d9c8', height: 2.6, base: 1.05 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabCenter[0], cabCenter[1], 5.8, 3.65, cabAngle)] }
   });
 
-  // ক্যাবের সাদা লিভারি ব্যান্ড
+  // ক্যাবের আপার ডিপ ব্লু বডি (Upper BR Deep Blue)
   features.push({
     type: 'Feature',
-    properties: { color: '#f8fafc', height: 2.65, base: 2.15 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabCenter[0], cabCenter[1], 5.65, 3.7, cabAngle)] }
+    properties: { color: '#1d4ed8', height: 4.6, base: 2.55 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabCenter[0], cabCenter[1], 5.8, 3.65, cabAngle)] }
   });
 
-  // সামনের কালো উইন্ডশিল্ড (Front Windshield Glass)
+  // সামনের ৩টি কালো উইন্ডশিল্ড (3-Panel Front Windshield)
   const windshieldPos = interpolateAt(headDist - 2.8);
   features.push({
     type: 'Feature',
@@ -456,44 +464,53 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(windshieldPos[0], windshieldPos[1], 0.85, 3.68, cabAngle)] }
   });
 
-  // সাইড ক্যাব উইন্ডো (Side Cab Windows)
+  // সাইড ক্যাব উইন্ডো (Side Driver Windows)
   features.push({
     type: 'Feature',
     properties: { color: '#090d16', height: 4.15, base: 3.15 },
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabCenter[0], cabCenter[1], 1.8, 3.72, cabAngle)] }
   });
 
-  // ক্যাবের রূপালী ছাদ (Cab Silver Roof)
+  // ক্যাবের ব্লু রুফ ক্যাপ (Cab Blue Roof)
   features.push({
     type: 'Feature',
-    properties: { color: '#cbd5e1', height: 4.85, base: 4.5 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabCenter[0], cabCenter[1], 5.4, 3.4, cabAngle)] }
+    properties: { color: '#1e3a8a', height: 4.85, base: 4.5 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabCenter[0], cabCenter[1], 5.6, 3.4, cabAngle)] }
   });
 
-  // (ঙ) লং ইঞ্জিন হূড (Narrower Long Hood with Open Catwalk Walkways)
+  // (চ) লং ইঞ্জিন হূড (Narrower Long Hood with Catwalks - Blue & Cream)
   const hoodD = headDist - 14.5;
   const { center: hoodCenter, angle: hoodAngle } = getPolylinePointAndAngle(points, cumDists, hoodD);
+
+  // হূডের লোয়ার ক্রিম সেকশন
   features.push({
     type: 'Feature',
-    properties: { color: '#b91c1c', height: 4.15, base: 1.1 },
+    properties: { color: '#e2d9c8', height: 2.5, base: 1.05 },
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(hoodCenter[0], hoodCenter[1], 13.0, 2.85, hoodAngle)] }
   });
 
-  // হূডের সাদা ফিতা (Hood White Stripe)
+  // হূডের আপার ব্লু সেকশন
   features.push({
     type: 'Feature',
-    properties: { color: '#f8fafc', height: 2.65, base: 2.15 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(hoodCenter[0], hoodCenter[1], 13.05, 2.9, hoodAngle)] }
+    properties: { color: '#1d4ed8', height: 4.25, base: 2.45 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(hoodCenter[0], hoodCenter[1], 13.0, 2.85, hoodAngle)] }
   });
 
-  // হূডের সিলভার ছাদ (Hood Silver Roof)
+  // হূডের ব্লু রুফ
   features.push({
     type: 'Feature',
-    properties: { color: '#94a3b8', height: 4.4, base: 4.05 },
+    properties: { color: '#1e3a8a', height: 4.45, base: 4.15 },
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(hoodCenter[0], hoodCenter[1], 12.8, 2.65, hoodAngle)] }
   });
 
-  // (চ) ছাদের রেডিয়েটর ফ্যান পড ও সাইলেন্সার (Radiator Fan Pod & Exhaust Stack)
+  // হূডের দুই পাশের হলুদ সেফটি হ্যান্ডরেইলিং (Side Safety Handrails)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#eab308', height: 2.1, base: 1.05 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(hoodCenter[0], hoodCenter[1], 13.0, 3.7, hoodAngle)] }
+  });
+
+  // (ছ) ছাদের রেডিয়েটর ফ্যান পড ও সাইলেন্সার (Radiator Fan Pod & Exhaust Stack)
   const radiatorD = headDist - 17.5;
   const { center: radCenter, angle: radAngle } = getPolylinePointAndAngle(points, cumDists, radiatorD);
   features.push({
@@ -515,7 +532,15 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(exhaustPos[0], exhaustPos[1], 1.2, 0.9, locoAngle)] }
   });
 
-  // ইঞ্জিন ও প্রথম বগির মধ্যবর্তী কাপলার ও ট্রানজিশন (Engine-to-Coach Transition Coupler)
+  // পেছনের ওয়াকওয়ে হলুদ রেইলিং
+  const rearDeckPos = interpolateAt(headDist - 21.0);
+  features.push({
+    type: 'Feature',
+    properties: { color: '#eab308', height: 2.2, base: 0.9 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(rearDeckPos[0], rearDeckPos[1], 1.0, 3.75, locoAngle)] }
+  });
+
+  // ইঞ্জিন ও প্রথম বগির মধ্যবর্তী কাপলার (Engine-to-Coach Coupler)
   const coupler0Pos = interpolateAt(headDist - 22.0);
   features.push({
     type: 'Feature',
@@ -524,7 +549,7 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
   });
 
   // -----------------------------------------------------------------------
-  // ২. আটটি আন্তঃনগর লাল-সবুজ কোচ (8 Bangladesh Railway Intercity Coaches)
+  // ২. আটটি আন্তঃনগর লাল-সবুজ কোচ (Official Bangladesh Railway Livery)
   // -----------------------------------------------------------------------
   for (let i = 1; i <= 8; i++) {
     const coachD = headDist - 23 - (i - 1) * 21.6 - 10;
@@ -547,47 +572,54 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
       geometry: { type: 'Polygon', coordinates: [createBoxPolygon(rbCenter[0], rbCenter[1], 4.2, 3.4, rbAngle)] }
     });
 
-    // (খ) সেন্ট্রাল ব্যাটারি ও আন্ডারফ্রেম ইকুইপমেন্ট বক্স (Underframe Equipment Box)
+    // (খ) সেন্ট্রাল ব্যাটারি ও আন্ডারফ্রেম ইকুইপমেন্ট বক্স
     features.push({
       type: 'Feature',
       properties: { color: '#1e293b', height: 0.65, base: 0.1 },
       geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 5.0, 2.5, cAngle)] }
     });
 
-    // (গ) বাংলাদেশ রেলওয়ে ডিপ ফরেস্ট গ্রিন বডি (Official Bangladesh Railway Deep Green Body)
+    // (গ) বাংলাদেশ রেলওয়ে ডিপ ফরেস্ট গ্রিন বডি (Official BR Deep Green Body)
     features.push({
       type: 'Feature',
       properties: { color: '#006a4e', height: 4.25, base: 0.8 },
       geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.4, 3.65, cAngle)] }
     });
 
-    // (ঘ) সিগনেচার লাল কোমরবন্ধ ফিতা (Crimson Red Waistline Stripe)
+    // (ঘ) নিচের সিগনেচার লাল কোমরবন্ধ ফিতা (Crimson Red Waistline Accent Stripe)
     features.push({
       type: 'Feature',
       properties: { color: '#dc2626', height: 2.38, base: 2.05 },
       geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.5, 3.71, cAngle)] }
     });
 
-    // (ঙ) ক্রিস্প সাদা/আইভরি জানালা বেল্ট (Crisp White/Ivory Window Band)
+    // (ঙ) সিগনেচার সাদা/আইভরি ওয়েভ ব্যান্ড (White Livery Swoosh Band)
     features.push({
       type: 'Feature',
-      properties: { color: '#f8fafc', height: 3.55, base: 2.15 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.5, 3.7, cAngle)] }
+      properties: { color: '#f8fafc', height: 2.25, base: 1.85 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.5, 3.72, cAngle)] }
     });
 
-    // (চ) আলাদা আলাদা ১১টি গাঢ় কাঁচের জানালা (11 Individual Passenger Windows with White Pillars)
+    // (চ) আলাদা আলাদা ১১টি গাঢ় কাঁচের টিন্টেড জানালা (11 Individual Tinted Passenger Windows)
     const windowOffsets = [-6.75, -5.4, -4.05, -2.7, -1.35, 0.0, 1.35, 2.7, 4.05, 5.4, 6.75];
     for (let w = 0; w < windowOffsets.length; w++) {
       const winD = coachD + windowOffsets[w];
       const { center: wCenter, angle: wAngle } = getPolylinePointAndAngle(points, cumDists, winD);
+      // জানালার কাঁচ
       features.push({
         type: 'Feature',
         properties: { color: '#090d16', height: 3.38, base: 2.45 },
         geometry: { type: 'Polygon', coordinates: [createBoxPolygon(wCenter[0], wCenter[1], 0.92, 3.76, wAngle)] }
       });
+      // জানালার সিলভার ফ্রেম বেস
+      features.push({
+        type: 'Feature',
+        properties: { color: '#e2e8f0', height: 2.5, base: 2.4 },
+        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(wCenter[0], wCenter[1], 0.96, 3.74, wAngle)] }
+      });
     }
 
-    // (ছ) দুই প্রান্তের প্যাসেঞ্জার ডোর ও ডোর গ্লাস (Front & Rear Passenger Doors)
+    // (ছ) দুই প্রান্তের প্যাসেঞ্জার ডোর ও হলুদ হ্যান্ডগ্র্যাব (Front & Rear Passenger Doors)
     const doorOffsets = [8.3, -8.3];
     for (let d = 0; d < doorOffsets.length; d++) {
       const doorD = coachD + doorOffsets[d];
@@ -595,7 +627,7 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
       // ডোর ফ্রেম
       features.push({
         type: 'Feature',
-        properties: { color: '#00503a', height: 3.85, base: 0.82 },
+        properties: { color: '#004d38', height: 3.85, base: 0.82 },
         geometry: { type: 'Polygon', coordinates: [createBoxPolygon(dCenter[0], dCenter[1], 0.95, 3.73, dAngle)] }
       });
       // ডোর উইন্ডো
@@ -604,23 +636,36 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
         properties: { color: '#090d16', height: 3.45, base: 2.55 },
         geometry: { type: 'Polygon', coordinates: [createBoxPolygon(dCenter[0], dCenter[1], 0.45, 3.76, dAngle)] }
       });
+      // ডোর হলুদ সেফটি হ্যান্ডল
+      features.push({
+        type: 'Feature',
+        properties: { color: '#eab308', height: 2.8, base: 1.5 },
+        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(dCenter[0], dCenter[1], 0.15, 3.78, dAngle)] }
+      });
     }
 
-    // (জ) বাঁকানো ছাদের বেস টিয়ার (Curved Roof Rim)
+    // (জ) ছাদের নিচের আপার লাল রিম স্ট্রাইপ (Upper Red Roof-line Stripe)
     features.push({
       type: 'Feature',
-      properties: { color: '#2d6a4f', height: 4.5, base: 4.15 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.3, 3.5, cAngle)] }
+      properties: { color: '#dc2626', height: 4.35, base: 4.15 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.45, 3.68, cAngle)] }
     });
 
-    // (ঝ) মূল মসৃণ সিলভার-গ্রে মেটালিক ছাদ (Satin Silver Metallic Roof Cap)
+    // (ঝ) অফ-হোয়াইট / পার্ল হোয়াইট বাঁকানো ছাদ (Iconic Pure White Intercity Roof Cap)
     features.push({
       type: 'Feature',
-      properties: { color: '#cbd5e1', height: 4.82, base: 4.4 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.0, 3.15, cAngle)] }
+      properties: { color: '#f8fafc', height: 4.85, base: 4.25 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.4, 3.4, cAngle)] }
     });
 
-    // (ঞ) ছাদের ৩টি সেন্ট্রাল এসি পড ও গ্রিল (3 Rooftop AC Compressor Units per Coach)
+    // ছাদের সেন্ট্রাল মেটালিক কার্ভ
+    features.push({
+      type: 'Feature',
+      properties: { color: '#ffffff', height: 4.95, base: 4.65 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.1, 2.9, cAngle)] }
+    });
+
+    // (ঞ) ছাদের ৩টি সেন্ট্রাল এসি পড ও গ্রিল (3 Rooftop AC Units per Coach)
     const acOffsets = [5.0, 0.0, -5.0];
     for (let a = 0; a < acOffsets.length; a++) {
       const acD = coachD + acOffsets[a];
@@ -628,13 +673,13 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
       // এসি হাউজিং
       features.push({
         type: 'Feature',
-        properties: { color: '#e2e8f0', height: 5.12, base: 4.78 },
+        properties: { color: '#e2e8f0', height: 5.18, base: 4.85 },
         geometry: { type: 'Polygon', coordinates: [createBoxPolygon(acCenter[0], acCenter[1], 2.6, 2.0, acAngle)] }
       });
       // এসি টপ গ্রিল
       features.push({
         type: 'Feature',
-        properties: { color: '#475569', height: 5.22, base: 5.1 },
+        properties: { color: '#475569', height: 5.26, base: 5.15 },
         geometry: { type: 'Polygon', coordinates: [createBoxPolygon(acCenter[0], acCenter[1], 1.6, 1.4, acAngle)] }
       });
     }
