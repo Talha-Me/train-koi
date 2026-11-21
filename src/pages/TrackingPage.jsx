@@ -61,6 +61,36 @@ const ChevronUpIcon = () => (
   </svg>
 );
 
+const TrainFrontIcon = ({ size = 16, color = "#ffffff" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="3" width="16" height="16" rx="2" />
+    <path d="M4 11h16" />
+    <path d="M12 3v8" />
+    <path d="m8 19-2 3" />
+    <path d="m16 19 2 3" />
+    <circle cx="8" cy="15" r="1.2" fill={color} />
+    <circle cx="16" cy="15" r="1.2" fill={color} />
+  </svg>
+);
+
+const TrainBadge = ({ speed = 0, isMoving = true }) => (
+  <div style={{
+    position: 'relative',
+    width: '28px',
+    height: '28px',
+    borderRadius: '50%',
+    background: '#006a4e',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 0 0 4px rgba(0, 106, 78, 0.25), 0 4px 10px rgba(0, 0, 0, 0.25)',
+    zIndex: 6,
+    animation: isMoving ? 'pulseGlow 2s infinite' : 'none'
+  }}>
+    <TrainFrontIcon size={16} color="#ffffff" />
+  </div>
+);
+
 // =========================================================================
 // ২. সহজ বাংলা সংখ্যা ও সময়ের হেল্পার
 // =========================================================================
@@ -830,6 +860,11 @@ const TrackingPage = () => {
           70% { box-shadow: 0 0 0 10px rgba(0, 106, 78, 0); }
           100% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0); }
         }
+        @keyframes pulseGlow {
+          0% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.6), 0 4px 10px rgba(0, 0, 0, 0.25); }
+          70% { box-shadow: 0 0 0 8px rgba(0, 106, 78, 0), 0 4px 10px rgba(0, 0, 0, 0.25); }
+          100% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0), 0 4px 10px rgba(0, 0, 0, 0.25); }
+        }
         .clean-card {
           background: #ffffff;
           border-radius: 20px;
@@ -1339,34 +1374,61 @@ const TrackingPage = () => {
                 const hasIntermediate = intermediateList.length > 0;
                 const isIntermediateExpanded = expandedSegments[i] || false;
 
+                const curRatio = isCurrentSegment && activeState.segmentRatio !== undefined ? activeState.segmentRatio : 0;
+
+                // মধ্যবর্তী স্টেশনের মধ্য থেকে ট্রেনের সবচেয়ে কাছের স্টেশন খোঁজা
+                let closestImIdx = -1;
+                let minDiff = Infinity;
+                if (hasIntermediate && isCurrentSegment && activeState.isRunning) {
+                  intermediateList.forEach((im, idx) => {
+                    const diff = Math.abs(curRatio - im.ratio);
+                    if (diff < minDiff) {
+                      minDiff = diff;
+                      closestImIdx = idx;
+                    }
+                  });
+                }
+
+                // ট্রেনটি কি এই মূল স্টেশনে রয়েছে?
+                const isTrainAtThisStation = isCurrentSegment && activeState.isRunning && (
+                  activeState.isAtStation ||
+                  (!hasIntermediate && curRatio < 0.5) ||
+                  (hasIntermediate && curRatio < (intermediateList[0]?.ratio - 0.06))
+                );
+
                 return (
                   <div key={i}>
+                    {/* মূল স্টেশন রো */}
                     <div style={{ display: 'flex', gap: '16px', opacity: isPassed ? 0.65 : 1 }}>
-                      {/* উল্লম্ব টাইমলাইন লাইন ও ডট */}
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '28px' }}>
-                        <div style={{
-                          width: isCurrentSegment ? '20px' : '14px',
-                          height: isCurrentSegment ? '20px' : '14px',
-                          borderRadius: '50%',
-                          background: isCurrentSegment ? '#006a4e' : (isPassed ? '#006a4e' : '#cbd5e1'),
-                          border: isCurrentSegment ? '4px solid #bbf7d0' : '2px solid #ffffff',
-                          boxShadow: isCurrentSegment ? '0 0 12px rgba(0, 106, 78, 0.4)' : 'none',
-                          zIndex: 3,
-                          transition: 'all 0.3s'
-                        }}></div>
+                      {/* উল্লম্ব টাইমলাইন ট্র্যাক ও ডট/ট্রেন ব্যাজ (হুবহু 28px কলাম) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '28px', position: 'relative' }}>
+                        {isTrainAtThisStation ? (
+                          <TrainBadge speed={activeState.speed} isMoving={activeState.speed > 0} />
+                        ) : (
+                          <div style={{
+                            width: isCurrentSegment ? '20px' : '14px',
+                            height: isCurrentSegment ? '20px' : '14px',
+                            borderRadius: '50%',
+                            background: isCurrentSegment ? '#006a4e' : (isPassed ? '#006a4e' : '#cbd5e1'),
+                            border: isCurrentSegment ? '4px solid #bbf7d0' : '2px solid #ffffff',
+                            boxShadow: isCurrentSegment ? '0 0 12px rgba(0, 106, 78, 0.4)' : 'none',
+                            zIndex: 3,
+                            transition: 'all 0.3s'
+                          }}></div>
+                        )}
 
                         {i < scheduleData.length - 1 && (
                           <div style={{
                             width: '3px',
                             flex: 1,
-                            background: isPassed ? '#006a4e' : (isCurrentSegment ? 'linear-gradient(to bottom, #006a4e, #cbd5e1)' : '#e2e8f0'),
-                            minHeight: '65px'
+                            background: isPassed ? '#006a4e' : (isCurrentSegment ? '#006a4e' : '#e2e8f0'),
+                            minHeight: hasIntermediate && (isCurrentSegment || isIntermediateExpanded) ? '16px' : '65px'
                           }}></div>
                         )}
                       </div>
 
                       {/* স্টেশনের বিস্তারিত তথ্য */}
-                      <div style={{ flex: 1, paddingBottom: '20px' }}>
+                      <div style={{ flex: 1, paddingBottom: hasIntermediate && (isCurrentSegment || isIntermediateExpanded) ? '12px' : '20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1415,7 +1477,7 @@ const TrackingPage = () => {
                             )}
 
                             {/* স্টেশনে দাঁড়িয়ে থাকলে নোটিফিকেশন */}
-                            {isCurrentSegment && activeState.isAtStation && (
+                            {isTrainAtThisStation && activeState.isAtStation && (
                               <div style={{
                                 marginTop: '8px',
                                 background: '#f0fdf4',
@@ -1471,137 +1533,104 @@ const TrackingPage = () => {
                       </div>
                     </div>
 
-                    {/* চলমান ট্রেনের লাইভ স্ট্যাটাস স্ট্রিপ */}
-                    {isCurrentSegment && activeState.isRunning && (
-                      <div style={{
-                        margin: '-6px 0 16px 28px',
-                        background: '#ecfdf5',
-                        border: '1.5px solid #a7f3d0',
-                        borderRadius: '14px',
-                        padding: '12px 16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '10px'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#006a4e', animation: 'rippleDot 1.5s infinite' }}></span>
-                          <span style={{ fontSize: '15px', fontWeight: '800', color: '#065f46' }}>
-                            ট্রেনটি এখন এই পথে চলছে
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '14px', color: '#047857', fontWeight: '700' }}>
-                          গতি: {toBn(activeState.speed)} কিমি/ঘণ্টা • বাকি: {toBn(stats?.distNext)} কিমি
-                        </div>
-                      </div>
-                    )}
-
-                    {/* মধ্যবর্তী ক্রসিং/নন-স্টপ স্টেশনসমূহ (অ্যাক্টিভ সেগমেন্টে অটো ওপেন, অন্য সেগমেন্টে প্রয়োজনমতো টগল) */}
+                    {/* মধ্যবর্তী ক্রসিং/নন-স্টপ স্টেশনসমূহ (মূল 28px ট্র্যাকের সাথে নিখুঁতভাবে অ্যালাইনড) */}
                     {hasIntermediate && (isCurrentSegment || isIntermediateExpanded) && (
                       <div style={{
-                        marginLeft: '36px',
-                        marginRight: '8px',
-                        marginBottom: '20px',
+                        position: 'relative',
+                        margin: '0 0 16px 0',
                         background: '#1e293b',
-                        borderRadius: '14px',
-                        padding: '16px 18px',
-                        color: '#ffffff',
-                        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.16)',
+                        borderRadius: '16px',
+                        padding: '12px 14px 12px 0',
+                        boxShadow: '0 6px 20px rgba(15, 23, 42, 0.12)',
                         border: '1px solid #334155'
                       }}>
+                        {/* হেডার */}
                         <div style={{
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          marginBottom: '14px',
+                          paddingLeft: '44px',
+                          paddingRight: '8px',
                           paddingBottom: '10px',
+                          marginBottom: '8px',
                           borderBottom: '1px solid #334155'
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isCurrentSegment ? '#22c55e' : '#94a3b8', animation: isCurrentSegment ? 'rippleDot 1.5s infinite' : 'none' }}></span>
                             <span style={{ fontSize: '13px', fontWeight: '800', color: isCurrentSegment ? '#38bdf8' : '#e2e8f0' }}>
-                              মাঝের ক্রসিং/নন-স্টপ স্টেশন ({toBn(intermediateList.length)}টি)
+                              মাঝের ক্রসিং ও নন-স্টপ স্টেশনসমূহ ({toBn(intermediateList.length)}টি)
                             </span>
                           </div>
                           <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>
-                            {isCurrentSegment && activeState.isRunning
-                              ? (activeState.speed > 0 ? `গতি ${toBn(activeState.speed)} কিমি/ঘ` : 'দাঁড়িয়ে আছে')
-                              : (isPassed ? 'অতিক্রান্ত' : 'আসন্ন')}
+                            {isCurrentSegment && activeState.isRunning ? `গতি ${toBn(activeState.speed)} কিমি/ঘ` : ''}
                           </div>
                         </div>
 
-                        <div style={{ position: 'relative', paddingLeft: '16px' }}>
-                          {/* উল্লম্ব রেল ট্র্যাক বার */}
-                          <div style={{
-                            position: 'absolute',
-                            left: '5px',
-                            top: '6px',
-                            bottom: '6px',
-                            width: '2px',
-                            background: '#475569'
-                          }}></div>
+                        {/* প্রতিটি মধ্যবর্তী স্টেশন রো (মূল 28px কলামের সাথে হুবহু অ্যালাইনড) */}
+                        {intermediateList.map((im, imIdx) => {
+                          const segDepMin = st.depMin !== null ? st.depMin : st.effectiveMin;
+                          const nextArrMin = scheduleData[i + 1]?.arrMin !== null ? scheduleData[i + 1].arrMin : scheduleData[i + 1]?.effectiveMin;
+                          let approxPassMin = null;
+                          if (segDepMin !== null && nextArrMin !== null) {
+                            approxPassMin = Math.round(segDepMin + im.ratio * (nextArrMin - segDepMin)) + delay;
+                          }
+                          const approxTimeStr = approxPassMin !== null ? formatMinutesToBanglaTime(approxPassMin) : '--:--';
 
-                          {intermediateList.map((im, imIdx) => {
-                            const segDepMin = st.depMin !== null ? st.depMin : st.effectiveMin;
-                            const nextArrMin = scheduleData[i + 1]?.arrMin !== null ? scheduleData[i + 1].arrMin : scheduleData[i + 1]?.effectiveMin;
-                            let approxPassMin = null;
-                            if (segDepMin !== null && nextArrMin !== null) {
-                              approxPassMin = Math.round(segDepMin + im.ratio * (nextArrMin - segDepMin)) + delay;
-                            }
-                            const approxTimeStr = approxPassMin !== null ? formatMinutesToBanglaTime(approxPassMin) : '--:--';
+                          const isTrainHere = isCurrentSegment && activeState.isRunning && !isTrainAtThisStation && (imIdx === closestImIdx);
+                          const isImPassed = isPassed || (isCurrentSegment && curRatio > (im.ratio + 0.04));
 
-                            const curRatio = isCurrentSegment ? (activeState.segmentRatio || 0) : (isPassed ? 1 : 0);
-                            const isImPassed = isPassed || curRatio > (im.ratio + 0.03);
-                            const isImCurrent = isCurrentSegment && Math.abs(curRatio - im.ratio) <= 0.04;
-
-                            return (
-                              <div
-                                key={imIdx}
-                                style={{
-                                  position: 'relative',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  padding: '7px 0',
-                                  opacity: isImPassed && !isImCurrent ? 0.6 : 1,
-                                  transition: 'all 0.3s'
-                                }}
-                              >
-                                {/* নোড ডট */}
+                          return (
+                            <div key={imIdx} style={{ display: 'flex', gap: '16px', minHeight: '46px', alignItems: 'center' }}>
+                              {/* উল্লম্ব টাইমলাইন ট্র্যাক ও ডট/ট্রেন ব্যাজ (হুবহু মূল লাইনের সাথে এক লাইনে) */}
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '28px', position: 'relative', height: '100%', minHeight: '46px' }}>
+                                {/* ট্র্যাক লাইন */}
                                 <div style={{
                                   position: 'absolute',
-                                  left: '-16px',
-                                  width: isImCurrent ? '14px' : '8px',
-                                  height: isImCurrent ? '14px' : '8px',
-                                  borderRadius: '50%',
-                                  background: isImCurrent ? '#22c55e' : (isImPassed ? '#10b981' : '#cbd5e1'),
-                                  border: isImCurrent ? '3px solid #bbf7d0' : 'none',
-                                  boxShadow: isImCurrent ? '0 0 10px #22c55e' : 'none',
-                                  transform: isImCurrent ? 'translate(-3px, 0)' : 'none',
-                                  zIndex: 2,
-                                  transition: 'all 0.3s'
+                                  top: 0,
+                                  bottom: 0,
+                                  width: '3px',
+                                  background: isImPassed ? '#10b981' : '#475569'
                                 }}></div>
 
+                                {/* নোড অথবা লাইভ ট্রেন ব্যাজ */}
+                                <div style={{ margin: 'auto 0', zIndex: 4 }}>
+                                  {isTrainHere ? (
+                                    <TrainBadge speed={activeState.speed} isMoving={activeState.speed > 0} />
+                                  ) : (
+                                    <div style={{
+                                      width: '10px',
+                                      height: '10px',
+                                      borderRadius: '50%',
+                                      background: isImPassed ? '#10b981' : '#cbd5e1',
+                                      border: '2px solid #1e293b',
+                                      boxShadow: isImPassed ? '0 0 6px #10b981' : 'none',
+                                      transition: 'all 0.3s'
+                                    }}></div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* স্টেশনের নাম ও কিলোমিটার (বড় স্টেশনের সাথে একই মার্জিন ও অ্যালাইনমেন্ট) */}
+                              <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: '8px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                   <span style={{
-                                    fontWeight: isImCurrent ? '800' : '700',
                                     fontSize: '14px',
-                                    color: isImCurrent ? '#4ade80' : '#f8fafc'
+                                    fontWeight: isTrainHere ? '800' : '700',
+                                    color: isTrainHere ? '#4ade80' : (isImPassed ? '#94a3b8' : '#f8fafc')
                                   }}>
                                     {im.nameBn}
                                   </span>
-                                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                                    {toBn(im.approxKm)} কিমি
+                                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                                    • {toBn(im.approxKm)} কিমি
                                   </span>
-                                  {isImCurrent && (
+                                  {isTrainHere && (
                                     <span style={{
                                       fontSize: '11px',
-                                      background: 'rgba(34, 197, 94, 0.2)',
+                                      background: 'rgba(34, 197, 94, 0.25)',
                                       color: '#4ade80',
-                                      padding: '2px 6px',
-                                      borderRadius: '4px',
-                                      fontWeight: '700',
+                                      padding: '2px 8px',
+                                      borderRadius: '6px',
+                                      fontWeight: '800',
                                       border: '1px solid rgba(34, 197, 94, 0.4)'
                                     }}>
                                       এখন অতিক্রম করছে
@@ -1609,19 +1638,20 @@ const TrackingPage = () => {
                                   )}
                                 </div>
 
-                                <div style={{ fontSize: '13px', color: isImCurrent ? '#38bdf8' : '#94a3b8', fontWeight: '700' }}>
+                                {/* ডানপাশে আনুমানিক অতিক্রমের সময় */}
+                                <div style={{ fontSize: '13px', color: isTrainHere ? '#38bdf8' : '#94a3b8', fontWeight: '700', paddingRight: '12px' }}>
                                   ≈ {approxTimeStr}
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
                     {/* মধ্যবর্তী স্টেশন টগল বাটন (শুধুমাত্র যখন সেগমেন্টটি নন-অ্যাক্টিভ কিন্তু ইউজার দেখতে চায়) */}
                     {hasIntermediate && !isCurrentSegment && (
-                      <div style={{ marginLeft: '36px', marginBottom: '14px' }}>
+                      <div style={{ marginLeft: '44px', marginBottom: '14px' }}>
                         <button
                           onClick={() => setExpandedSegments((prev) => ({ ...prev, [i]: !isIntermediateExpanded }))}
                           style={{
