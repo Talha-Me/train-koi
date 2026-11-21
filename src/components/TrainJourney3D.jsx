@@ -1135,6 +1135,35 @@ export default function TrainJourney3D({
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.5; transform: scale(1.3); }
         }
+        /* লাইভ মোড: ডুয়াল রাডার রিং + গ্লোয়িং বীকন */
+        @keyframes liveRadarPing {
+          0% { transform: scale(0.9); opacity: 0.9; }
+          50% { transform: scale(2.2); opacity: 0.35; }
+          100% { transform: scale(3.2); opacity: 0; }
+        }
+        @keyframes liveBeaconGlow {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 6px #10b981, 0 0 14px rgba(16, 185, 129, 0.6); }
+          50% { transform: scale(1.18); box-shadow: 0 0 10px #10b981, 0 0 22px rgba(16, 185, 129, 0.9); }
+        }
+        /* প্রেডিকশন মোড: ব্রিদিং অ্যাম্বার পালস */
+        @keyframes predictedBreathe {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 6px #f59e0b, 0 0 12px rgba(245, 158, 11, 0.5); }
+          50% { transform: scale(1.15); box-shadow: 0 0 12px #f59e0b, 0 0 20px rgba(245, 158, 11, 0.85); }
+        }
+        @keyframes predictedRing {
+          0% { transform: scale(0.9); opacity: 0.8; }
+          60% { transform: scale(2.2); opacity: 0.25; }
+          100% { transform: scale(2.8); opacity: 0; }
+        }
+        /* শিডিউল মোড: ক্লক-টিক স্টেডি ব্লু পালস */
+        @keyframes scheduleClockPulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 5px #0284c7; }
+          50% { transform: scale(1.12); box-shadow: 0 0 10px #0284c7, 0 0 18px rgba(2, 132, 199, 0.6); }
+        }
+        @keyframes scheduleRing {
+          0% { transform: scale(0.9); opacity: 0.7; }
+          100% { transform: scale(2.4); opacity: 0; }
+        }
         .btn-press:active {
           transform: scale(0.94);
           transition: transform 0.1s ease;
@@ -1436,8 +1465,9 @@ export default function TrainJourney3D({
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                flexWrap: 'wrap',
                 gap: '8px',
-                marginTop: '4px',
+                marginTop: '5px',
                 fontSize: '12px',
                 fontWeight: '700'
               }}
@@ -1453,22 +1483,74 @@ export default function TrainJourney3D({
                     ? `${toBangla(activeState.delay)} মিনিট বিলম্বে`
                     : 'সঠিক সময়ে (অন টাইম)')}
               </span>
+
               <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ color: '#006a4e', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span
-                  style={{
-                    width: '7px',
-                    height: '7px',
-                    borderRadius: '50%',
-                    background: '#059669',
-                    display: 'inline-block',
-                    animation: 'liveGlow 1.8s infinite ease-in-out'
-                  }}
-                ></span>
-                লাইভ
-              </span>
-              <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ color: '#64748b' }}>১ মি আগে</span>
+
+              {/* ৩ স্তরের ডাইনামিক ট্র্যাকিং মোড ব্যাজ (LIVE / PREDICTED / SCHEDULED) */}
+              {(() => {
+                const mode = activeState?.mode || 'LIVE';
+                const isLive = mode === 'LIVE';
+                const isPredicted = mode === 'PREDICTED';
+
+                const badgeBg = isLive ? '#ecfdf5' : (isPredicted ? '#fffbeb' : '#f0f9ff');
+                const badgeBorder = isLive ? '#a7f3d0' : (isPredicted ? '#fde68a' : '#bae6fd');
+                const badgeColor = isLive ? '#065f46' : (isPredicted ? '#92400e' : '#0369a1');
+                const dotColor = isLive ? '#10b981' : (isPredicted ? '#f59e0b' : '#0284c7');
+                const coreAnim = isLive ? 'liveBeaconGlow 1.4s infinite ease-in-out' : (isPredicted ? 'predictedBreathe 2s infinite ease-in-out' : 'scheduleClockPulse 2.4s infinite ease-in-out');
+                const ringAnim = isLive ? 'liveRadarPing 1.4s infinite ease-out' : (isPredicted ? 'predictedRing 2s infinite ease-out' : 'scheduleRing 2.4s infinite ease-out');
+                const label = isLive ? 'লাইভ মোড' : (isPredicted ? 'প্রেডিকশন মোড' : 'শিডিউল মোড');
+
+                return (
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: badgeBg,
+                      border: `1px solid ${badgeBorder}`,
+                      color: badgeColor,
+                      padding: '2px 8px',
+                      borderRadius: '16px',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      boxShadow: isLive ? '0 1px 6px rgba(16, 185, 129, 0.25)' : 'none'
+                    }}
+                  >
+                    <span style={{ position: 'relative', width: '8px', height: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span
+                        style={{
+                          position: 'absolute',
+                          width: '7px',
+                          height: '7px',
+                          borderRadius: '50%',
+                          background: dotColor,
+                          animation: ringAnim
+                        }}
+                      />
+                      <span
+                        style={{
+                          position: 'relative',
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          background: dotColor,
+                          animation: coreAnim
+                        }}
+                      />
+                    </span>
+                    {label}
+                  </span>
+                );
+              })()}
+
+              {activeState?.lastSeen !== null && activeState?.lastSeen !== undefined && (
+                <>
+                  <span style={{ color: '#cbd5e1' }}>•</span>
+                  <span style={{ color: '#64748b' }}>
+                    {activeState.lastSeen === 0 ? 'এইমাত্র আপডেট' : `${toBangla(activeState.lastSeen)} মি আগে`}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 

@@ -863,6 +863,35 @@ const TrackingPage = () => {
           50% { transform: scale(1.6); opacity: 0.3; }
           100% { transform: scale(2.2); opacity: 0; }
         }
+        /* লাইভ মোড: ডুয়াল রাডার রিং + গ্লোয়িং বীকন */
+        @keyframes liveRadarPing {
+          0% { transform: scale(0.9); opacity: 0.9; }
+          50% { transform: scale(2.2); opacity: 0.35; }
+          100% { transform: scale(3.2); opacity: 0; }
+        }
+        @keyframes liveBeaconGlow {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 6px #10b981, 0 0 14px rgba(16, 185, 129, 0.6); }
+          50% { transform: scale(1.18); box-shadow: 0 0 10px #10b981, 0 0 22px rgba(16, 185, 129, 0.9); }
+        }
+        /* প্রেডিকশন মোড: ব্রিদিং অ্যাম্বার পালস */
+        @keyframes predictedBreathe {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 6px #f59e0b, 0 0 12px rgba(245, 158, 11, 0.5); }
+          50% { transform: scale(1.15); box-shadow: 0 0 12px #f59e0b, 0 0 20px rgba(245, 158, 11, 0.85); }
+        }
+        @keyframes predictedRing {
+          0% { transform: scale(0.9); opacity: 0.8; }
+          60% { transform: scale(2.2); opacity: 0.25; }
+          100% { transform: scale(2.8); opacity: 0; }
+        }
+        /* শিডিউল মোড: ক্লক-টিক স্টেডি ব্লু পালস */
+        @keyframes scheduleClockPulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 5px #0284c7; }
+          50% { transform: scale(1.12); box-shadow: 0 0 10px #0284c7, 0 0 18px rgba(2, 132, 199, 0.6); }
+        }
+        @keyframes scheduleRing {
+          0% { transform: scale(0.9); opacity: 0.7; }
+          100% { transform: scale(2.4); opacity: 0; }
+        }
         @keyframes rippleDot {
           0% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.5); }
           70% { box-shadow: 0 0 0 10px rgba(0, 106, 78, 0); }
@@ -1057,22 +1086,26 @@ const TrackingPage = () => {
               );
             })}
 
-            {/* লাইভ ট্রেন পজিশন মার্কার (পালসিং অ্যানিমেশন সহ) */}
-            {activeState.isRunning && (
-              <Marker
-                position={[activeState.lat, activeState.lng]}
-                icon={L.divIcon({
-                  html: `
-                    <div style="position: relative; width: 24px; height: 24px;">
-                      <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(0, 106, 78, 0.4); animation: livePulse 2s infinite ease-out;"></div>
-                      <div style="width: 24px; height: 24px; background: #006a4e; border: 3.5px solid #ffffff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.35);"></div>
-                    </div>
-                  `,
-                  iconSize: [24, 24],
-                  iconAnchor: [12, 12]
-                })}
-              />
-            )}
+            {/* লাইভ ট্রেন পজিশন মার্কার (মোড ভিত্তিক পালসিং অ্যানিমেশন সহ) */}
+            {activeState.isRunning && (() => {
+              const markerBg = activeState.mode === 'LIVE' ? '#10b981' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#0284c7');
+              const pulseBg = activeState.mode === 'LIVE' ? 'rgba(16, 185, 129, 0.45)' : (activeState.mode === 'PREDICTED' ? 'rgba(245, 158, 11, 0.45)' : 'rgba(2, 132, 199, 0.45)');
+              return (
+                <Marker
+                  position={[activeState.lat, activeState.lng]}
+                  icon={L.divIcon({
+                    html: `
+                      <div style="position: relative; width: 24px; height: 24px;">
+                        <div style="position: absolute; inset: -10px; border-radius: 50%; background: ${pulseBg}; animation: livePulse 2s infinite ease-out;"></div>
+                        <div style="width: 24px; height: 24px; background: ${markerBg}; border: 3.5px solid #ffffff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.35);"></div>
+                      </div>
+                    `,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                  })}
+                />
+              );
+            })()}
           </MapContainer>
         </div>
 
@@ -1083,31 +1116,111 @@ const TrackingPage = () => {
           <div className="clean-card" style={{ padding: '24px 22px', marginBottom: '18px', borderTop: '5px solid #006a4e' }}>
             
             {/* স্ট্যাটাস ও লেট ব্যাজ */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: activeState.mode === 'LIVE' ? '#dcfce7' : (activeState.mode === 'PREDICTED' ? '#fef3c7' : '#e0f2fe'),
-                  color: activeState.mode === 'LIVE' ? '#166534' : (activeState.mode === 'PREDICTED' ? '#92400e' : '#075985'),
-                  padding: '5px 12px',
-                  borderRadius: '20px',
-                  fontSize: '13px',
-                  fontWeight: '800'
-                }}>
-                  <span style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: activeState.mode === 'LIVE' ? '#16a34a' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#0284c7'),
-                    boxShadow: '0 0 6px currentColor'
-                  }}></span>
-                  {activeState.mode === 'LIVE' ? 'লাইভ মোড (LIVE)' : (activeState.mode === 'PREDICTED' ? 'প্রেডিকশন মোড (PREDICTED)' : 'শিডিউল মোড (SCHEDULED)')}
-                </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                {/* ৩ স্তরের ট্র্যাকিং মোড ব্যাজ (LIVE / PREDICTED / SCHEDULED) */}
+                {(() => {
+                  const mode = activeState.mode;
+                  const isLive = mode === 'LIVE';
+                  const isPredicted = mode === 'PREDICTED';
+
+                  const badgeConfig = isLive ? {
+                    title: 'লাইভ মোড (LIVE)',
+                    sub: 'রিয়েল-টাইম জিপিএস',
+                    bg: '#ecfdf5',
+                    border: '#a7f3d0',
+                    color: '#065f46',
+                    dot: '#10b981',
+                    coreAnim: 'liveBeaconGlow 1.4s infinite ease-in-out',
+                    ringAnim: 'liveRadarPing 1.4s infinite ease-out',
+                    shadow: '0 2px 10px rgba(16, 185, 129, 0.22)'
+                  } : isPredicted ? {
+                    title: 'প্রেডিকশন মোড (PREDICTED)',
+                    sub: 'সম্ভাব্য হিসাব',
+                    bg: '#fffbeb',
+                    border: '#fde68a',
+                    color: '#92400e',
+                    dot: '#f59e0b',
+                    coreAnim: 'predictedBreathe 2s infinite ease-in-out',
+                    ringAnim: 'predictedRing 2s infinite ease-out',
+                    shadow: '0 2px 10px rgba(245, 158, 11, 0.22)'
+                  } : {
+                    title: 'শিডিউল মোড (SCHEDULED)',
+                    sub: 'অফিসিয়াল সময়সূচী',
+                    bg: '#f0f9ff',
+                    border: '#bae6fd',
+                    color: '#0369a1',
+                    dot: '#0284c7',
+                    coreAnim: 'scheduleClockPulse 2.4s infinite ease-in-out',
+                    ringAnim: 'scheduleRing 2.4s infinite ease-out',
+                    shadow: '0 2px 10px rgba(2, 132, 199, 0.22)'
+                  };
+
+                  return (
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: badgeConfig.bg,
+                      border: `1.5px solid ${badgeConfig.border}`,
+                      color: badgeConfig.color,
+                      padding: '6px 14px',
+                      borderRadius: '24px',
+                      fontSize: '13px',
+                      fontWeight: '800',
+                      boxShadow: badgeConfig.shadow,
+                      transition: 'all 0.3s ease'
+                    }}>
+                      {/* ডুয়াল পালসিং রাডার ডট */}
+                      <div style={{ position: 'relative', width: '12px', height: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{
+                          position: 'absolute',
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: '50%',
+                          background: badgeConfig.dot,
+                          animation: badgeConfig.ringAnim,
+                          pointerEvents: 'none'
+                        }} />
+                        <span style={{
+                          position: 'relative',
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: badgeConfig.dot,
+                          animation: badgeConfig.coreAnim
+                        }} />
+                      </div>
+
+                      {/* মোড আইকন */}
+                      {isLive ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+                          <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
+                          <circle cx="12" cy="12" r="2" fill="currentColor" />
+                          <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
+                          <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1" />
+                        </svg>
+                      ) : isPredicted ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" />
+                          <line x1="8" y1="2" x2="8" y2="6" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                      )}
+
+                      <span>{badgeConfig.title}</span>
+                    </div>
+                  );
+                })()}
 
                 {activeState.lastSeen !== null && activeState.lastSeen !== undefined && (
-                  <span style={{ fontSize: '13px', color: '#64748b' }}>
+                  <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>
                     • {activeState.lastSeen === 0 ? 'এইমাত্র আপডেট' : `${toBn(activeState.lastSeen)} মিনিট আগে`}
                   </span>
                 )}
@@ -1128,26 +1241,101 @@ const TrackingPage = () => {
             </div>
 
             {/* ৩ স্তরের ট্র্যাকিং মোড নোটিফিকেশন বার */}
-            <div style={{
-              padding: '10px 14px',
-              borderRadius: '12px',
-              marginBottom: '14px',
-              fontSize: '13px',
-              lineHeight: '1.5',
-              background: activeState.mode === 'LIVE' ? '#f0fdf4' : (activeState.mode === 'PREDICTED' ? '#fffbeb' : '#f0f9ff'),
-              borderLeft: `4px solid ${activeState.mode === 'LIVE' ? '#16a34a' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#0284c7')}`,
-              color: activeState.mode === 'LIVE' ? '#166534' : (activeState.mode === 'PREDICTED' ? '#92400e' : '#0369a1')
-            }}>
-              {activeState.mode === 'LIVE' && (
-                <span>✓ এই ট্রেনটির <b>লাইভ জিপিএস লোকেশন</b> সচল রয়েছে। সহযাত্রী বা ট্র্যাকার থেকে সরাসরি ডেটা আসছে।</span>
-              )}
-              {activeState.mode === 'PREDICTED' && (
-                <span>⚠️ ট্রেনটির লাইভ লোকেশন কিছুক্ষণ আগে আপডেট করা হয়েছিল, তাই গতি ও সময় মিলিয়ে <b>সম্ভাব্য প্রেডিকশন</b> করে অবস্থান দেখানো হচ্ছে।</span>
-              )}
-              {activeState.mode === 'SCHEDULED' && (
-                <span>📅 ট্রেনটির কোনো সাম্প্রতিক লাইভ জিপিএস পাওয়া যায়নি, তাই বাংলাদেশ রেলওয়ের <b>অফিশিয়াল সময়সূচী (Schedule Mode)</b> অনুযায়ী সম্ভাব্য অবস্থান দেখানো হচ্ছে।</span>
-              )}
-            </div>
+            {(() => {
+              const mode = activeState.mode;
+              const isLive = mode === 'LIVE';
+              const isPredicted = mode === 'PREDICTED';
+
+              const boxStyle = isLive ? {
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+                border: '1px solid #a7f3d0',
+                borderLeft: '5px solid #10b981',
+                color: '#065f46',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.08)'
+              } : isPredicted ? {
+                background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                border: '1px solid #fde68a',
+                borderLeft: '5px solid #f59e0b',
+                color: '#92400e',
+                boxShadow: '0 2px 8px rgba(245, 158, 11, 0.08)'
+              } : {
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+                border: '1px solid #bae6fd',
+                borderLeft: '5px solid #0284c7',
+                color: '#0369a1',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.08)'
+              };
+
+              return (
+                <div style={{
+                  padding: '12px 16px',
+                  borderRadius: '14px',
+                  marginBottom: '16px',
+                  fontSize: '13.5px',
+                  lineHeight: '1.6',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  ...boxStyle
+                }}>
+                  <div style={{ marginTop: '2px', flexShrink: 0 }}>
+                    {isLive && (
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: '#10b981',
+                        color: '#ffffff',
+                        fontSize: '11px',
+                        fontWeight: '900'
+                      }}>✓</span>
+                    )}
+                    {isPredicted && (
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: '#f59e0b',
+                        color: '#ffffff',
+                        fontSize: '11px',
+                        fontWeight: '900'
+                      }}>⚡</span>
+                    )}
+                    {!isLive && !isPredicted && (
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        background: '#0284c7',
+                        color: '#ffffff',
+                        fontSize: '11px',
+                        fontWeight: '900'
+                      }}>📅</span>
+                    )}
+                  </div>
+                  <div>
+                    {isLive && (
+                      <span>এই ট্রেনটির <b>সরাসরি লাইভ জিপিএস (Live GPS)</b> লোকেশন সচল রয়েছে। সহযাত্রী বা ট্র্যাকার থেকে প্রতি মুহূর্তে আসল লোকেশন আপডেট হচ্ছে।</span>
+                    )}
+                    {isPredicted && (
+                      <span>ট্রেনটির লাইভ লোকেশন কিছুক্ষণ আগে আপডেট হয়েছিল। বর্তমান গতিবেগ ও অতিবাহিত সময় মিলিয়ে <b>স্মার্ট প্রেডিকশন (Predicted Mode)</b> দ্বারা সম্ভাব্য অবস্থান হিসাব করা হচ্ছে।</span>
+                    )}
+                    {!isLive && !isPredicted && (
+                      <span>ট্রেনটির সাম্প্রতিক কোনো লাইভ জিপিএস পাওয়া যায়নি, তাই বাংলাদেশ রেলওয়ের <b>অফিশিয়াল সময়সূচী (Schedule Mode)</b> অনুযায়ী সম্ভাব্য অবস্থান দেখানো হচ্ছে।</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* পরবর্তী স্টেশন বড় হেডিং */}
             <div style={{ marginBottom: '14px' }}>
