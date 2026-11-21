@@ -191,21 +191,12 @@ const Navbar = ({ activePage }) => {
       <header className="tk-navbar-desktop">
         <div className="tk-nav-container">
           {/* Logo */}
-          <Link to="/" className="tk-nav-brand" title="TrainKoi - হোম">
-            <div style={{ 
-              background: '#ffffff', 
-              padding: '5px 12px', 
-              borderRadius: '10px', 
-              display: 'flex', 
-              alignItems: 'center',
-              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
-            }}>
-              <img 
-                src="/trainkoi-logo.png" 
-                alt="TrainKoi" 
-                style={{ height: '36px', width: 'auto', display: 'block', objectFit: 'contain' }} 
-              />
-            </div>
+          <Link to="/" className="tk-nav-brand" title="TrainKoi - হোম" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <img 
+              src="/trainkoi-logo-dark.png" 
+              alt="TrainKoi" 
+              style={{ height: '44px', width: 'auto', display: 'block', objectFit: 'contain' }} 
+            />
           </Link>
 
           {/* Navigation Links */}
