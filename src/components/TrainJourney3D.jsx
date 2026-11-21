@@ -821,8 +821,10 @@ export default function TrainJourney3D({
   // লাইভ স্পিড, জিপিএস ও সময়সূচী অবস্থা
   const rawLat = activeState?.lat || 24.5826;
   const rawLng = activeState?.lng || 90.3947;
-  const isAtStation = Boolean(activeState?.isAtStation);
-  const speed = isAtStation ? 0 : Math.round(activeState?.speed || 48); // বাস্তব কিমি/ঘণ্টা
+  const isRunning = activeState?.isRunning !== false;
+  const isAtStation = Boolean(activeState?.isAtStation) || !isRunning;
+  const rawSpeed = typeof activeState?.speed === 'number' ? activeState.speed : 48;
+  const speed = (!isRunning || isAtStation) ? 0 : Math.round(rawSpeed); // বাস্তব কিমি/ঘণ্টা
   const currentIdx = activeState?.segmentIndex ?? 0;
   const segmentRatio = typeof activeState?.segmentRatio === 'number' ? Math.max(0, Math.min(1, activeState.segmentRatio)) : 0;
 
@@ -844,11 +846,11 @@ export default function TrainJourney3D({
     const startM = stationDistances[segIdx] || 0;
     const endM = stationDistances[segIdx + 1] || (startM + 25000);
 
-    if (isAtStation) {
+    if (isAtStation || !isRunning) {
       return Math.max(220, startM);
     }
     return Math.max(220, startM + segmentRatio * (endM - startM));
-  }, [stationDistances, currentIdx, isAtStation, segmentRatio]);
+  }, [stationDistances, currentIdx, isAtStation, isRunning, segmentRatio]);
 
   // রিয়েলটাইম ডিস্ট্যান্স স্টেট (Dead-reckoning)
   const trainDistRef = useRef(targetDist);
@@ -1217,8 +1219,8 @@ export default function TrainJourney3D({
       const segIdx = Math.max(0, Math.min(stationDistances.length - 2, currentIdx));
       const endM = stationDistances[segIdx + 1] || totalDist;
 
-      if (isAtStation || speed === 0) {
-        // ট্রেন স্টেশনে থেমে আছে - কোনো অনাকাঙ্ক্ষিত নড়াচড়া হবে না
+      if (!isRunning || isAtStation || speed === 0) {
+        // ট্রেন স্টেশনে থেমে আছে বা অফলাইন - কোনো কৃত্রিম নড়াচড়া হবে না
         trainDistRef.current = stationDistances[segIdx] || trainDistRef.current;
       } else {
         // বাস্তব পদার্থবিজ্ঞান অনুযায়ী মিটার দূরত্ব অতিক্রম
@@ -1678,9 +1680,11 @@ export default function TrainJourney3D({
                   color: isAtStation ? '#059669' : (activeState?.delay > 5 ? '#dc2626' : '#006a4e')
                 }}
               >
-                {isAtStation
-                  ? 'স্টেশনে যাত্রা বিরতি'
-                  : formatDelayBangla(activeState?.delay)}
+                {!isRunning
+                  ? 'যাত্রার সময় হয়নি'
+                  : isAtStation
+                    ? 'স্টেশনে যাত্রা বিরতি'
+                    : formatDelayBangla(activeState?.delay)}
               </span>
 
               <span style={{ color: '#cbd5e1' }}>•</span>
