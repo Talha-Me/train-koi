@@ -5,6 +5,7 @@ import {
   ArrowUpRight, SearchX, ArrowLeft, ListOrdered
 } from 'lucide-react';
 import Navbar from './components/Navbar';
+import { newsData as staticNews } from '../data/newsData';
 
 /* =====================================================================
    ADSENSE SETTINGS
@@ -222,12 +223,16 @@ const NewsDetail = () => {
       if (!found || !found.title) {
         found = list.find((n) => n.slug === key || n._id === key) || null;
       }
+      if (!found || !found.title) {
+        found = staticNews.find((n) => n.slug === key || n._id === key) || null;
+      }
 
       if (cancelled) return;
       setNews(found);
       if (found) {
         const currentId = found._id || found.slug;
-        setRelated(list.filter((n) => (n._id || n.slug) !== currentId).slice(0, 4));
+        const allCandidates = list.length > 0 ? list : staticNews;
+        setRelated(allCandidates.filter((n) => (n._id || n.slug) !== currentId).slice(0, 4));
       } else {
         setRelated([]);
       }

@@ -5,6 +5,7 @@ import {
   Radio, Check, WifiOff, Search, ArrowUpRight, X
 } from 'lucide-react';
 import Navbar from './components/Navbar';
+import { newsData as staticNews } from '../data/newsData';
 
 const PAGE_SIZE = 12;
 

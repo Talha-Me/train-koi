@@ -6469,6 +6469,11 @@ app.get('/sitemap.xml', async (req, res) => {
   { loc: '/metro/fare', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
   { loc: '/metro/map', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
   { loc: '/metro/rules', lastmod: '2026-03-01', changefreq: 'daily', priority: '0.9' },
+  { loc: '/blog/bangladesh-railway-online-ticket-booking-guide-2026', lastmod: '2026-11-21', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/blog/dhaka-to-coxs-bazar-train-journey-guide-schedule-fare', lastmod: '2026-11-21', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/news/bangladesh-railway-new-schedule-and-safety-circular-2026', lastmod: '2026-11-21', changefreq: 'daily', priority: '0.9' },
+  { loc: '/news/dhaka-metro-rail-mrt-line-6-motijheel-to-kamalapur-update-2026', lastmod: '2026-11-21', changefreq: 'daily', priority: '0.9' },
+  { loc: '/news/chattogram-dohazari-coxs-bazar-railway-route-speed-expansion-2026', lastmod: '2026-11-21', changefreq: 'daily', priority: '0.9' },
  
   // ===== Train schedule pages =====
   { loc: '/schedule/lalmoni-express', lastmod: '2026-02-26', changefreq: 'daily', priority: '0.9' },

@@ -5,6 +5,7 @@ import {
   BookOpen, Sparkles, RefreshCw, Compass, WifiOff, Newspaper
 } from 'lucide-react';
 import Navbar from './components/Navbar';
+import { blogs as staticBlogs } from '../data/blogData';
 
 const FALLBACK_IMG = '/homeimg.png';
 
@@ -123,12 +124,25 @@ const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onre
         return res.json();
       })
       .then((data) => {
-        setBlogs(Array.isArray(data) ? data : []);
+        if (Array.isArray(data) && data.length > 0) {
+          // Merge backend blogs with static blogs (avoid duplicate slugs)
+          const slugs = new Set(data.map((b) => b.slug || b._id));
+          const merged = [...data];
+          staticBlogs.forEach((sb) => {
+            const key = sb.slug || String(sb.id);
+            if (!slugs.has(key)) {
+              merged.push(sb);
+            }
+          });
+          setBlogs(merged);
+        } else {
+          setBlogs(staticBlogs);
+        }
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Blog fetch error:', err);
-        setError(true);
+        console.warn('Backend blogs unavailable, using static fallback:', err);
+        setBlogs(staticBlogs);
         setLoading(false);
       });
   };
@@ -144,7 +158,7 @@ const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onre
     ? blogs
     : blogs.filter((blog) => (blog.category || 'ভ্রমণ টিপস') === selectedCategory);
 
-  const openBlog = (blog) => navigate(`/blog/${blog.slug || blog._id}`);
+  const openBlog = (blog) => navigate(`/blog/${blog.slug || blog._id || blog.id}`);
 
   const onKey = (e, blog) => {
     if (e.key === 'Enter' || e.key === ' ') {

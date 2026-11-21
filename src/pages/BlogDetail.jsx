@@ -5,6 +5,7 @@ import {
   ArrowUpRight, SearchX, ArrowLeft
 } from 'lucide-react';
 import Navbar from './components/Navbar';
+import { blogs as staticBlogs } from '../data/blogData';
 
 const FALLBACK_IMG = '/homeimg.png';
 const FONT_SIZES = [16.5, 18, 20];
@@ -134,15 +135,19 @@ const API_BASE_URL = isLocal ? 'http://localhost:5001' : 'https://train-koi.onre
 
       // Fallback: list theke slug ba _id diye khuje ber kora
       if (!found || !found.title) {
-        found = list.find((b) => b.slug === key || b._id === key) || null;
+        found = list.find((b) => b.slug === key || b._id === key || String(b.id) === key) || null;
+      }
+      if (!found || !found.title) {
+        found = staticBlogs.find((b) => b.slug === key || String(b.id) === key || b._id === key) || null;
       }
 
       if (cancelled) return;
 
       setBlog(found);
       if (found) {
-        const currentId = found._id || found.slug;
-        const others = list.filter((b) => (b._id || b.slug) !== currentId);
+        const currentId = found._id || found.slug || found.id;
+        const allCandidates = list.length > 0 ? list : staticBlogs;
+        const others = allCandidates.filter((b) => (b._id || b.slug || b.id) !== currentId);
         others.sort((a, b) => {
           const aSame = (a.category || '') === (found.category || '') ? 0 : 1;
           const bSame = (b.category || '') === (found.category || '') ? 0 : 1;
