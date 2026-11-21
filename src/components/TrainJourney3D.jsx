@@ -1570,43 +1570,6 @@ export default function TrainJourney3D({
       </div>
 
       {/* =====================================================================
-          ৩. সেন্টার ফ্লোটিং বাটন: '⊕ ট্রেনের সাথে চলুন' (Glowing Pulse)
-      ===================================================================== */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '235px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 100,
-          pointerEvents: 'auto'
-        }}
-      >
-        <button
-          onClick={toggleFollow}
-          className="btn-press"
-          style={{
-            background: 'linear-gradient(135deg, #006a4e 0%, #047857 100%)',
-            color: '#ffffff',
-            border: '1.5px solid rgba(255, 255, 255, 0.4)',
-            borderRadius: '30px',
-            padding: '11px 24px',
-            fontSize: '14px',
-            fontWeight: '800',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            animation: isFollowing ? 'pulseEmeraldFollow 2.2s infinite ease-in-out' : 'none'
-          }}
-        >
-          <IconCrosshair />
-          <span>{isFollowing ? 'ট্রেন অনুসরণ চলছে' : 'ট্রেনের সাথে চলুন'}</span>
-        </button>
-      </div>
-
-      {/* =====================================================================
           ৪. মূল ৩ডি ম্যাপ কন্টেইনার
       ===================================================================== */}
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%', outline: 'none' }} />
@@ -1631,6 +1594,42 @@ export default function TrainJourney3D({
           color: '#0f172a'
         }}
       >
+        {/* সেন্ট্রাল ফ্লোটিং বাটন: '⊕ ট্রেনের সাথে চলুন' (কার্ডের ঠিক উপরে সর্বদা পরিষ্কার দৃশ্যমান) */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '-52px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 110,
+            pointerEvents: 'auto',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <button
+            onClick={toggleFollow}
+            className="btn-press"
+            style={{
+              background: 'linear-gradient(135deg, #006a4e 0%, #047857 100%)',
+              color: '#ffffff',
+              border: '1.5px solid rgba(255, 255, 255, 0.6)',
+              borderRadius: '30px',
+              padding: '10px 22px',
+              fontSize: '14px',
+              fontWeight: '800',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(0, 106, 78, 0.45), 0 2px 8px rgba(0,0,0,0.25)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              animation: isFollowing ? 'pulseEmeraldFollow 2.2s infinite ease-in-out' : 'none'
+            }}
+          >
+            <IconCrosshair />
+            <span>{isFollowing ? 'ট্রেন অনুসরণ চলছে' : 'ট্রেনের সাথে চলুন'}</span>
+          </button>
+        </div>
         {/* টপ রো: পরবর্তী স্টেশন ও স্পিড ব্যাজ */}
         <div
           style={{
