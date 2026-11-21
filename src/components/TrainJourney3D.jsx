@@ -359,7 +359,7 @@ function buildCompleteTrainRoute(scheduleData, segments) {
   return { fullRoute, stationDistances, cumDists };
 }
 
-// পলিলিনের নির্দিষ্ট দূরত্বের সাব-পয়েন্ট ও এঙ্গেল খোঁজা
+// পলিলিনের নির্দিষ্ট দূরত্বের সাব-পয়েন্ট ও মসৃণ এঙ্গেল খোঁজা (Binary Search + Stable Tangent)
 function getPolylinePointAndAngle(points, cumDists, d) {
   const totalDist = cumDists[cumDists.length - 1] || 1;
   const clampedD = Math.max(0, Math.min(totalDist, d));
@@ -368,22 +368,26 @@ function getPolylinePointAndAngle(points, cumDists, d) {
     if (dist <= 0) return points[0];
     if (dist >= totalDist) return points[points.length - 1];
 
-    for (let i = 1; i < cumDists.length; i++) {
-      if (cumDists[i] >= dist) {
-        const segLen = cumDists[i] - cumDists[i - 1];
-        const fraction = segLen > 0 ? (dist - cumDists[i - 1]) / segLen : 0;
-        const pA = points[i - 1];
-        const pB = points[i];
-        return [pA[0] + fraction * (pB[0] - pA[0]), pA[1] + fraction * (pB[1] - pA[1])];
-      }
+    let low = 0, high = cumDists.length - 1;
+    while (low < high) {
+      const mid = (low + high) >> 1;
+      if (cumDists[mid] < dist) low = mid + 1;
+      else high = mid;
     }
-    return points[points.length - 1];
+    const idx = Math.max(1, low);
+    const segLen = cumDists[idx] - cumDists[idx - 1];
+    const fraction = segLen > 0 ? (dist - cumDists[idx - 1]) / segLen : 0;
+    const pA = points[idx - 1];
+    const pB = points[idx];
+    return [pA[0] + fraction * (pB[0] - pA[0]), pA[1] + fraction * (pB[1] - pA[1])];
   }
 
   const center = interpolateAt(clampedD);
-  const ahead = interpolateAt(clampedD + 3);
-  const dx = ahead[0] - center[0];
-  const dy = ahead[1] - center[1];
+  // ২০ মিটার ট্যানজেন্ট বেসলাইন যাতে মাইক্রো-টার্নে কোনো কাঁপুনি বা জাম্প না হয়
+  const ahead = interpolateAt(Math.min(totalDist, clampedD + 10));
+  const behind = interpolateAt(Math.max(0, clampedD - 10));
+  const dx = ahead[0] - behind[0];
+  const dy = ahead[1] - behind[1];
   const angle = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
 
   return { center, angle, interpolateAt };
@@ -566,20 +570,18 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
     const { center: cCenter, angle: cAngle } = getPolylinePointAndAngle(points, cumDists, coachD);
 
     // (ক) বগির সামনের ও পেছনের ডাবল বগি ট্রাক ও চাকা (Front & Rear Wheel Bogies)
-    const frontBogieD = coachD + 6.0;
-    const rearBogieD = coachD - 6.0;
-    const { center: fbCenter, angle: fbAngle } = getPolylinePointAndAngle(points, cumDists, frontBogieD);
-    const { center: rbCenter, angle: rbAngle } = getPolylinePointAndAngle(points, cumDists, rearBogieD);
+    const fbPos = interpolateAt(Math.max(0, coachD + 6.0));
+    const rbPos = interpolateAt(Math.max(0, coachD - 6.0));
 
     features.push({
       type: 'Feature',
       properties: { color: '#0f172a', height: 0.8, base: 0.0 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(fbCenter[0], fbCenter[1], 4.2, 3.4, fbAngle)] }
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(fbPos[0], fbPos[1], 4.2, 3.4, cAngle)] }
     });
     features.push({
       type: 'Feature',
       properties: { color: '#0f172a', height: 0.8, base: 0.0 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(rbCenter[0], rbCenter[1], 4.2, 3.4, rbAngle)] }
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(rbPos[0], rbPos[1], 4.2, 3.4, cAngle)] }
     });
 
     // (খ) সেন্ট্রাল ব্যাটারি ও আন্ডারফ্রেম ইকুইপমেন্ট বক্স
@@ -610,58 +612,21 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
       geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.5, 3.72, cAngle)] }
     });
 
-    // (চ) আলাদা আলাদা ১১টি গাঢ় কাঁচের টিন্টেড জানালা (11 Individual Tinted Passenger Windows)
-    const windowOffsets = [-6.75, -5.4, -4.05, -2.7, -1.35, 0.0, 1.35, 2.7, 4.05, 5.4, 6.75];
-    for (let w = 0; w < windowOffsets.length; w++) {
-      const winD = coachD + windowOffsets[w];
-      const { center: wCenter, angle: wAngle } = getPolylinePointAndAngle(points, cumDists, winD);
-      // জানালার কাঁচ
-      features.push({
-        type: 'Feature',
-        properties: { color: '#090d16', height: 3.38, base: 2.45 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(wCenter[0], wCenter[1], 0.92, 3.76, wAngle)] }
-      });
-      // জানালার সিলভার ফ্রেম বেস
-      features.push({
-        type: 'Feature',
-        properties: { color: '#e2e8f0', height: 2.5, base: 2.4 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(wCenter[0], wCenter[1], 0.96, 3.74, wAngle)] }
-      });
-    }
+    // (চ) সিগনেচার গাঢ় কাঁচের টিন্টেড প্যাসেঞ্জার উইন্ডো ব্যান্ড (Sleek Tinted Window Ribbon)
+    features.push({
+      type: 'Feature',
+      properties: { color: '#090d16', height: 3.38, base: 2.45 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 16.4, 3.75, cAngle)] }
+    });
 
-    // (ছ) দুই প্রান্তের প্যাসেঞ্জার ডোর ও হলুদ হ্যান্ডগ্র্যাব (Front & Rear Passenger Doors)
-    const doorOffsets = [8.3, -8.3];
-    for (let d = 0; d < doorOffsets.length; d++) {
-      const doorD = coachD + doorOffsets[d];
-      const { center: dCenter, angle: dAngle } = getPolylinePointAndAngle(points, cumDists, doorD);
-      // ডোর ফ্রেম
-      features.push({
-        type: 'Feature',
-        properties: { color: '#004d38', height: 3.85, base: 0.82 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(dCenter[0], dCenter[1], 0.95, 3.73, dAngle)] }
-      });
-      // ডোর উইন্ডো
-      features.push({
-        type: 'Feature',
-        properties: { color: '#090d16', height: 3.45, base: 2.55 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(dCenter[0], dCenter[1], 0.45, 3.76, dAngle)] }
-      });
-      // ডোর হলুদ সেফটি হ্যান্ডল
-      features.push({
-        type: 'Feature',
-        properties: { color: '#eab308', height: 2.8, base: 1.5 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(dCenter[0], dCenter[1], 0.15, 3.78, dAngle)] }
-      });
-    }
-
-    // (জ) ছাদের নিচের আপার লাল রিম স্ট্রাইপ (Upper Red Roof-line Stripe)
+    // (ছ) ছাদের নিচের আপার লাল রিম স্ট্রাইপ (Upper Red Roof-line Stripe)
     features.push({
       type: 'Feature',
       properties: { color: '#dc2626', height: 4.35, base: 4.15 },
       geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.45, 3.68, cAngle)] }
     });
 
-    // (ঝ) অফ-হোয়াইট / পার্ল হোয়াইট বাঁকানো ছাদ (Iconic Pure White Intercity Roof Cap)
+    // (জ) অফ-হোয়াইট / পার্ল হোয়াইট বাঁকানো ছাদ (Iconic Pure White Intercity Roof Cap)
     features.push({
       type: 'Feature',
       properties: { color: '#f8fafc', height: 4.85, base: 4.25 },
@@ -675,33 +640,25 @@ function generate3DTrainFeatures(points, cumDists, headDist) {
       geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.1, 2.9, cAngle)] }
     });
 
-    // (ঞ) ছাদের ৩টি সেন্ট্রাল এসি পড ও গ্রিল (3 Rooftop AC Units per Coach)
-    const acOffsets = [5.0, 0.0, -5.0];
-    for (let a = 0; a < acOffsets.length; a++) {
-      const acD = coachD + acOffsets[a];
-      const { center: acCenter, angle: acAngle } = getPolylinePointAndAngle(points, cumDists, acD);
-      // এসি হাউজিং
-      features.push({
-        type: 'Feature',
-        properties: { color: '#e2e8f0', height: 5.18, base: 4.85 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(acCenter[0], acCenter[1], 2.6, 2.0, acAngle)] }
-      });
-      // এসি টপ গ্রিল
-      features.push({
-        type: 'Feature',
-        properties: { color: '#475569', height: 5.26, base: 5.15 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(acCenter[0], acCenter[1], 1.6, 1.4, acAngle)] }
-      });
-    }
+    // (ঝ) ছাদের সেন্ট্রাল এসি পড ও গ্রিল (Rooftop AC Unit)
+    features.push({
+      type: 'Feature',
+      properties: { color: '#e2e8f0', height: 5.18, base: 4.85 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 9.6, 2.0, cAngle)] }
+    });
+    features.push({
+      type: 'Feature',
+      properties: { color: '#475569', height: 5.26, base: 5.15 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 6.0, 1.4, cAngle)] }
+    });
 
-    // (ট) প্রতিটি বগির সংযোগ করিডোর ও কালো কাপলার বেলো (Flexible Inter-coach Vestibule)
+    // (ঞ) প্রতিটি বগির সংযোগ করিডোর ও কালো কাপলার বেলো (Flexible Inter-coach Vestibule)
     if (i < 8) {
-      const gangwayD = coachD - 10.8;
-      const { center: gCenter, angle: gAngle } = getPolylinePointAndAngle(points, cumDists, gangwayD);
+      const gangwayPos = interpolateAt(Math.max(0, coachD - 10.8));
       features.push({
         type: 'Feature',
         properties: { color: '#090d16', height: 3.9, base: 0.85 },
-        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(gCenter[0], gCenter[1], 2.2, 2.5, gAngle)] }
+        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(gangwayPos[0], gangwayPos[1], 2.2, 2.5, cAngle)] }
       });
     }
   }
@@ -854,10 +811,40 @@ export default function TrainJourney3D({
 
   // রিয়েলটাইম ডিস্ট্যান্স স্টেট (Dead-reckoning)
   const trainDistRef = useRef(targetDist);
+  const targetDistRef = useRef(targetDist);
+  targetDistRef.current = targetDist;
+
+  // গতিশীল অ্যানিমেশন ইনপুট রিফারেন্সসমূহ (লুপ রি-রেন্ডার ব্রেক রোধে)
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
+  const isRunningRef = useRef(isRunning);
+  isRunningRef.current = isRunning;
+  const isAtStationRef = useRef(isAtStation);
+  isAtStationRef.current = isAtStation;
+  const currentIdxRef = useRef(currentIdx);
+  currentIdxRef.current = currentIdx;
+  const isFollowingRef = useRef(isFollowing);
+  isFollowingRef.current = isFollowing;
+  const is2DModeRef = useRef(is2DMode);
+  is2DModeRef.current = is2DMode;
+  const prevStationRef = useRef(prevStation);
+  prevStationRef.current = prevStation;
+  const nextStationRef = useRef(nextStation);
+  nextStationRef.current = nextStation;
+  const stationDistancesRef = useRef(stationDistances);
+  stationDistancesRef.current = stationDistances;
+
+  // ক্যামেরা LERP মসৃণকরণ এবং থ্রটলিং
+  const smoothCamCenterRef = useRef(null);
+  const smoothCamBearingRef = useRef(null);
+  const lastRenderDistRef = useRef(-1);
+  const latestTrainDataRef = useRef(null);
 
   useEffect(() => {
     if (Math.abs(trainDistRef.current - targetDist) > 1500) {
       trainDistRef.current = targetDist;
+      smoothCamCenterRef.current = null;
+      smoothCamBearingRef.current = null;
     }
   }, [targetDist]);
 
@@ -905,6 +892,8 @@ export default function TrainJourney3D({
     const nextFollow = !isFollowing;
     setIsFollowing(nextFollow);
     if (nextFollow && mapRef.current) {
+      smoothCamCenterRef.current = null;
+      smoothCamBearingRef.current = null;
       const pts = fullRoutePolyline;
       const { midPos, locoAngle } = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
 
@@ -921,6 +910,8 @@ export default function TrainJourney3D({
   // শুরুর ভিউ (রিসেট ক্যামেরা)
   const resetView = () => {
     setIsFollowing(true);
+    smoothCamCenterRef.current = null;
+    smoothCamBearingRef.current = null;
     if (mapRef.current) {
       const pts = fullRoutePolyline;
       const { midPos, locoAngle } = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
@@ -1198,12 +1189,9 @@ export default function TrainJourney3D({
   // ৬. রিয়েলটাইম ডেড-রেকনিং অ্যানিমেশন লুপ (বাস্তব গতি ও সময়ের নিখুঁত প্রতিফলন)
   // ট্রেনের ডেজিগনেটেড রুটের বাইরে কখনো বের হবে না এবং গতি নিখুঁত থাকবে
   // =========================================================================
-  useEffect(() => {
-    let lastTime = performance.now();
-    const pts = fullRoutePolyline;
-    const totalDist = cumDists[cumDists.length - 1] || 1;
 
-    // অডিও গতি অনুযায়ী সমন্বয়
+  // অডিও গতি ও অবস্থা আলাদা এফেক্টে পরিচালনা (অ্যানিমেশন লুপ থেকে সম্পূর্ণ আলাদা)
+  useEffect(() => {
     if (audioSynthRef.current && !isMuted) {
       if (isAtStation || speed === 0) {
         audioSynthRef.current.stop();
@@ -1211,22 +1199,40 @@ export default function TrainJourney3D({
         audioSynthRef.current.updateTempo(speed);
       }
     }
+  }, [speed, isAtStation, isMuted]);
+
+  useEffect(() => {
+    let lastTime = performance.now();
+    const pts = fullRoutePolyline;
+    const totalDist = cumDists[cumDists.length - 1] || 1;
 
     const animateTrainAlongCurve = (now) => {
       const dt = Math.min(0.1, (now - lastTime) / 1000);
       lastTime = now;
 
-      const segIdx = Math.max(0, Math.min(stationDistances.length - 2, currentIdx));
-      const endM = stationDistances[segIdx + 1] || totalDist;
+      const segs = stationDistancesRef.current;
+      const segIdx = Math.max(0, Math.min(segs.length - 2, currentIdxRef.current));
+      const endM = segs[segIdx + 1] || totalDist;
+      const startM = segs[segIdx] || 0;
 
-      if (!isRunning || isAtStation || speed === 0) {
+      const curSpeed = speedRef.current;
+      const curIsAtStation = isAtStationRef.current;
+      const curIsRunning = isRunningRef.current;
+
+      if (!curIsRunning || curIsAtStation || curSpeed === 0) {
         // ট্রেন স্টেশনে থেমে আছে বা অফলাইন - কোনো কৃত্রিম নড়াচড়া হবে না
-        trainDistRef.current = stationDistances[segIdx] || trainDistRef.current;
+        trainDistRef.current = startM || trainDistRef.current;
       } else {
         // বাস্তব পদার্থবিজ্ঞান অনুযায়ী মিটার দূরত্ব অতিক্রম
         // speed km/h => (speed * 1000 / 3600) meters per second
-        const metersPerSec = (speed * 1000) / 3600;
+        const metersPerSec = (curSpeed * 1000) / 3600;
         trainDistRef.current += metersPerSec * dt;
+
+        // লাইভ টার্গেট দূরত্বের সাথে অতি মৃদু সিঙ্ক (যদি কোনো ব্যবধান থাকে, ঝাঁকুনি ছাড়া মিলানো)
+        const distDiff = targetDistRef.current - trainDistRef.current;
+        if (Math.abs(distDiff) > 10 && Math.abs(distDiff) <= 1500) {
+          trainDistRef.current += distDiff * (dt * 0.15);
+        }
 
         // ট্রেনের রুট শেষ প্রান্তের আগে সুরক্ষিত রাখা
         if (trainDistRef.current >= totalDist - 30) {
@@ -1239,48 +1245,70 @@ export default function TrainJourney3D({
       const distRemainingKm = Math.round((distRemainingMeters / 1000) * 10) / 10;
 
       if (mapRef.current && mapRef.current.getSource('train-3d-boxes')) {
-        const trainData = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
+        const distMoved = Math.abs(trainDistRef.current - lastRenderDistRef.current);
 
-        // ১. ৩ডি সলিড বগিগুলোর জ্যামিতি আপডেট
-        mapRef.current.getSource('train-3d-boxes').setData(trainData.geojson);
+        // রেন্ডার থ্রটলিং: অন্তত ০.১৫ মিটার নড়লে GeoJSON ডাটা আপডেট হবে (GPU/Worker বাফার ওভারলোড প্রতিরোধ)
+        if (distMoved >= 0.15 || lastRenderDistRef.current < 0) {
+          lastRenderDistRef.current = trainDistRef.current;
 
-        // ২. হেডলাইট পজিশন আপডেট
-        if (mapRef.current.getSource('train-headlight-src')) {
-          mapRef.current.getSource('train-headlight-src').setData({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: trainData.headPos }
-          });
-        }
+          const trainData = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
+          latestTrainDataRef.current = trainData;
 
-        // ৩. শেষ বগি মার্কার পজিশন আপডেট
-        if (tailCoachMarkerRef.current) {
-          tailCoachMarkerRef.current.setLngLat(trainData.tailPos);
-        }
+          // ১. ৩ডি সলিড বগিগুলোর জ্যামিতি আপডেট
+          mapRef.current.getSource('train-3d-boxes').setData(trainData.geojson);
 
-        // ৪. পরবর্তী স্টেশন নির্দেশক মার্কার পজিশন ও লেখা আপডেট
-        if (aheadStationMarkerRef.current) {
-          const { interpolateAt } = getPolylinePointAndAngle(pts, cumDists, trainDistRef.current);
-          const aheadPtPos = interpolateAt(trainDistRef.current + 35);
-          aheadStationMarkerRef.current.setLngLat(aheadPtPos);
+          // ২. হেডলাইট পজিশন আপডেট
+          if (mapRef.current.getSource('train-headlight-src')) {
+            mapRef.current.getSource('train-headlight-src').setData({
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: trainData.headPos }
+            });
+          }
 
-          const el = aheadStationMarkerRef.current.getElement();
-          if (el) {
-            const span = el.querySelector('.ahead-text');
-            const txt = isAtStation
-              ? `${prevStation?.name?.split('(')[0] || 'স্টেশন'} স্টপেজে অবস্থান করছে`
-              : `${nextStation?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(Math.round(distRemainingKm))} কি`;
-            if (span && span.textContent !== txt) {
-              span.textContent = txt;
+          // ৩. শেষ বগি মার্কার পজিশন আপডেট
+          if (tailCoachMarkerRef.current) {
+            tailCoachMarkerRef.current.setLngLat(trainData.tailPos);
+          }
+
+          // ৪. পরবর্তী স্টেশন নির্দেশক মার্কার পজিশন ও লেখা আপডেট
+          if (aheadStationMarkerRef.current) {
+            const { interpolateAt } = getPolylinePointAndAngle(pts, cumDists, trainDistRef.current);
+            const aheadPtPos = interpolateAt(trainDistRef.current + 35);
+            aheadStationMarkerRef.current.setLngLat(aheadPtPos);
+
+            const el = aheadStationMarkerRef.current.getElement();
+            if (el) {
+              const span = el.querySelector('.ahead-text');
+              const txt = curIsAtStation
+                ? `${prevStationRef.current?.name?.split('(')[0] || 'স্টেশন'} স্টপেজে অবস্থান করছে`
+                : `${nextStationRef.current?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(Math.round(distRemainingKm))} কি`;
+              if (span && span.textContent !== txt) {
+                span.textContent = txt;
+              }
             }
           }
         }
 
-        // ৫. ক্যামেরা স্মুথ ফলো (ট্রেনের সাথে চলুন - ৩/৪ আইসোমেট্রিক সাইড পারস্পেক্টিভ)
-        if (isFollowing) {
-          mapRef.current.easeTo({
-            center: trainData.midPos,
-            bearing: is2DMode ? 0 : (trainData.locoAngle - 28),
-            duration: 0
+        // ৫. ক্যামেরা মসৃণ ফলো (LERP ও jumpTo দিয়ে যেকোনো জিটার বা ফ্ল্যাকচুয়েশন সম্পূর্ণ রোধ)
+        if (isFollowingRef.current && latestTrainDataRef.current) {
+          const trainData = latestTrainDataRef.current;
+          const targetCenter = trainData.midPos;
+          const targetBearing = is2DModeRef.current ? 0 : (trainData.locoAngle - 28);
+
+          if (!smoothCamCenterRef.current) {
+            smoothCamCenterRef.current = [targetCenter[0], targetCenter[1]];
+            smoothCamBearingRef.current = targetBearing;
+          } else {
+            smoothCamCenterRef.current[0] += (targetCenter[0] - smoothCamCenterRef.current[0]) * 0.12;
+            smoothCamCenterRef.current[1] += (targetCenter[1] - smoothCamCenterRef.current[1]) * 0.12;
+
+            let diffAngle = (targetBearing - smoothCamBearingRef.current + 540) % 360 - 180;
+            smoothCamBearingRef.current = (smoothCamBearingRef.current + diffAngle * 0.08 + 360) % 360;
+          }
+
+          mapRef.current.jumpTo({
+            center: smoothCamCenterRef.current,
+            bearing: is2DModeRef.current ? 0 : smoothCamBearingRef.current
           });
         }
       }
@@ -1293,7 +1321,7 @@ export default function TrainJourney3D({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [speed, isAtStation, currentIdx, isFollowing, is2DMode, fullRoutePolyline, cumDists, stationDistances]);
+  }, [fullRoutePolyline, cumDists]);
 
   return (
     <div
