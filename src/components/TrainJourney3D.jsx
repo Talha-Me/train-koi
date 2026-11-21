@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Volume2, VolumeX, RotateCcw, Map, Layers, Navigation, ArrowLeft, Crosshair, MessageCircle, Info } from 'lucide-react';
+import { Volume2, VolumeX, RotateCcw, Map, ArrowLeft, Crosshair, MessageCircle } from 'lucide-react';
+import railSegmentsData from '../data/railSegments.json';
 
 // =========================================================================
-// ১. হাই-রেজোলিউশন ম্যাপ স্টাইলসমূহ (স্যাটেলাইট ও সাধারণ মানচিত্র)
+// ১. হাই-রেজোলিউশন ম্যাপ স্টাইলসমূহ (স্যাটেলাইট ও মানচিত্র)
 // =========================================================================
 const MAP_STYLES = {
   satellite: {
@@ -61,24 +62,6 @@ const MAP_STYLES = {
   }
 };
 
-// =========================================================================
-// ২. বেয়ারিং / হেডিং ক্যালকুলেটর (ট্র্যাক বরাবর কোণ)
-// =========================================================================
-function calculateBearing(startLat, startLng, destLat, destLng) {
-  const startLatRad = (startLat * Math.PI) / 180;
-  const startLngRad = (startLng * Math.PI) / 180;
-  const destLatRad = (destLat * Math.PI) / 180;
-  const destLngRad = (destLng * Math.PI) / 180;
-
-  const y = Math.sin(destLngRad - startLngRad) * Math.cos(destLatRad);
-  const x =
-    Math.cos(startLatRad) * Math.sin(destLatRad) -
-    Math.sin(startLatRad) * Math.cos(destLatRad) * Math.cos(destLngRad - startLngRad);
-
-  let brng = (Math.atan2(y, x) * 180) / Math.PI;
-  return (brng + 360) % 360;
-}
-
 // বাংলা সংখ্যা কনভার্টার
 const toBangla = (num) => {
   if (num === null || num === undefined) return '';
@@ -87,7 +70,71 @@ const toBangla = (num) => {
 };
 
 // =========================================================================
-// ৩. ট্রেনের হুইসেল ও বাস্তব ট্র্যাক সাউন্ড (Web Audio API)
+// ২. হাই-প্রিসিশন ট্র্যাক স্ন্যাপিং ও বিয়ারিং অ্যালগরিদম
+// =========================================================================
+function snapToRailTrack(lat, lng, destLat, destLng, segments) {
+  if (!segments || !segments.length) {
+    return { lat, lng, bearing: 45, distanceMeters: 0 };
+  }
+
+  let minDistanceSq = Infinity;
+  let bestLat = lat;
+  let bestLng = lng;
+  let bestBearing = 45;
+
+  for (let i = 0; i < segments.length; i++) {
+    const [slat, slng, elat, elng] = segments[i];
+
+    if (Math.abs(lat - slat) > 0.08 && Math.abs(lat - elat) > 0.08) continue;
+    if (Math.abs(lng - slng) > 0.08 && Math.abs(lng - elng) > 0.08) continue;
+
+    const dx = elng - slng;
+    const dy = elat - slat;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) continue;
+
+    const t = Math.max(0, Math.min(1, ((lng - slng) * dx + (lat - slat) * dy) / lenSq));
+    const projLng = slng + t * dx;
+    const projLat = slat + t * dy;
+
+    const dLng = lng - projLng;
+    const dLat = lat - projLat;
+    const distSq = dLng * dLng + dLat * dLat;
+
+    if (distSq < minDistanceSq) {
+      minDistanceSq = distSq;
+      bestLat = projLat;
+      bestLng = projLng;
+
+      const rad = Math.atan2(dx, dy);
+      let brng = (rad * 180) / Math.PI;
+      bestBearing = (brng + 360) % 360;
+    }
+  }
+
+  // গন্তব্য স্টেশন অনুযায়ী ট্রেনের মুখ সামনের দিকে ঘোরানো
+  if (destLat !== undefined && destLng !== undefined) {
+    const destDx = destLng - bestLng;
+    const destDy = destLat - bestLat;
+    const destAngle = ((Math.atan2(destDx, destDy) * 180) / Math.PI + 360) % 360;
+
+    let diff = Math.abs(bestBearing - destAngle);
+    if (diff > 180) diff = 360 - diff;
+    if (diff > 90) {
+      bestBearing = (bestBearing + 180) % 360;
+    }
+  }
+
+  return {
+    lat: bestLat,
+    lng: bestLng,
+    bearing: bestBearing,
+    distanceMeters: Math.sqrt(minDistanceSq) * 111000
+  };
+}
+
+// =========================================================================
+// ৩. ট্রেনের হুইসেল ও ট্র্যাক সাউন্ড (Web Audio API)
 // =========================================================================
 let audioCtx = null;
 let chugInterval = null;
@@ -137,7 +184,6 @@ function playTrainHorn() {
   });
 }
 
-// ট্রেনের চাকা ও ট্র্যাকের ক্লিক-ক্ল্যাক সাউন্ড
 function startTrackAmbientSound() {
   const ctx = getAudioContext();
   if (!ctx || chugInterval) return;
@@ -145,7 +191,6 @@ function startTrackAmbientSound() {
   chugInterval = setInterval(() => {
     try {
       const now = ctx.currentTime;
-      // মৃদু ক্লিক-ক্ল্যাক নয়েজ
       const bufferSize = ctx.sampleRate * 0.05;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
@@ -162,7 +207,7 @@ function startTrackAmbientSound() {
       filter.Q.setValueAtTime(3, now);
 
       const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.setValueAtTime(0.035, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
       noise.connect(filter);
@@ -183,7 +228,7 @@ function stopTrackAmbientSound() {
 }
 
 // =========================================================================
-// ৪. বাস্তবসম্মত ট্রেন কম্পোনেন্ট (Engine + 12 Coaches)
+// ৪. মূল ৩ডি জার্নি ভিউ কম্পোনেন্ট
 // =========================================================================
 export default function TrainJourney3D({
   train,
@@ -197,19 +242,32 @@ export default function TrainJourney3D({
   const trainMarkerRef = useRef(null);
   const aheadMarkerRef = useRef(null);
 
-  const [currentStyle, setCurrentStyle] = useState('satellite'); // 'satellite' | 'streets'
+  const [currentStyle, setCurrentStyle] = useState('satellite');
   const [is2DMode, setIs2DMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [isFollowing, setIsFollowing] = useState(true);
 
-  const trainLat = activeState?.lat || 23.8103;
-  const trainLng = activeState?.lng || 90.4125;
+  // কাঁচা জিপিএস পজিশন
+  const rawLat = activeState?.lat || 24.3622;
+  const rawLng = activeState?.lng || 88.9639;
   const speed = activeState?.speed || 50;
 
-  // আগের ও পরবর্তী স্টেশন
+  // বর্তমান ও পরবর্তী স্টেশন
   const currentIdx = activeState?.segmentIndex ?? 0;
   const prevStation = scheduleData[currentIdx] || scheduleData[0];
   const nextStation = scheduleData[currentIdx + 1] || scheduleData[scheduleData.length - 1];
+
+  // গন্তব্য স্টেশনের স্থানাঙ্ক (হেডিং ঠিক রাখার জন্য)
+  const destCoords = nextStation?.coords || [24.1568, 89.0558];
+
+  // রেল ট্র্যাকে ম্যাথমেটিক্যাল স্ন্যাপ ও সঠিক বিয়ারিং
+  const snapped = useMemo(() => {
+    return snapToRailTrack(rawLat, rawLng, destCoords[0], destCoords[1], railSegmentsData);
+  }, [rawLat, rawLng, destCoords]);
+
+  const trainLat = snapped.lat;
+  const trainLng = snapped.lng;
+  const bearing = snapped.bearing;
 
   // পরবর্তী স্টেশনের দূরত্ব
   const distanceToNext = useMemo(() => {
@@ -219,14 +277,6 @@ export default function TrainJourney3D({
     }
     return 24;
   }, [activeState, nextStation, prevStation]);
-
-  // বেয়ারিং / হেডিং
-  const bearing = useMemo(() => {
-    if (nextStation && nextStation.coords) {
-      return calculateBearing(trainLat, trainLng, nextStation.coords[0], nextStation.coords[1]);
-    }
-    return 42; // ডিফল্ট উত্তর-পূর্ব কোণ
-  }, [trainLat, trainLng, nextStation]);
 
   // সাউন্ড টগল
   const toggleSound = () => {
@@ -268,7 +318,7 @@ export default function TrainJourney3D({
       pitch: 68,
       bearing: bearing,
       zoom: 17,
-      duration: 1400
+      duration: 1200
     });
   };
 
@@ -285,7 +335,7 @@ export default function TrainJourney3D({
   };
 
   // =========================================================================
-  // ম্যাপ ইনিশিয়ালাইজেশন
+  // ৫. ম্যাপ ইনিশিয়ালাইজেশন
   // =========================================================================
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -308,152 +358,167 @@ export default function TrainJourney3D({
     });
 
     map.on('load', () => {
-      // ১. বাস্তবসম্মত ৩ডি রেলওয়ে ট্র্যাক ড্রয়িং
-      if (railData) {
-        if (!map.getSource('rail-network')) {
-          map.addSource('rail-network', {
-            type: 'geojson',
-            data: railData
-          });
-
-          // লেয়ার ১: সবুজ এমব্যাংকমেন্ট / মাটির বাঁধ (Green Embankment Bed)
-          map.addLayer({
-            id: 'track-embankment',
-            type: 'line',
-            source: 'rail-network',
-            layout: { 'line-join': 'round', 'line-cap': 'round' },
-            paint: {
-              'line-color': '#1b381e',
-              'line-width': 22,
-              'line-opacity': 0.85
-            }
-          });
-
-          // লেয়ার ২: গ্রে ব্যালাস্ট পাথর বেড (Ballast Gravel Layer)
-          map.addLayer({
-            id: 'track-ballast',
-            type: 'line',
-            source: 'rail-network',
-            layout: { 'line-join': 'round', 'line-cap': 'round' },
-            paint: {
-              'line-color': '#78716c',
-              'line-width': 14,
-              'line-opacity': 0.95
-            }
-          });
-
-          // লেয়ার ৩: রেল স্লিপার কাঠের টাই (Sleeper Ties with dasharray)
-          map.addLayer({
-            id: 'track-sleepers',
-            type: 'line',
-            source: 'rail-network',
-            paint: {
-              'line-color': '#292524',
-              'line-width': 10,
-              'line-dasharray': [0.25, 0.75],
-              'line-opacity': 0.9
-            }
-          });
-
-          // লেয়ার ৪: স্টিল রেললাইন জোড়া (Silver Steel Rail Tracks)
-          map.addLayer({
-            id: 'track-rails',
-            type: 'line',
-            source: 'rail-network',
-            paint: {
-              'line-color': '#e2e8f0',
-              'line-width': 5.5,
-              'line-opacity': 0.95
-            }
-          });
-
-          // লেয়ার ৫: রেললাইনের মাঝের ফাঁক (Center separation)
-          map.addLayer({
-            id: 'track-center-gap',
-            type: 'line',
-            source: 'rail-network',
-            paint: {
-              'line-color': '#44403c',
-              'line-width': 2.8,
-              'line-opacity': 0.95
-            }
-          });
+      // ১. হাই-প্রিসিশন রেলওয়ে ট্র্যাক লেয়ার
+      const trackFeatures = railSegmentsData.map((seg, idx) => ({
+        type: 'Feature',
+        id: idx,
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [seg[1], seg[0]],
+            [seg[3], seg[2]]
+          ]
         }
-      }
+      }));
 
-      // ২. ১২টি বগি সহ বাস্তব লাল-সবুজ ট্রেন মডেল তৈরি
+      map.addSource('high-precision-rail', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: trackFeatures
+        }
+      });
+
+      // সবুজ বাঁধের কিনারা (Embankment)
+      map.addLayer({
+        id: 'track-embankment',
+        type: 'line',
+        source: 'high-precision-rail',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#16331a',
+          'line-width': 18,
+          'line-opacity': 0.85
+        }
+      });
+
+      // ধূসর পাথরের ব্যালাস্ট বেড (Ballast Gravel Bed)
+      map.addLayer({
+        id: 'track-ballast',
+        type: 'line',
+        source: 'high-precision-rail',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#78716c',
+          'line-width': 12,
+          'line-opacity': 0.95
+        }
+      });
+
+      // কাঠের রেল স্লিপার টাই (Sleepers Ties)
+      map.addLayer({
+        id: 'track-sleepers',
+        type: 'line',
+        source: 'high-precision-rail',
+        paint: {
+          'line-color': '#292524',
+          'line-width': 9,
+          'line-dasharray': [0.25, 0.75],
+          'line-opacity': 0.95
+        }
+      });
+
+      // রূপালী স্টিল রেল ট্র্যাক (Steel Rails)
+      map.addLayer({
+        id: 'track-rails',
+        type: 'line',
+        source: 'high-precision-rail',
+        paint: {
+          'line-color': '#e2e8f0',
+          'line-width': 4.5,
+          'line-opacity': 0.98
+        }
+      });
+
+      // রেলের মাঝের খাঁজ (Inner gap)
+      map.addLayer({
+        id: 'track-center-gap',
+        type: 'line',
+        source: 'high-precision-rail',
+        paint: {
+          'line-color': '#44403c',
+          'line-width': 2.2,
+          'line-opacity': 0.98
+        }
+      });
+
+      // ২. ১২টি বগি বিশিষ্ট বাস্তবসম্মত ট্রেন (SVG ভেক্টর - ট্র্যাকে নিখুঁতভাবে বসা)
       const trainEl = document.createElement('div');
-      trainEl.className = 'real-train-3d-wrapper';
-      trainEl.style.transformOrigin = 'center center';
+      trainEl.className = 'real-train-3d-model';
+      trainEl.style.transformOrigin = 'top center';
       trainEl.style.transform = `rotate(${bearing}deg)`;
       trainEl.style.transition = 'transform 0.4s ease';
 
-      // ১০-১২টি বগি ডাইনামিক রেন্ডারিং
-      const coachesHtml = Array.from({ length: 11 }).map((_, i) => `
+      // ১০-১২টি কোচের বাস্তবসম্মত SVG লুক
+      const coachesSvg = Array.from({ length: 11 }).map((_, i) => `
         <!-- বগি ${i + 1} -->
-        <div style="
-          position: relative;
-          width: 14px;
-          height: 30px;
-          background: linear-gradient(90deg, #f8fafc 0%, #e2e8f0 40%, #ffffff 70%, #cbd5e1 100%);
-          border-radius: 2px;
-          border-left: 2px solid #006a4e;
-          border-right: 2px solid #006a4e;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.45);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          padding: 2px 0;
-          overflow: hidden;
-        ">
-          <!-- লাল ব্যান্ড স্ট্রাইপ (Red Belt) -->
-          <div style="position: absolute; top: 0; bottom: 0; left: 1px; right: 1px; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 3px;">
-            <div style="height: 3px; background: #dc2626; width: 100%;"></div>
-            <div style="height: 2px; background: #006a4e; width: 100%;"></div>
-          </div>
-          <!-- জানালা সারি -->
-          <div style="position: absolute; top: 3px; bottom: 3px; left: 2px; right: 2px; display: flex; flex-direction: column; justify-content: space-around;">
-            <div style="height: 3px; background: #1e293b; border-radius: 1px; opacity: 0.85;"></div>
-            <div style="height: 3px; background: #1e293b; border-radius: 1px; opacity: 0.85;"></div>
-            <div style="height: 3px; background: #1e293b; border-radius: 1px; opacity: 0.85;"></div>
-            <div style="height: 3px; background: #1e293b; border-radius: 1px; opacity: 0.85;"></div>
-          </div>
-        </div>
-        <!-- বগির সংযোগকারী কালো গ্যাংওয়ে (Gangway Bellows) -->
-        <div style="width: 8px; height: 3px; background: #1e293b; border-radius: 1px;"></div>
+        <g transform="translate(0, ${28 + i * 24})">
+          <!-- ড্রপ শ্যাডো -->
+          <rect x="-1" y="1" width="14" height="20" rx="2" fill="rgba(0,0,0,0.5)" filter="blur(1px)" />
+          <!-- বডি বেস (সবুজ) -->
+          <rect x="0" y="0" width="12" height="20" rx="2" fill="#006a4e" />
+          <!-- লাল স্ট্রাইপ বেল্ট -->
+          <rect x="0" y="5" width="12" height="4" fill="#dc2626" />
+          <!-- সাদা কার্ভড ছাদ -->
+          <rect x="1.5" y="0" width="9" height="20" rx="1.5" fill="url(#roofGrad)" />
+          <!-- কালো কাচের জানালা সারি -->
+          <rect x="0.5" y="6" width="1" height="2" fill="#0f172a" />
+          <rect x="0.5" y="10" width="1" height="2" fill="#0f172a" />
+          <rect x="0.5" y="14" width="1" height="2" fill="#0f172a" />
+          <rect x="10.5" y="6" width="1" height="2" fill="#0f172a" />
+          <rect x="10.5" y="10" width="1" height="2" fill="#0f172a" />
+          <rect x="10.5" y="14" width="1" height="2" fill="#0f172a" />
+          <!-- কালো গ্যাংওয়ে সংযোগকারী -->
+          <rect x="3.5" y="20" width="5" height="4" fill="#1e293b" />
+        </g>
       `).join('');
 
       trainEl.innerHTML = `
-        <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+        <div style="position: relative; width: 60px; display: flex; flex-direction: column; align-items: center;">
           
-          <!-- লোকোমোটিভ লাল ইঞ্জিন (Front Engine) -->
-          <div style="
-            width: 15px;
-            height: 34px;
-            background: linear-gradient(180deg, #dc2626 0%, #b91c1c 45%, #991b1b 100%);
-            border-radius: 6px 6px 2px 2px;
-            border: 1px solid #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
-            position: relative;
-            overflow: hidden;
-          ">
-            <!-- কেবিন গ্লাস -->
-            <div style="position: absolute; top: 3px; left: 2px; right: 2px; height: 5px; background: #38bdf8; border-radius: 1px;"></div>
-            <!-- হেডলাইট জোড়া -->
-            <div style="position: absolute; top: 1px; left: 2px; width: 3px; height: 3px; background: #fff; border-radius: 50%; box-shadow: 0 0 6px #fef08a;"></div>
-            <div style="position: absolute; top: 1px; right: 2px; width: 3px; height: 3px; background: #fff; border-radius: 50%; box-shadow: 0 0 6px #fef08a;"></div>
-            <!-- ছাদের বিকন -->
-            <div style="position: absolute; top: 13px; left: 50%; transform: translateX(-50%); width: 3px; height: 3px; background: #ef4444; border-radius: 50%;"></div>
-          </div>
-          <div style="width: 8px; height: 3px; background: #1e293b;"></div>
+          <!-- ৩ডি ট্রেন SVG মডেল (ইঞ্জিন + ১১টি বগি) -->
+          <svg width="40" height="310" viewBox="-14 0 40 310" style="overflow: visible;">
+            <defs>
+              <!-- ছাদের সিলভার-সাদা কার্ভড গ্রেডিয়েন্ট -->
+              <linearGradient id="roofGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#cbd5e1" />
+                <stop offset="35%" stop-color="#ffffff" />
+                <stop offset="70%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#94a3b8" />
+              </linearGradient>
+              <!-- ইঞ্জিনের লাল গ্রেডিয়েন্ট -->
+              <linearGradient id="engineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ef4444" />
+                <stop offset="50%" stop-color="#dc2626" />
+                <stop offset="100%" stop-color="#991b1b" />
+              </linearGradient>
+            </defs>
 
-          <!-- প্যাসেঞ্জার কোচ সারি -->
-          ${coachesHtml}
+            <!-- লোকোমোটিভ ইঞ্জিন (Engine Head) -->
+            <g transform="translate(0, 0)">
+              <!-- ইঞ্জিন গ্রাউন্ড শ্যাডো -->
+              <rect x="-1" y="2" width="14" height="24" rx="4" fill="rgba(0,0,0,0.6)" />
+              <!-- ইঞ্জিন বডি -->
+              <path d="M 1 6 Q 6 0 11 6 L 11 24 L 1 24 Z" fill="url(#engineGrad)" stroke="#ffffff" stroke-width="0.5" />
+              <!-- ফ্রন্ট কেবিন উইন্ডশিল্ড -->
+              <path d="M 2.5 6 Q 6 2 9.5 6 L 9.5 9 L 2.5 9 Z" fill="#38bdf8" />
+              <!-- হেডলাইট জোড়া -->
+              <circle cx="2.5" cy="4" r="1" fill="#ffffff" />
+              <circle cx="9.5" cy="4" r="1" fill="#ffffff" />
+              <!-- ছাদের বিকন লাইট -->
+              <circle cx="6" cy="13" r="1" fill="#fef08a" />
+              <!-- গ্যাংওয়ে কাপলার -->
+              <rect x="3.5" y="24" width="5" height="4" fill="#1e293b" />
+            </g>
+
+            <!-- বগি সারি -->
+            ${coachesSvg}
+          </svg>
 
           <!-- শেষ বগি ট্যাগ (Floating Pill: ↑ ক শেষ বগি) -->
           <div style="
             position: absolute;
-            bottom: -32px;
+            bottom: -22px;
             left: 50%;
             transform: translateX(-50%);
             background: #ffffff;
@@ -493,7 +558,7 @@ export default function TrainJourney3D({
         element: trainEl,
         rotationAlignment: 'map',
         pitchAlignment: 'map',
-        anchor: 'center'
+        anchor: 'top' // ট্রেনের ইঞ্জিন থাকবে স্ন্যাপ করা পয়েন্টে
       })
         .setLngLat([trainLng, trainLat])
         .addTo(map);
@@ -525,9 +590,11 @@ export default function TrainJourney3D({
           </div>
         `;
 
-        // ট্রেনের সামনে সামান্য দূরে পিন প্লেস করা
-        const aheadLat = trainLat + (nextStation.coords ? (nextStation.coords[0] - trainLat) * 0.15 : 0.005);
-        const aheadLng = trainLng + (nextStation.coords ? (nextStation.coords[1] - trainLng) * 0.15 : 0.005);
+        // ট্রেনের সামনে ট্র্যাকে কিছুটা দূরে পিন প্লেস করা
+        const rad = (bearing * Math.PI) / 180;
+        const forwardOffset = 0.004; // ~400 মিটার সামনে
+        const aheadLat = trainLat + Math.cos(rad) * forwardOffset;
+        const aheadLng = trainLng + Math.sin(rad) * forwardOffset;
 
         const aheadMarker = new maplibregl.Marker({
           element: aheadEl,
@@ -549,7 +616,7 @@ export default function TrainJourney3D({
     };
   }, [currentStyle]);
 
-  // পজিশন আপডেট হলে মার্কার সরানো
+  // পজিশন ও বিয়ারিং আপডেট হলে ট্রেন মার্কার আপডেট করা
   useEffect(() => {
     if (trainMarkerRef.current) {
       trainMarkerRef.current.setLngLat([trainLng, trainLat]);
@@ -560,10 +627,11 @@ export default function TrainJourney3D({
     if (isFollowing && mapRef.current) {
       mapRef.current.easeTo({
         center: [trainLng, trainLat],
+        bearing: is2DMode ? 0 : bearing,
         duration: 800
       });
     }
-  }, [trainLat, trainLng, bearing, isFollowing]);
+  }, [trainLat, trainLng, bearing, isFollowing, is2DMode]);
 
   return (
     <div
@@ -589,7 +657,6 @@ export default function TrainJourney3D({
           gap: '10px'
         }}
       >
-        {/* ব্যাক বাটন */}
         <button
           onClick={onClose}
           style={{
@@ -610,7 +677,6 @@ export default function TrainJourney3D({
           <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
 
-        {/* ট্রেন টাইটেল ও নম্বর ক্যাপসুল */}
         <div
           style={{
             background: '#ffffff',
@@ -624,7 +690,7 @@ export default function TrainJourney3D({
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
-              {train?.name?.split('(')[0]?.trim() || 'ট্রেন'}
+              {train?.name?.split('(')[0]?.trim() || 'দ্রুতযান এক্সপ্রেস'}
             </span>
             <span
               style={{
@@ -640,7 +706,7 @@ export default function TrainJourney3D({
             </span>
           </div>
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
-            {train?.origin || 'প্রারম্ভিক'} - {train?.destination || 'গন্তব্য'}
+            {train?.origin || 'পঞ্চগড়'} - {train?.destination || 'ঢাকা'}
           </span>
         </div>
       </div>
@@ -651,7 +717,7 @@ export default function TrainJourney3D({
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%', outline: 'none' }} />
 
       {/* =====================================================================
-          ৩. ডানদিকের ফ্ল্যাটিং বাটনসমূহ (হুবহু স্ক্রিনশটের মতো)
+          ৩. ডানদিকের ফ্ল্যাটিং বাটনসমূহ
       ===================================================================== */}
       <div
         style={{
@@ -825,7 +891,7 @@ export default function TrainJourney3D({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
           <div>
             <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
-              পরবর্তী <span style={{ color: '#0f172a' }}>{nextStation?.name?.split('(')[0] || 'স্টেশন'}</span>{' '}
+              পরবর্তী <span style={{ color: '#0f172a' }}>{nextStation?.name?.split('(')[0] || 'ঈশ্বরদী বাইপাস'}</span>{' '}
               <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600' }}>
                 ({toBangla(distanceToNext)} কি)
               </span>
@@ -921,7 +987,7 @@ export default function TrainJourney3D({
                 🚆
               </div>
               <span style={{ fontSize: '10px', fontWeight: '700', color: '#475569', marginTop: '4px', whiteSpace: 'nowrap' }}>
-                {activeState?.currentStationName || prevStation?.name?.split('(')[0] || 'স্টেশন'} • ৩.৯ কি
+                {activeState?.currentStationName || prevStation?.name?.split('(')[0] || 'মালঞ্চি'} • ৩.৯ কি
               </span>
             </div>
 
@@ -931,14 +997,14 @@ export default function TrainJourney3D({
 
           {/* স্টেশন নামসমূহ (নিচে) */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '28px', fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
-            <span>{prevStation?.name?.split('(')[0] || ''}</span>
+            <span>{prevStation?.name?.split('(')[0] || 'নাটোর'}</span>
             <span style={{ color: '#be185d', fontWeight: '700' }}>
-              {nextStation?.name?.split('(')[0] || ''}
+              {nextStation?.name?.split('(')[0] || 'ঈশ্বরদী বাইপাস'}
             </span>
           </div>
         </div>
 
-        {/* তৃতীয় সারি: দুটি অ্যাকশন বাটন (বিস্তারিত ও চ্যাট) */}
+        {/* তৃতীয় সারি: দুটি অ্যাকশন বাটন */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
           <button
             onClick={onClose}
