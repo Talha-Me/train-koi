@@ -69,24 +69,191 @@ const TrainSchedule = () => {
     return Array.from(stations).sort();
   }, []);
 
-  // SEO ফ্রেন্ডলি ডায়নামিক মেটা টাইটেল
+  // SEO ফ্রেন্ডলি ডায়নামিক মেটা ট্যাগস ও Schema.org (JSON-LD) স্ট্রাকচার্ড ডাটা
   useEffect(() => {
     const originalTitle = "Train Live Location | Train Tracking - TrainKoi";
     let currentTitle = "বাংলাদেশ রেলওয়ে ট্রেন সময়সূচী ২০২৬ | TrainKoi";
+    let descContent = "বাংলাদেশ রেলওয়ের সকল আন্তঃনগর, মেইল ও কমিউটার ট্রেনের অফিশিয়াল সময়সূচী, ভাড়ার তালিকা, বন্ধের দিন ও স্টপেজ তথ্য ২০২৬। ট্রেনকই (TrainKoi)।";
+    let pageUrl = "https://www.trainkoi.com/schedule";
+
     if (selectedTrain) {
-      currentTitle = `${selectedTrain.name} Schedule & Time Table 2026 | TrainKoi - ফ্রি লাইভ ট্র্যাকিং`;
+      const startSt = selectedTrain.stations[0]?.name?.split('(')[0]?.trim();
+      const endSt = selectedTrain.stations[selectedTrain.stations.length - 1]?.name?.split('(')[0]?.trim();
+      const slug = getCleanSlug(selectedTrain.name);
+      pageUrl = `https://www.trainkoi.com/schedule/${slug}`;
+      currentTitle = `${selectedTrain.name} সময়সূচী ও ভাড়া ২০২৬ | ${startSt} হতে ${endSt} - TrainKoi`;
+      descContent = `${selectedTrain.name} (${selectedTrain.id}) ট্রেনের অফিশিয়াল সময়সূচী, ${startSt} থেকে ${endSt} পৌঁছানোর সময়, টিকিটের মূল্য তালিকা, সাপ্তাহিক বন্ধের দিন, স্টপেজ ও অন-বোর্ড সুবিধা ২০২৬।`;
     }
+
     document.title = currentTitle;
-    const timer = setTimeout(() => { document.title = currentTitle; }, 150);
+
+    // ১. Meta Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      document.head.appendChild(metaDesc);
+    }
+    const prevDesc = metaDesc.content;
+    metaDesc.content = descContent;
+
+    // ২. Canonical Link
+    let linkCanonical = document.querySelector('link[rel="canonical"]');
+    if (!linkCanonical) {
+      linkCanonical = document.createElement('link');
+      linkCanonical.rel = 'canonical';
+      document.head.appendChild(linkCanonical);
+    }
+    const prevCanonical = linkCanonical.href;
+    linkCanonical.href = pageUrl;
+
+    // ৩. Open Graph Tags
+    const updateOg = (property, value) => {
+      let el = document.querySelector(`meta[property="${property}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute('property', property);
+        document.head.appendChild(el);
+      }
+      el.content = value;
+      return el;
+    };
+    updateOg('og:title', currentTitle);
+    updateOg('og:description', descContent);
+    updateOg('og:url', pageUrl);
+    updateOg('og:type', 'article');
+
+    // ৪. Schema.org JSON-LD Structured Data
+    let schemaScript = document.getElementById('trainkoi-schedule-schema');
+    if (!schemaScript) {
+      schemaScript = document.createElement('script');
+      schemaScript.id = 'trainkoi-schedule-schema';
+      schemaScript.type = 'application/ld+json';
+      document.head.appendChild(schemaScript);
+    }
+
+    if (selectedTrain) {
+      const startSt = selectedTrain.stations[0];
+      const endSt = selectedTrain.stations[selectedTrain.stations.length - 1];
+      const offDayDisplay = selectedTrain.offDay && selectedTrain.offDay !== 'None' && selectedTrain.offDay !== 'নাই (None)'
+        ? selectedTrain.offDay
+        : 'সপ্তাহের ৭ দিনই চলাচল করে';
+
+      const jsonLd = {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "TrainTrip",
+            "@id": `${pageUrl}#triptable`,
+            "name": `${selectedTrain.name} Time Table 2026`,
+            "trainNumber": String(selectedTrain.id),
+            "description": descContent,
+            "departureStation": {
+              "@type": "TrainStation",
+              "name": startSt?.name?.split('(')[0]?.trim() || "প্রারম্ভিক স্টেশন"
+            },
+            "arrivalStation": {
+              "@type": "TrainStation",
+              "name": endSt?.name?.split('(')[0]?.trim() || "গন্তব্য স্টেশন"
+            },
+            "departureTime": startSt?.departure || "00:00",
+            "arrivalTime": endSt?.arrival || "00:00",
+            "provider": {
+              "@type": "Organization",
+              "name": "Bangladesh Railway",
+              "url": "https://railway.gov.bd/"
+            }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": `${pageUrl}#breadcrumb`,
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "হোম",
+                "item": "https://www.trainkoi.com/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "ট্রেন সময়সূচী",
+                "item": "https://www.trainkoi.com/schedule"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": selectedTrain.name,
+                "item": pageUrl
+              }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": `${pageUrl}#faq`,
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": `${selectedTrain.name}-এর সাপ্তাহিক বন্ধের দিন কোনটি?`,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": `${selectedTrain.name} ট্রেনের সাপ্তাহিক বন্ধের দিন হচ্ছে ${offDayDisplay}।`
+                }
+              },
+              {
+                "@type": "Question",
+                "name": `${startSt?.name.split('(')[0]} থেকে ${endSt?.name.split('(')[0]} ট্রেনের ছাড়ার ও পৌঁছানোর সময় কত?`,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": `${selectedTrain.name} ট্রেনটি ${startSt?.name.split('(')[0]} থেকে ছাড়ার সময় ${startSt?.departure || 'নির্ধারিত সময়'} এবং ${endSt?.name.split('(')[0]} পৌঁছানোর সময় ${endSt?.arrival || 'নির্ধারিত সময়'}।`
+                }
+              },
+              {
+                "@type": "Question",
+                "name": `${selectedTrain.name}-এর টিকিট কীভাবে কাটবেন?`,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": `বাংলাদেশ রেলওয়ের অফিশিয়াল ওয়েবসাইট eticket.railway.gov.bd অথবা Rail Sheba অ্যাপ থেকে যাত্রার ১০ দিন পূর্বে অগ্রিম টিকিট কাটা যায়।`
+                }
+              }
+            ]
+          }
+        ]
+      };
+      schemaScript.text = JSON.stringify(jsonLd);
+    } else {
+      schemaScript.text = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "বাংলাদেশ রেলওয়ে ট্রেন সময়সূচী ২০২৬",
+        "description": descContent
+      });
+    }
+
     return () => {
-      clearTimeout(timer);
       document.title = originalTitle;
+      if (metaDesc) metaDesc.content = prevDesc || '';
+      if (linkCanonical) linkCanonical.href = prevCanonical || 'https://www.trainkoi.com/schedule';
+      if (schemaScript && schemaScript.parentNode) {
+        schemaScript.parentNode.removeChild(schemaScript);
+      }
     };
   }, [selectedTrain]);
 
   useEffect(() => {
     if (trainSlug) {
-      const train = trains.find(t => getCleanSlug(t.name) === trainSlug);
+      const cleanTarget = trainSlug.toLowerCase().replace(/[-_]/g, '');
+      const train = trains.find(t => {
+        const slug = getCleanSlug(t.name).replace(/[-_]/g, '');
+        const idStr = String(t.id);
+        const rawName = t.name.toLowerCase().replace(/[-_\s()]/g, '');
+        return slug === cleanTarget || 
+               idStr === trainSlug || 
+               rawName.includes(cleanTarget) ||
+               cleanTarget.includes(slug) ||
+               (cleanTarget.includes('subarna') && slug.includes('suborno')) ||
+               (cleanTarget.includes('suborno') && slug.includes('subarna'));
+      });
       if (train) setSelectedTrain(train);
     } else {
       setSelectedTrain(null);
@@ -151,6 +318,33 @@ const TrainSchedule = () => {
       text: (hours + ' ঘণ্টা ' + minText).trim() 
     };
   };
+
+  // স্টেশনে যাত্রাবিরতি বা থামার সময় হিসাব (Halt Duration)
+  const calculateHaltTime = (arr, dep) => {
+    if (!arr || !dep || arr === '-' || dep === '-') return null;
+    const arrMin = parseTimeToMinutes(arr);
+    const depMin = parseTimeToMinutes(dep);
+    if (arrMin === null || depMin === null) return null;
+    let diff = depMin - arrMin;
+    if (diff < 0) diff += 24 * 60;
+    if (diff === 0) return '১ মিনিট';
+    return `${diff} মিনিট`;
+  };
+
+  // একই রুটের বিকল্প ও ফিরতি জনপ্রিয় ট্রেনসমূহ (হাই-ভ্যালু এসইও ইন্টারনাল লিংকিং)
+  const sameRouteTrains = useMemo(() => {
+    if (!selectedTrain || !trains) return [];
+    const curStart = selectedTrain.stations[0]?.name?.split('(')[0]?.trim();
+    const curEnd = selectedTrain.stations[selectedTrain.stations.length - 1]?.name?.split('(')[0]?.trim();
+    if (!curStart || !curEnd) return [];
+
+    return trains.filter(t => {
+      if (t.id === selectedTrain.id) return false;
+      const tStart = t.stations[0]?.name?.split('(')[0]?.trim();
+      const tEnd = t.stations[t.stations.length - 1]?.name?.split('(')[0]?.trim();
+      return (tStart === curStart && tEnd === curEnd) || (tStart === curEnd && tEnd === curStart);
+    }).slice(0, 6);
+  }, [selectedTrain]);
 
   // দূরত্ব ভিত্তিক আনুমানিক ভাড়া ক্যালকুলেটর (বাংলাদেশ রেলওয়ে ফ্রেইমওয়ার্ক)
   const calculateFares = (km) => {
@@ -862,6 +1056,7 @@ const TrainSchedule = () => {
                           <th style={{ padding: '12px 14px', fontSize: '13px', textAlign: 'center' }}>দূরত্ব</th>
                           <th style={{ padding: '12px 16px', fontSize: '13.5px', textAlign: 'center' }}>পৌঁছানোর সময়</th>
                           <th style={{ padding: '12px 16px', fontSize: '13.5px', textAlign: 'center' }}>ছাড়ার সময়</th>
+                          <th style={{ padding: '12px 14px', fontSize: '13px', textAlign: 'center' }}>বিরতি</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -878,6 +1073,17 @@ const TrainSchedule = () => {
                             </td>
                             <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: '#64748b' }}>{st.arrival || '-'}</td>
                             <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: '#006a4e', fontWeight: '800' }}>{st.departure || '-'}</td>
+                            <td style={{ padding: '12px 14px', fontSize: '12px', textAlign: 'center', fontWeight: '700' }}>
+                              {i === 0 ? (
+                                <span style={{ color: '#15803d', backgroundColor: '#dcfce7', padding: '3px 8px', borderRadius: '6px' }}>যাত্রা শুরু</span>
+                              ) : i === selectedTrain.stations.length - 1 ? (
+                                <span style={{ color: '#b91c1c', backgroundColor: '#fee2e2', padding: '3px 8px', borderRadius: '6px' }}>যাত্রা শেষ</span>
+                              ) : (
+                                <span style={{ color: '#006a4e', backgroundColor: '#f0fdf4', padding: '3px 8px', borderRadius: '6px', border: '1px solid #bbf7d0' }}>
+                                  {calculateHaltTime(st.arrival, st.departure) || '১–২ মিনিট'}
+                                </span>
+                              )}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1223,7 +1429,198 @@ const TrainSchedule = () => {
                   </div>
                 </div>
 
-                {/* ৫. ট্রেনভিত্তিক সাধারণ প্রশ্নোত্তর (Train-Specific FAQ Accordion) */}
+                {/* ৫. অন-বোর্ড রেলওয়ে ক্যাটারিং মেনু ও অনুমোদিত মূল্যতালিকা */}
+                <div className="ts-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                    <h3 style={{ fontSize: '18px', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
+                      <Utensils size={20} color="#006a4e" /> অন-বোর্ড খাবার ও ক্যাটারিং মেনু (Approved Price Card)
+                    </h3>
+                    <span style={{ fontSize: '11.5px', backgroundColor: '#e6f4ee', color: '#006a4e', padding: '4px 10px', borderRadius: '12px', fontWeight: '800' }}>
+                      বাংলাদেশ রেলওয়ে নির্ধারিত রেট
+                    </span>
+                  </div>
+
+                  <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#64748b', lineHeight: '1.6' }}>
+                    আন্তঃনগর ট্রেনের সংযুক্ত খাবার গাড়িতে (Buffet Car) অনুমোদিত খাদ্যদ্রব্য ও সরকারি নির্ধারিত মূল্যতালিকা অনুযায়ী খাবার সরবরাহ করা হয়।
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                    <div style={{ backgroundColor: '#fbfcfb', padding: '12px 14px', borderRadius: '12px', border: '1px solid #eef2f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#1e293b' }}>চিকেন কাটলেট (২ পিস)</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>সস ও সালাদসহ পরিবেশন</div>
+                      </div>
+                      <div style={{ fontWeight: '900', color: '#006a4e', fontSize: '15px' }}>৳৫০</div>
+                    </div>
+
+                    <div style={{ backgroundColor: '#fbfcfb', padding: '12px 14px', borderRadius: '12px', border: '1px solid #eef2f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#1e293b' }}>স্পেশাল ডিম খিচুড়ি</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>আচার ও ডিমসহ লাঞ্চ বক্স</div>
+                      </div>
+                      <div style={{ fontWeight: '900', color: '#006a4e', fontSize: '15px' }}>৳১০০–৳১২০</div>
+                    </div>
+
+                    <div style={{ backgroundColor: '#fbfcfb', padding: '12px 14px', borderRadius: '12px', border: '1px solid #eef2f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#1e293b' }}>চিকেন রোস্ট / ফ্রাই প্যাকেট</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>পরোটা বা খিচুড়ির সাথে</div>
+                      </div>
+                      <div style={{ fontWeight: '900', color: '#006a4e', fontSize: '15px' }}>৳১৫০–৳১৮০</div>
+                    </div>
+
+                    <div style={{ backgroundColor: '#fbfcfb', padding: '12px 14px', borderRadius: '12px', border: '1px solid #eef2f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#1e293b' }}>স্পেশাল দুধ চা / ব্ল্যাক কফি</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>কাপ প্রতি গরম পানীয়</div>
+                      </div>
+                      <div style={{ fontWeight: '900', color: '#006a4e', fontSize: '15px' }}>৳২০</div>
+                    </div>
+
+                    <div style={{ backgroundColor: '#fbfcfb', padding: '12px 14px', borderRadius: '12px', border: '1px solid #eef2f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#1e293b' }}>মিনারেল ওয়াটার (৫০০ মিলি)</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>রেলওয়ে অনুমোদিত ব্র্যান্ড</div>
+                      </div>
+                      <div style={{ fontWeight: '900', color: '#006a4e', fontSize: '15px' }}>৳১৫–৳২০</div>
+                    </div>
+
+                    <div style={{ backgroundColor: '#fbfcfb', padding: '12px 14px', borderRadius: '12px', border: '1px solid #eef2f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#1e293b' }}>প্যাকেট কুকিজ ও স্ন্যাক্স</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>সিলগালা হালকা নাস্তা</div>
+                      </div>
+                      <div style={{ fontWeight: '900', color: '#006a4e', fontSize: '15px' }}>MRP গায়ের রেট</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '14px', backgroundColor: '#f8fafc', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle size={16} color="#006a4e" />
+                    <span><strong>গ্রাহক অধিকার:</strong> ক্যাটারিং কর্মীরা অতিরিক্ত মূল্য দাবি করলে বা রসিদ দিতে অস্বীকার করলে ট্রেনের পরিচালক (গার্ড) অথবা রেলওয়ে হেল্পলাইন <strong>১৬৪৫৯</strong>-এ অবহিত করার নিয়ম রয়েছে।</span>
+                  </div>
+                </div>
+
+                {/* ৬. কোচ কম্পোজিশন ও স্মার্ট আসন বিন্যাস সহায়িকা */}
+                <div className="ts-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                    <div style={{ backgroundColor: '#e6f4ee', padding: '10px', borderRadius: '12px', display: 'flex' }}>
+                      <Train size={20} color="#006a4e" />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '18px', color: '#0f1f1a', margin: 0, fontWeight: '800' }}>
+                        কোচ কম্পোজিশন ও স্মার্ট সিটিং গাইড (Coach Layout & Seating Secrets)
+                      </h3>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                        ট্রেনের রেক সজ্জা এবং আরামদায়ক জানালার আসন নির্বাচনের কৌশল
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+                    <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                      <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
+                        ১. ট্রেনের রেক ও বগির অবস্থান:
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
+                        সাধারণত ট্রেনের পাওয়ার কার (জেনারেটর বগি) ও গার্ড রুম একদম সামনে বা পেছনে থাকে। ট্রেনের মাঝামাঝি বগিগুলোতে ক্যাটারিং কার এবং শান্ত এসি স্নিগ্ধা থাকে, যেখানে লাইনের ঝাঁকুনি ও শব্দ সবচেয়ে কম হয়।
+                      </p>
+                    </div>
+
+                    <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                      <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
+                        ২. উইন্ডো সিট নির্বাচনের উপায়:
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
+                        শোভন চেয়ারে ২+৩ বিন্যাসে সাধারণত ১, ৪ অথবা ৫ নম্বর আসনগুলো জানালার পাশে পড়ে। স্নিগ্ধা এসিতে ২+২ সিটিং ব্যবস্থায় A ও D কলামের সিট জানালার পাশে থাকে। অনলাইনে টিকিট কাটার সময় সিট সিলেকশন ম্যাপ দেখে এটি নিশ্চিত করা যায়।
+                      </p>
+                    </div>
+
+                    <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                      <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#006a4e', fontWeight: '800' }}>
+                        ৩. চার্জিং আউটলেট ও নামাজ ঘর:
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '12.5px', color: '#475569', lineHeight: '1.6' }}>
+                        স্নিগ্ধা এবং এসি কেবিনে প্রতি সিটের নিচে মোবাইল চার্জিং সকেট সচল থাকে। শোভন বগিগুলোতেও নির্দিষ্ট কোচে চার্জিং পয়েন্ট রয়েছে। এছাড়া খাবার গাড়ির নির্দিষ্ট অংশে নিয়মিত নামাজের কার্পেট বিছানো স্থান সংরক্ষিত থাকে।
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ৭. একই রুটের বিকল্প ও ফিরতি জনপ্রিয় ট্রেনসমূহ (হাই-ভ্যালু এসইও ইন্টারনাল লিংক) */}
+                {sameRouteTrains.length > 0 && (
+                  <div className="ts-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '18px', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800' }}>
+                          <ArrowRightLeft size={20} color="#006a4e" /> একই রুটের বিকল্প ও ফিরতি ট্রেনসমূহ
+                        </h3>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>
+                          {selectedTrain.stations[0]?.name.split('(')[0]} ⇄ {selectedTrain.stations[selectedTrain.stations.length - 1]?.name.split('(')[0]} রুটের অন্যান্য ট্রেন
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '11.5px', backgroundColor: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '12px', fontWeight: '700' }}>
+                        মোট {sameRouteTrains.length}টি ট্রেন
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' }}>
+                      {sameRouteTrains.map((rt) => {
+                        const rtStart = rt.stations[0];
+                        const rtEnd = rt.stations[rt.stations.length - 1];
+                        const rtSlug = getCleanSlug(rt.name);
+
+                        return (
+                          <div
+                            key={rt.id}
+                            onClick={() => {
+                              setSelectedTrain(rt);
+                              navigate(`/schedule/${rtSlug}`);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            style={{
+                              padding: '14px 16px',
+                              backgroundColor: '#fff',
+                              border: '1.5px solid #edf2ef',
+                              borderRadius: '16px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                              gap: '8px'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = '#006a4e';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 106, 78, 0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = '#edf2ef';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontWeight: '800', fontSize: '14px', color: '#0f1f1a' }}>{rt.name}</span>
+                              <span style={{ fontSize: '11px', color: '#006a4e', backgroundColor: '#e6f4ee', padding: '2px 8px', borderRadius: '10px', fontWeight: '800' }}>
+                                নং {rt.id}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>{rtStart?.name.split('(')[0]}</span>
+                              <span>➔</span>
+                              <span>{rtEnd?.name.split('(')[0]}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px dashed #f1f5f9', paddingTop: '6px', fontSize: '11.5px' }}>
+                              <span style={{ color: '#475569' }}>ছাড়ার সময়: <strong>{rtStart?.departure || '-'}</strong></span>
+                              <span style={{ color: '#92400e', fontWeight: '700' }}>বন্ধ: {rt.offDay || 'নেই'}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {(() => {
                   const startSt = selectedTrain.stations[0];
                   const endSt = selectedTrain.stations[selectedTrain.stations.length - 1];
