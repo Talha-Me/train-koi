@@ -56,15 +56,14 @@ const Navbar = ({ activePage }) => {
           cursor: pointer;
         }
         .tk-brand-icon {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          width: 42px;
+          height: 42px;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          box-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+          overflow: hidden;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .tk-nav-brand:hover .tk-brand-icon {
@@ -194,7 +193,11 @@ const Navbar = ({ activePage }) => {
           {/* Logo */}
           <Link to="/" className="tk-nav-brand">
             <div className="tk-brand-icon">
-              <Train size={22} />
+              <img 
+                src="/trainkoi-icon.png" 
+                alt="TrainKoi" 
+                style={{ width: '100%', height: '100%', borderRadius: '12px', objectFit: 'cover' }} 
+              />
             </div>
             <div className="tk-brand-text">
               <span className="tk-brand-title">

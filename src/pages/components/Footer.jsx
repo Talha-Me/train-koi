@@ -127,7 +127,11 @@ const Footer = () => {
         {/* কলাম ১: লোগো ও বর্ণনা */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <Train size={30} color="#2ecc71" />
+            <img 
+              src="/trainkoi-icon.png" 
+              alt="TrainKoi" 
+              style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }} 
+            />
             <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '1px' }}>ট্রেনকই</h2>
           </div>
 

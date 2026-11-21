@@ -145,7 +145,11 @@ const MetroRules = () => {
           {/* SEO Marketing Footer */}
           <footer className="rules-marketing-footer">
             <div className="footer-logo">
-              <Zap size={20} fill="#008352" color="#008352" />
+              <img 
+                src="/trainkoi-icon.png" 
+                alt="TrainKoi" 
+                style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover' }} 
+              />
               <span>Trainkoi (ট্রেনকই)</span>
             </div>
             <p>

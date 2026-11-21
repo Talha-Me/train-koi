@@ -1438,7 +1438,11 @@ const HomePage = () => {
           zIndex: 1
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
-            <Train size={24} color="#fef08a" />
+            <img 
+              src="/trainkoi-icon.png" 
+              alt="TrainKoi" 
+              style={{ width: 34, height: 34, borderRadius: 10, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }} 
+            />
             <span style={{ fontSize: '20px', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.3px' }}>TrainKoi</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
@@ -1479,17 +1483,24 @@ const HomePage = () => {
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <h2 style={{ 
-              margin: 0, 
-              fontWeight: 900, 
-              fontSize: '28px', 
-              background: 'linear-gradient(to right, #ffffff, #fef08a, #ffffff)', 
-              WebkitBackgroundClip: 'text', 
-              WebkitTextFillColor: 'transparent', 
-              letterSpacing: '-0.5px'
-            }}>
-              ট্রেনকই
-            </h2>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <img 
+                src="/trainkoi-icon.png" 
+                alt="TrainKoi" 
+                style={{ width: 30, height: 30, borderRadius: 9, objectFit: 'cover', boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }} 
+              />
+              <h2 style={{ 
+                margin: 0, 
+                fontWeight: 900, 
+                fontSize: '28px', 
+                background: 'linear-gradient(to right, #ffffff, #fef08a, #ffffff)', 
+                WebkitBackgroundClip: 'text', 
+                WebkitTextFillColor: 'transparent', 
+                letterSpacing: '-0.5px'
+              }}>
+                ট্রেনকই
+              </h2>
+            </div>
             {/* লাইভ ট্র্যাকিং কাউন্টার ব্যাজ */}
             <div 
               className="hp-live-counter-badge"
@@ -1842,8 +1853,12 @@ const HomePage = () => {
             <TrainFront size={90} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, paddingRight: '15px', zIndex: 1 }}>
-            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', padding: '10px', borderRadius: '16px', color: '#eab308', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <HelpCircle size={22} style={{ transform: 'rotate(180deg)' }} />
+            <div style={{ padding: '4px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <img 
+                src="/trainkoi-icon.png" 
+                alt="TrainKoi App" 
+                style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} 
+              />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
               <span style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' }}>স্মার্ট ভ্রমণ সেবা</span>

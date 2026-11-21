@@ -48,7 +48,11 @@ const MetroPage = () => {
             <ChevronLeft size={24} />
           </button>
           <div className="main-logo">
-            <TrainFront size={24} />
+            <img 
+              src="/trainkoi-icon.png" 
+              alt="TrainKoi" 
+              style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'cover' }} 
+            />
             <span>TRAINKOI™</span>
           </div>
           <button onClick={handleShare} className="circle-btn">

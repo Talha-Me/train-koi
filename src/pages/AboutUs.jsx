@@ -823,8 +823,12 @@ const AboutUs = () => {
         <section className="tk-hero">
           <div className="tk-hero-grid">
             <div className="tk-hero-brand">
-              <div className="tk-hero-logo">
-                <Train size={55} color="#005a43" />
+              <div className="tk-hero-logo" style={{ overflow: 'hidden', padding: 0 }}>
+                <img 
+                  src="/trainkoi-icon.png" 
+                  alt="TrainKoi Logo" 
+                  style={{ width: '100%', height: '100%', borderRadius: 'inherit', objectFit: 'cover' }} 
+                />
               </div>
 
               <div className="tk-badge">
