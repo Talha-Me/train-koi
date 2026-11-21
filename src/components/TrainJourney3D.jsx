@@ -70,69 +70,10 @@ const toBangla = (num) => {
 };
 
 // =========================================================================
-// ২. রেলওয়ে গ্রাফ ও পাথফাইন্ডিং সিস্টেম (স্টেশন থেকে স্টেশনে অবিচ্ছিন্ন রুট)
+// ২. হাই-প্রিসিশন ট্র্যাক স্ন্যাপিং অ্যালগরিদম (রেললাইনের ঠিক ওপর বসানো)
 // =========================================================================
-const graphAdj = new Map();
-function ptKey(lat, lng) {
-  return (Math.round(lat * 1000) / 1000) + ',' + (Math.round(lng * 1000) / 1000);
-}
-
-// গ্রাফ ইনিশিয়ালাইজেশন
-railSegmentsData.forEach(([slat, slng, elat, elng]) => {
-  const k1 = ptKey(slat, slng);
-  const k2 = ptKey(elat, elng);
-  if (!graphAdj.has(k1)) graphAdj.set(k1, []);
-  if (!graphAdj.has(k2)) graphAdj.set(k2, []);
-  graphAdj.get(k1).push([elat, elng]);
-  graphAdj.get(k2).push([slat, slng]);
-});
-
-function findNearestGraphNode(lat, lng) {
-  let best = null, minD = Infinity;
-  for (const [k, pts] of graphAdj.entries()) {
-    const [klat, klng] = k.split(',').map(Number);
-    const d = Math.hypot(lat - klat, lng - klng);
-    if (d < minD) {
-      minD = d;
-      best = [klat, klng];
-    }
-  }
-  return best;
-}
-
-function findTrackPathBetween(p1, p2) {
-  const start = findNearestGraphNode(p1[0], p1[1]);
-  const end = findNearestGraphNode(p2[0], p2[1]);
-  if (!start || !end) return [p1, p2];
-
-  const startK = ptKey(start[0], start[1]);
-  const endK = ptKey(end[0], end[1]);
-  if (startK === endK) return [start];
-
-  const queue = [[startK, [start]]];
-  const visited = new Set([startK]);
-
-  while (queue.length > 0) {
-    const [currK, path] = queue.shift();
-    if (currK === endK) return path;
-
-    const neighbors = graphAdj.get(currK) || [];
-    for (const [nlat, nlng] of neighbors) {
-      const nK = ptKey(nlat, nlng);
-      if (!visited.has(nK)) {
-        visited.add(nK);
-        queue.push([nK, [...path, [nlat, nlng]]]);
-      }
-    }
-  }
-  return [p1, p2];
-}
-
-// =========================================================================
-// ৩. ট্রেনের বর্তমান অবস্থান রুটের ওপর স্ন্যাপ করা
-// =========================================================================
-function snapTrainToRoute(lat, lng, route) {
-  if (!route || route.length < 2) {
+function snapToRailTrack(lat, lng, destLat, destLng, segments) {
+  if (!segments || !segments.length) {
     return { lat, lng, bearing: 45, segIdx: 0, t: 0 };
   }
 
@@ -140,12 +81,14 @@ function snapTrainToRoute(lat, lng, route) {
   let bestLat = lat;
   let bestLng = lng;
   let bestBearing = 45;
-  let bestSegIdx = 0;
+  let bestIdx = 0;
   let bestT = 0;
 
-  for (let i = 0; i < route.length - 1; i++) {
-    const [slat, slng] = route[i];
-    const [elat, elng] = route[i + 1];
+  for (let i = 0; i < segments.length; i++) {
+    const [slat, slng, elat, elng] = segments[i];
+
+    if (Math.abs(lat - slat) > 0.08 && Math.abs(lat - elat) > 0.08) continue;
+    if (Math.abs(lng - slng) > 0.08 && Math.abs(lng - elng) > 0.08) continue;
 
     const dx = elng - slng;
     const dy = elat - slat;
@@ -164,7 +107,7 @@ function snapTrainToRoute(lat, lng, route) {
       minDistanceSq = distSq;
       bestLat = projLat;
       bestLng = projLng;
-      bestSegIdx = i;
+      bestIdx = i;
       bestT = t;
 
       const brng = ((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360;
@@ -172,17 +115,30 @@ function snapTrainToRoute(lat, lng, route) {
     }
   }
 
+  // গন্তব্য স্টেশন অনুযায়ী ট্রেনের মুখ সামনের দিকে অ্যালাইন করা
+  if (destLat !== undefined && destLng !== undefined) {
+    const destDx = destLng - bestLng;
+    const destDy = destLat - bestLat;
+    const destAngle = ((Math.atan2(destDx, destDy) * 180) / Math.PI + 360) % 360;
+
+    let diff = Math.abs(bestBearing - destAngle);
+    if (diff > 180) diff = 360 - diff;
+    if (diff > 90) {
+      bestBearing = (bestBearing + 180) % 360;
+    }
+  }
+
   return {
     lat: bestLat,
     lng: bestLng,
     bearing: bestBearing,
-    segIdx: bestSegIdx,
+    segIdx: bestIdx,
     t: bestT
   };
 }
 
 // =========================================================================
-// ৪. মূল ৩ডি জার্নি ভিউ কম্পোনেন্ট
+// ৩. মূল ৩ডি জার্নি ভিউ কম্পোনেন্ট
 // =========================================================================
 export default function TrainJourney3D({
   train,
@@ -201,53 +157,26 @@ export default function TrainJourney3D({
   const [isFollowing, setIsFollowing] = useState(true);
 
   // কাঁচা জিপিএস পজিশন
-  const rawLat = activeState?.lat || 23.8519;
-  const rawLng = activeState?.lng || 90.4079;
-  const speed = activeState?.speed || 63;
+  const rawLat = activeState?.lat || 24.2346;
+  const rawLng = activeState?.lng || 89.9213;
+  const speed = activeState?.speed || 42; // কিমি/ঘণ্টা
 
   // বর্তমান ও পরবর্তী স্টেশন
   const currentIdx = activeState?.segmentIndex ?? 0;
-  const prevStation = scheduleData[currentIdx] || scheduleData[0] || { name: 'ঢাকা বিমানবন্দর' };
-  const nextStation = scheduleData[currentIdx + 1] || scheduleData[scheduleData.length - 1] || { name: 'ঢাকা কমলাপুর' };
-  const originStation = scheduleData[0] || { name: 'প্রারম্ভিক' };
-  const destStation = scheduleData[scheduleData.length - 1] || { name: 'গন্তব্য' };
+  const prevStation = scheduleData[currentIdx] || scheduleData[0] || { name: 'Dhaka' };
+  const nextStation = scheduleData[currentIdx + 1] || scheduleData[scheduleData.length - 1] || { name: 'Mirzapur' };
+  const originStation = scheduleData[0] || { name: 'Dhaka' };
+  const destStation = scheduleData[scheduleData.length - 1] || { name: 'Chapainawabganj' };
 
-  // সম্পূর্ণ ট্রেনের অবিচ্ছিন্ন রুট ট্র্যাক তৈরি (স্টেশন টু স্টেশন)
-  const fullRoutePath = useMemo(() => {
-    if (!scheduleData || scheduleData.length < 2) {
-      return [
-        [rawLat - 0.05, rawLng - 0.05],
-        [rawLat, rawLng],
-        [rawLat + 0.05, rawLng + 0.05]
-      ];
-    }
+  // গন্তব্য স্থানাঙ্ক
+  const destCoords = nextStation?.coords || [24.2346, 89.9213];
 
-    let combined = [];
-    for (let i = 0; i < scheduleData.length - 1; i++) {
-      const c1 = scheduleData[i].coords;
-      const c2 = scheduleData[i + 1].coords;
-      if (c1 && c2) {
-        const segPath = findTrackPathBetween(c1, c2);
-        if (combined.length === 0) {
-          combined = segPath;
-        } else {
-          combined = combined.concat(segPath.slice(1));
-        }
-      }
-    }
-
-    if (combined.length < 2) {
-      return scheduleData.filter(st => st.coords).map(st => st.coords);
-    }
-    return combined;
-  }, [scheduleData, rawLat, rawLng]);
-
-  // রুটের ওপর ট্রেনের নিখুঁত স্ন্যাপ পজিশন
+  // ট্র্যাকে স্ন্যাপ করা প্রাথমিক স্থানাঙ্ক ও হেডিং
   const initialSnap = useMemo(() => {
-    return snapTrainToRoute(rawLat, rawLng, fullRoutePath);
-  }, [rawLat, rawLng, fullRoutePath]);
+    return snapToRailTrack(rawLat, rawLng, destCoords[0], destCoords[1], railSegmentsData);
+  }, [rawLat, rawLng, destCoords]);
 
-  // রিয়েলটাইম অ্যানিমেশন স্টেট
+  // রিয়েলটাইম ট্র্যাকিং স্টেট (মুভিং ট্রেন)
   const trainStateRef = useRef({
     lat: initialSnap.lat,
     lng: initialSnap.lng,
@@ -258,20 +187,20 @@ export default function TrainJourney3D({
 
   const distanceToNext = useMemo(() => {
     if (activeState?.distanceToNext) return Math.round(activeState.distanceToNext);
-    return 10;
+    return 8;
   }, [activeState]);
 
   const etaMinutes = useMemo(() => {
-    const s = Math.max(20, speed);
-    return Math.round((distanceToNext / s) * 60) || 10;
+    const s = Math.max(15, speed);
+    return Math.round((distanceToNext / s) * 60) || 12;
   }, [distanceToNext, speed]);
 
   const progressPercent = useMemo(() => {
     if (activeState?.progress) return Math.round(activeState.progress);
     if (scheduleData.length > 1) {
-      return Math.round((currentIdx / (scheduleData.length - 1)) * 100) || 86;
+      return Math.round((currentIdx / (scheduleData.length - 1)) * 100) || 19;
     }
-    return 86;
+    return 19;
   }, [activeState, currentIdx, scheduleData]);
 
   // ২ডি / ৩ডি টগল
@@ -302,7 +231,7 @@ export default function TrainJourney3D({
   };
 
   // =========================================================================
-  // ৫. ম্যাপ ইনিশিয়ালাইজেশন
+  // ৪. ম্যাপ ও বাস্তবসম্মত ৩ডি রেললাইন লেয়ার
   // =========================================================================
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -325,25 +254,35 @@ export default function TrainJourney3D({
     });
 
     map.on('load', () => {
-      // ১. সম্পূর্ণ পরিষ্কার ও উজ্জ্বল ৩ডি রেলওয়ে লাইন (High Contrast Ballast Bed)
-      const routeGeoJson = {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: fullRoutePath.map(([lat, lng]) => [lng, lat])
-        }
+      // ১. সম্পূর্ণ বাংলাদেশের ৬,০১০টি হাই-প্রিসিশন রেললাইন একসাথে রেন্ডার করা
+      const allRailGeoJson = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'MultiLineString',
+              coordinates: railSegmentsData.map(s => [
+                [s[1], s[0]], // [slng, slat]
+                [s[3], s[2]]  // [elng, elat]
+              ])
+            },
+            properties: {}
+          }
+        ]
       };
 
-      map.addSource('train-route-line', {
+      map.addSource('all-bangladesh-railway', {
         type: 'geojson',
-        data: routeGeoJson
+        data: allRailGeoJson
       });
 
-      // লেয়ার ১: উজ্জ্বল লাইট-ধূসর ব্যালাস্ট পাথর বেড (Screen-matched Ballast Track)
+      // লেয়ার ১: উজ্জ্বল লাইট-ধূসর ব্যালাস্ট পাথর বেড (Light Stone Ballast Bed)
+      // স্যাটেলাইট ম্যাপে সবুজ ফসলি জমির মাঝে উজ্জ্বল ও স্পষ্ট দেখা যাবে (স্ক্রিনশটের হুবহু)
       map.addLayer({
-        id: 'track-ballast-outer',
+        id: 'rail-ballast-bed',
         type: 'line',
-        source: 'train-route-line',
+        source: 'all-bangladesh-railway',
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
           'line-color': '#e2e8f0',
@@ -352,11 +291,11 @@ export default function TrainJourney3D({
         }
       });
 
-      // লেয়ার ২: কাঠের স্লিপার টাই (Sleeper Ties with dasharray)
+      // লেয়ার ২: কাঠের ড্যাশ স্লিপার টাই (Sleeper Ties with dasharray)
       map.addLayer({
-        id: 'track-sleepers',
+        id: 'rail-sleepers',
         type: 'line',
-        source: 'train-route-line',
+        source: 'all-bangladesh-railway',
         paint: {
           'line-color': '#334155',
           'line-width': 14,
@@ -365,38 +304,38 @@ export default function TrainJourney3D({
         }
       });
 
-      // লেয়ার ৩: রূপালী স্টিল ডাবল রেললাইন (Steel Rails)
+      // লেয়ার ৩: স্টিলের রূপালী ডাবল রেললাইন (Steel Rails)
       map.addLayer({
-        id: 'track-steel-rails',
+        id: 'rail-steel-outer',
         type: 'line',
-        source: 'train-route-line',
+        source: 'all-bangladesh-railway',
         paint: {
           'line-color': '#0f172a',
-          'line-width': 6,
+          'line-width': 5.5,
           'line-opacity': 0.98
         }
       });
 
-      // লেয়ার ৪: রেলের মাঝের খাঁজ
+      // লেয়ার ৪: রেলের ভেতরের খাঁজ (Center gap between rails)
       map.addLayer({
-        id: 'track-rail-center',
+        id: 'rail-steel-inner',
         type: 'line',
-        source: 'train-route-line',
+        source: 'all-bangladesh-railway',
         paint: {
           'line-color': '#e2e8f0',
-          'line-width': 3,
+          'line-width': 2.8,
           'line-opacity': 0.98
         }
       });
 
-      // ২. স্ক্রিনশটের হুবহু ৩ডি ট্রেন মডেল (লাল ইঞ্জিন + ৬টি সবুজ বগি)
+      // ২. স্ক্রিনশটের হুবহু বাস্তবসম্মত ৩ডি ট্রেন (লাল ইঞ্জিন + ১২টি সবুজ বগি)
       const trainEl = document.createElement('div');
       trainEl.className = 'clean-train-3d-model';
       trainEl.style.transformOrigin = 'top center';
       trainEl.style.transform = `rotate(${initialSnap.bearing}deg)`;
 
-      // কোচসমূহের এইচটিএমএল
-      const coachesHtml = Array.from({ length: 6 }).map(() => `
+      // ১২টি কোচের নিখুঁত ভেক্টর মডেল (লাল ইঞ্জিন + সবুজ বগি)
+      const coachesHtml = Array.from({ length: 12 }).map(() => `
         <div style="
           width: 14px;
           height: 18px;
@@ -441,7 +380,7 @@ export default function TrainJourney3D({
           </div>
           <div style="width: 5px; height: 2px; background: #1e293b; margin-bottom: 2px;"></div>
 
-          <!-- ৬টি প্যাসেঞ্জার বগি -->
+          <!-- ১২টি প্যাসেঞ্জার বগি -->
           ${coachesHtml}
         </div>
       `;
@@ -462,55 +401,72 @@ export default function TrainJourney3D({
       if (trainMarkerRef.current) trainMarkerRef.current.remove();
       map.remove();
     };
-  }, [currentStyle, fullRoutePath]);
+  }, [currentStyle]);
 
   // =========================================================================
-  // ৬. মসৃণ রিয়েল মুভমেন্ট লুপ (অবিচ্ছিন্ন রুটের ওপর দিয়ে ট্রেন সামনে চলবে)
+  // ৫. স্মুথ ডেড-রেকনিং অ্যানিমেশন লুপ (রেললাইন ধরে ট্রেন সামনে মসৃণভাবে চলে)
+  // "দুই হালনাগাদের মাঝে ট্রেনটি সর্বশেষ জানা গতিতে সোজা এগোবে"
   // =========================================================================
   useEffect(() => {
     let lastTime = performance.now();
 
-    const animateTrainAlongRoute = (now) => {
+    const animateTrainAlongTrack = (now) => {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
 
       const st = trainStateRef.current;
-      const pts = fullRoutePath;
+      const segs = railSegmentsData;
 
-      if (pts && pts.length > 1 && st.segIdx < pts.length - 1) {
-        const p1 = pts[st.segIdx];
-        const p2 = pts[st.segIdx + 1];
-
-        const segDistMeters = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * 111000;
+      if (segs && segs[st.segIdx]) {
+        const [slat, slng, elat, elng] = segs[st.segIdx];
+        const segDistMeters = Math.hypot(elat - slat, elng - slng) * 111000;
 
         if (segDistMeters > 0) {
-          const metersPerSec = Math.max(10, (speed * 1000) / 3600);
+          const metersPerSec = Math.max(8, (speed * 1000) / 3600);
           const dtMeters = metersPerSec * dt;
           st.t += dtMeters / segDistMeters;
 
+          // সেগমেন্ট শেষ হলে সংযুক্ত পরবর্তী সেগমেন্টে ট্রানজিশন
           if (st.t >= 1) {
             st.t = 0;
-            st.segIdx = Math.min(pts.length - 2, st.segIdx + 1);
+            const dx = elng - slng;
+            const dy = elat - slat;
+
+            let nextIdx = (st.segIdx + 1) % segs.length;
+            let bestDot = -Infinity;
+
+            for (let k = 0; k < segs.length; k++) {
+              const cand = segs[k];
+              if (Math.hypot(cand[0] - elat, cand[1] - elng) < 0.001) {
+                const cdx = cand[3] - cand[1];
+                const cdy = cand[2] - cand[0];
+                const dot = dx * cdx + dy * cdy;
+                if (dot > bestDot) {
+                  bestDot = dot;
+                  nextIdx = k;
+                }
+              }
+            }
+            st.segIdx = nextIdx;
           }
 
-          const currP1 = pts[st.segIdx];
-          const currP2 = pts[st.segIdx + 1];
+          const currSeg = segs[st.segIdx];
+          st.lat = currSeg[0] + st.t * (currSeg[2] - currSeg[0]);
+          st.lng = currSeg[1] + st.t * (currSeg[3] - currSeg[1]);
 
-          st.lat = currP1[0] + st.t * (currP2[0] - currP1[0]);
-          st.lng = currP1[1] + st.t * (currP2[1] - currP1[1]);
-
-          const dx = currP2[1] - currP1[1];
-          const dy = currP2[0] - currP1[0];
+          const dx = currSeg[3] - currSeg[1];
+          const dy = currSeg[2] - currSeg[0];
           st.bearing = ((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360;
         }
 
-        // মার্কার ও ক্যামেরা আপডেট
+        // মার্কার পজিশন ও রোটেশন আপডেট
         if (trainMarkerRef.current) {
           trainMarkerRef.current.setLngLat([st.lng, st.lat]);
           const el = trainMarkerRef.current.getElement();
           if (el) el.style.transform = `rotate(${st.bearing}deg)`;
         }
 
+        // ক্যামেরা ফলোইং
         if (isFollowing && mapRef.current) {
           mapRef.current.easeTo({
             center: [st.lng, st.lat],
@@ -520,15 +476,15 @@ export default function TrainJourney3D({
         }
       }
 
-      animFrameRef.current = requestAnimationFrame(animateTrainAlongRoute);
+      animFrameRef.current = requestAnimationFrame(animateTrainAlongTrack);
     };
 
-    animFrameRef.current = requestAnimationFrame(animateTrainAlongRoute);
+    animFrameRef.current = requestAnimationFrame(animateTrainAlongTrack);
 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [fullRoutePath, speed, isFollowing, is2DMode]);
+  }, [speed, isFollowing, is2DMode]);
 
   return (
     <div
@@ -541,7 +497,7 @@ export default function TrainJourney3D({
       }}
     >
       {/* =====================================================================
-          ১. টপ-লেফট ক্যাপসুল (উপকূল এক্সপ্রেস #৬০ অন টাইম)
+          ১. টপ-লেফট ক্যাপসুল (Rajshahi Com Up #5 2h 49m দেরী)
       ===================================================================== */}
       <div
         style={{
@@ -586,7 +542,7 @@ export default function TrainJourney3D({
           }}
         >
           <span style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a' }}>
-            {train?.name?.split('(')[0]?.trim() || 'উপকূল এক্সপ্রেস'} #{train?.number || '৬০'}
+            {train?.name?.split('(')[0]?.trim() || 'Rajshahi Com Up'} #{train?.number || '5'}
           </span>
           <span
             style={{
@@ -598,7 +554,7 @@ export default function TrainJourney3D({
               color: activeState?.delayMinutes > 5 ? '#b45309' : '#15803d'
             }}
           >
-            {activeState?.delayMinutes > 5 ? `${toBangla(activeState.delayMinutes)}মিনিট লেট` : 'অন টাইম'}
+            {activeState?.delayMinutes > 5 ? `${toBangla(activeState.delayMinutes)} মিনিট লেট` : 'অন টাইম'}
           </span>
         </div>
       </div>
@@ -745,7 +701,7 @@ export default function TrainJourney3D({
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700' }}>পরবর্তী স্টেশন</div>
             <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
-              {nextStation?.name?.split('(')[0] || 'ঢাকা বিমানবন্দর'}
+              {nextStation?.name?.split('(')[0] || 'Mirzapur'}
             </div>
             <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
               {toBangla(distanceToNext)} কিমি দূরে
@@ -764,9 +720,9 @@ export default function TrainJourney3D({
         {/* প্রোগ্রেস বার (স্টেশন টু স্টেশন) */}
         <div style={{ marginBottom: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', fontWeight: '700', marginBottom: '4px' }}>
-            <span>{originStation?.name?.split('(')[0] || 'প্রারম্ভিক'}</span>
+            <span>{originStation?.name?.split('(')[0] || 'Dhaka'}</span>
             <span style={{ color: '#006a4e', fontWeight: '800' }}>{toBangla(progressPercent)}%</span>
-            <span>{destStation?.name?.split('(')[0] || 'গন্তব্য'}</span>
+            <span>{destStation?.name?.split('(')[0] || 'Chapainawabganj'}</span>
           </div>
 
           <div style={{ height: '5px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
