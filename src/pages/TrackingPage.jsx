@@ -873,6 +873,16 @@ const TrackingPage = () => {
           70% { box-shadow: 0 0 0 8px rgba(0, 106, 78, 0), 0 4px 10px rgba(0, 0, 0, 0.25); }
           100% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0), 0 4px 10px rgba(0, 0, 0, 0.25); }
         }
+        @keyframes btnGlowPulse {
+          0%, 100% {
+            box-shadow: 0 4px 14px rgba(0, 106, 78, 0.4), 0 0 0 0 rgba(0, 106, 78, 0.5);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: 0 6px 20px rgba(0, 106, 78, 0.6), 0 0 0 6px rgba(0, 106, 78, 0);
+            transform: scale(1.02);
+          }
+        }
         .clean-card {
           background: #ffffff;
           border-radius: 20px;
@@ -987,26 +997,27 @@ const TrackingPage = () => {
               top: '12px',
               right: '12px',
               zIndex: 1000,
-              background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              background: 'linear-gradient(135deg, #006a4e 0%, #065f46 100%)',
               color: '#ffffff',
-              border: '1.5px solid rgba(255, 255, 255, 0.25)',
+              border: '1.5px solid rgba(255, 255, 255, 0.4)',
               borderRadius: '24px',
-              padding: '7px 14px',
+              padding: '7px 16px',
               fontSize: '12px',
               fontWeight: '800',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+              boxShadow: '0 4px 16px rgba(0, 106, 78, 0.45)',
               cursor: 'pointer',
               backdropFilter: 'blur(8px)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.25s ease',
+              animation: 'btnGlowPulse 2.8s infinite ease-in-out'
             }}
             title="বাস্তবসম্মত ৩ডি ট্রেন ভিউ দেখুন"
           >
             <span style={{ fontSize: '15px' }}>🚆</span>
-            <span style={{ letterSpacing: '0.3px' }}>3D ভিউ</span>
-            <span style={{ background: '#22c55e', color: '#064e3b', fontSize: '9px', fontWeight: '900', padding: '1px 5px', borderRadius: '4px' }}>NEW</span>
+            <span style={{ letterSpacing: '0.4px', fontWeight: '900' }}>3D ভিউ</span>
+            <span style={{ background: '#ffffff', color: '#006a4e', fontSize: '9px', fontWeight: '900', padding: '1px 6px', borderRadius: '10px' }}>LIVE</span>
           </button>
 
           <MapContainer

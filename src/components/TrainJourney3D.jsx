@@ -6,17 +6,71 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 // Vite-এ MapLibre Web Worker URL সেট করা
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
-import {
-  ArrowLeft,
-  Volume2,
-  VolumeX,
-  RotateCcw,
-  Compass,
-  Layers,
-  MessageCircle,
-  FileText,
-  Crosshair
-} from 'lucide-react';
+// =========================================================================
+// পিওর ইনলাইন ভেক্টর আইকন (কোনো ৩য় পক্ষীয় লাইব্রেরি নেই - ১০০% লাইটওয়েট ও ফাস্ট)
+// =========================================================================
+const IconArrowLeft = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 12H5M12 19l-7-7 7-7" />
+  </svg>
+);
+
+const IconVolumeOn = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+  </svg>
+);
+
+const IconVolumeMute = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+    <line x1="23" y1="9" x2="17" y2="15" />
+    <line x1="17" y1="9" x2="23" y2="15" />
+  </svg>
+);
+
+const IconRotateCcw = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="1 4 1 10 7 10" />
+    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+  </svg>
+);
+
+const IconLayers = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+    <polyline points="2 17 12 22 22 17" />
+    <polyline points="2 12 12 17 22 12" />
+  </svg>
+);
+
+const IconCrosshair = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="22" y1="12" x2="18" y2="12" />
+    <line x1="6" y1="12" x2="2" y2="12" />
+    <line x1="12" y1="6" x2="12" y2="2" />
+    <line x1="12" y1="22" x2="12" y2="18" />
+  </svg>
+);
+
+const IconFileText = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+    <polyline points="10 9 9 9 8 9" />
+  </svg>
+);
+
+const IconChat = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
 import railSegmentsData from '../data/railSegments.json';
 
 // =========================================================================
@@ -325,68 +379,148 @@ function getPolylinePointAndAngle(points, cumDists, d) {
   return { center, angle, interpolateAt };
 }
 
-// ৯টি আলাদা ৩ডি কোচের ফিচার কালেকশন তৈরি
+// =========================================================================
+// ৩. শতভাগ বাস্তবসম্মত বাংলাদেশ রেলওয়ে আন্তঃনগর ট্রেন মডেল (Class 3000/2900 + লাল-সবুজ কোচ)
+// =========================================================================
 function generate3DTrainFeatures(points, cumDists, headDist) {
   const features = [];
   const { interpolateAt } = getPolylinePointAndAngle(points, cumDists, headDist);
 
-  // ১. লাল লোকোমোটিভ ইঞ্জিন (Locomotive)
-  const locoD = headDist - 12;
+  // -----------------------------------------------------------------------
+  // ১. বাংলাদেশ রেলওয়ে ডিজেল-ইলেকট্রিক লোকোমোটিভ ইঞ্জিন (Locomotive Engine)
+  // -----------------------------------------------------------------------
+  const locoD = headDist - 11;
   const { center: locoCenter, angle: locoAngle } = getPolylinePointAndAngle(points, cumDists, locoD);
 
-  // ইঞ্জিন বডি (লাল)
+  // (ক) ইঞ্জিনের আন্ডারক্যারিজ চ্যাসিস ও বগি ট্রাক (Dark Steel Bogies)
   features.push({
     type: 'Feature',
-    properties: { color: '#dc2626', height: 5.2, base: 0.8 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 24, 4.4, locoAngle)] }
+    properties: { color: '#1e293b', height: 0.85, base: 0.0 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 21, 3.8, locoAngle)] }
   });
-  // ইঞ্জিন মেটাল ছাদ (সাদা)
+
+  // (খ) সামনের হলুদ সেফটি পাইলট / কাউক্যাচার (Yellow Safety Cowcatcher & Buffer)
+  const pilotPos = interpolateAt(headDist - 1.0);
   features.push({
     type: 'Feature',
-    properties: { color: '#f8fafc', height: 5.6, base: 5.15 },
+    properties: { color: '#eab308', height: 1.3, base: 0.15 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(pilotPos[0], pilotPos[1], 2.2, 4.4, locoAngle)] }
+  });
+
+  // (গ) ইঞ্জিনের মূল লাল বডি (Bangladesh Railway Crimson Red)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#b91c1c', height: 4.85, base: 0.85 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 22, 4.3, locoAngle)] }
+  });
+
+  // (ঘ) ইঞ্জিনের কেন্দ্রীয় সাদা লিভারি বেল্ট (White Center Band)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#f8fafc', height: 2.6, base: 2.1 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 22.05, 4.35, locoAngle)] }
+  });
+
+  // (ঙ) অ্যারোডাইনামিক ড্রাইভার ক্যাব ও উইন্ডশিল্ড (Blue Anti-glare Cab Windshield)
+  const cabPos = interpolateAt(headDist - 5.5);
+  features.push({
+    type: 'Feature',
+    properties: { color: '#0284c7', height: 4.65, base: 3.1 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cabPos[0], cabPos[1], 7.0, 4.34, locoAngle)] }
+  });
+
+  // (চ) ইঞ্জিনের রূপালী মেটালিক ছাদ (Silver Fluted Roof)
+  features.push({
+    type: 'Feature',
+    properties: { color: '#94a3b8', height: 5.3, base: 4.75 },
     geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 20, 3.4, locoAngle)] }
   });
-  // ইঞ্জিন উইন্ডশিল্ড (নীল ক্যাব)
+
+  // (ছ) ছাদের এক্সহস্ট ও রেডিয়েটর পড (Exhaust Radiator Fans)
   features.push({
     type: 'Feature',
-    properties: { color: '#38bdf8', height: 4.8, base: 3.5 },
-    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 8, 4.45, locoAngle)] }
+    properties: { color: '#334155', height: 5.65, base: 5.25 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(locoCenter[0], locoCenter[1], 6.0, 2.2, locoAngle)] }
   });
 
-  // ২. ৮টি প্যাসেঞ্জার বগি (Bangladesh Railway Green Coaches)
+  // ইঞ্জিন ও প্রথম বগির মধ্যবর্তী কাপলার (Engine-to-Coach Coupler)
+  const coupler0Pos = interpolateAt(headDist - 22.2);
+  features.push({
+    type: 'Feature',
+    properties: { color: '#090d16', height: 2.5, base: 0.8 },
+    geometry: { type: 'Polygon', coordinates: [createBoxPolygon(coupler0Pos[0], coupler0Pos[1], 2.4, 2.2, locoAngle)] }
+  });
+
+  // -----------------------------------------------------------------------
+  // ২. আটটি আন্তঃনগর লাল-সবুজ কোচ (8 Bangladesh Railway Intercity Rakes)
+  // -----------------------------------------------------------------------
   for (let i = 1; i <= 8; i++) {
-    const coachD = headDist - 24 - (i - 1) * 22 - 11;
+    const coachD = headDist - 23 - (i - 1) * 21.5 - 10;
     const { center: cCenter, angle: cAngle } = getPolylinePointAndAngle(points, cumDists, coachD);
 
-    // কোচের সবুজ বডি
+    // (ক) বগির সামনের ও পেছনের ডাবল বগি ট্রাক (Chassis Bogie Wheels)
+    const frontBogiePos = interpolateAt(coachD + 5.5);
+    const rearBogiePos = interpolateAt(coachD - 5.5);
     features.push({
       type: 'Feature',
-      properties: { color: '#006a4e', height: 4.6, base: 0.6 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 20, 4.2, cAngle)] }
+      properties: { color: '#0f172a', height: 0.8, base: 0.0 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(frontBogiePos[0], frontBogiePos[1], 5.0, 3.6, cAngle)] }
     });
-    // কোচের সাদা মেটাল ছাদ
     features.push({
       type: 'Feature',
-      properties: { color: '#f8fafc', height: 5.0, base: 4.55 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19, 3.3, cAngle)] }
+      properties: { color: '#0f172a', height: 0.8, base: 0.0 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(rearBogiePos[0], rearBogiePos[1], 5.0, 3.6, cAngle)] }
     });
-    // কোচের লাল স্ট্রাইপ বেল্ট
+
+    // (খ) বাংলাদেশ রেলওয়ে ডিপ ফরেস্ট গ্রিন বডি (Official Bangladesh Railway Green)
     features.push({
       type: 'Feature',
-      properties: { color: '#ef4444', height: 2.8, base: 2.3 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 20.08, 4.28, cAngle)] }
+      properties: { color: '#006a4e', height: 4.4, base: 0.8 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.5, 4.15, cAngle)] }
     });
-    // অন্ধকার কাঁচের জানালা ব্যান্ড
+
+    // (গ) সিগনেচার লাল কোমরবন্ধ ফিতা (Crimson Red Waistline Stripe)
     features.push({
       type: 'Feature',
-      properties: { color: '#0f172a', height: 3.8, base: 2.8 },
-      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.5, 4.24, cAngle)] }
+      properties: { color: '#dc2626', height: 2.7, base: 2.1 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.6, 4.22, cAngle)] }
     });
+
+    // (ঘ) অন্ধকার কাঁচের জানালা ব্যান্ড (Tinted Glass Window Row)
+    features.push({
+      type: 'Feature',
+      properties: { color: '#090d16', height: 3.8, base: 2.75 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.2, 4.18, cAngle)] }
+    });
+
+    // (ঙ) বাঁকানো সিলভার অ্যালুমিনিয়াম ছাদ (Contoured Silver Roof Cap)
+    features.push({
+      type: 'Feature',
+      properties: { color: '#e2e8f0', height: 4.95, base: 4.35 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 19.0, 3.4, cAngle)] }
+    });
+
+    // (চ) ছাদের সেন্ট্রাল এসি কুলিং ভেন্ট ইউনিট (Rooftop AC Units)
+    features.push({
+      type: 'Feature',
+      properties: { color: '#94a3b8', height: 5.2, base: 4.9 },
+      geometry: { type: 'Polygon', coordinates: [createBoxPolygon(cCenter[0], cCenter[1], 5.0, 2.2, cAngle)] }
+    });
+
+    // (ছ) প্রতিটি বগির সংযোগ করিডোর ও কাপলার বেলো (Inter-coach Vestibule Corridors)
+    if (i < 8) {
+      const gangwayPos = interpolateAt(coachD - 10.75);
+      features.push({
+        type: 'Feature',
+        properties: { color: '#050811', height: 4.1, base: 0.9 },
+        geometry: { type: 'Polygon', coordinates: [createBoxPolygon(gangwayPos[0], gangwayPos[1], 2.2, 2.6, cAngle)] }
+      });
+    }
   }
 
   const headPos = interpolateAt(headDist);
   const midPos = interpolateAt(Math.max(0, headDist - 75));
-  const tailPos = interpolateAt(Math.max(0, headDist - 175));
+  const tailPos = interpolateAt(Math.max(0, headDist - 180));
 
   return {
     geojson: { type: 'FeatureCollection', features },
@@ -800,7 +934,7 @@ export default function TrainJourney3D({
         pointer-events: none;
       `;
       aheadEl.innerHTML = `
-        <span style="color: #be185d; font-size: 14px; font-weight: 900;">↑</span>
+        <span style="color: #006a4e; font-size: 14px; font-weight: 900;">↑</span>
         <span class="ahead-text">${isAtStation ? `${prevStation?.name?.split('(')[0] || 'স্টেশন'} স্টপেজে অবস্থান করছে` : `${nextStation?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(Math.round(dynamicDistToNext))} কি`}</span>
       `;
 
@@ -834,9 +968,9 @@ export default function TrainJourney3D({
         pointer-events: none;
       `;
       tailEl.innerHTML = `
-        <span style="color: #be185d;">↑</span>
-        <span style="background: #be185d; color: #fff; border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; font-size: 9px;">ক</span>
-        <span>শেষ বগি</span>
+        <span style="color: #006a4e; font-weight: 900;">↑</span>
+        <span style="background: #006a4e; color: #fff; border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800;">ক</span>
+        <span style="color: #0f172a;">শেষ বগি</span>
       `;
 
       const tailMarker = new maplibregl.Marker({
@@ -969,7 +1103,50 @@ export default function TrainJourney3D({
       }}
     >
       {/* =====================================================================
-          ১. টপ-লেফট ক্যাপসুল
+          প্রিমিয়াম অ্যানিমেশন ও স্টাইলিং (Website Theme & Colors)
+      ===================================================================== */}
+      <style>{`
+        @keyframes pulseEmeraldFollow {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.6), 0 6px 18px rgba(0, 106, 78, 0.4);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: 0 0 0 10px rgba(0, 106, 78, 0), 0 8px 24px rgba(0, 106, 78, 0.6);
+            transform: scale(1.02);
+          }
+        }
+        @keyframes haloBeacon {
+          0% {
+            box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.7);
+          }
+          70% {
+            box-shadow: 0 0 0 12px rgba(0, 106, 78, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(0, 106, 78, 0);
+          }
+        }
+        @keyframes shimmerBar {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes liveGlow {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.3); }
+        }
+        .btn-press:active {
+          transform: scale(0.94);
+          transition: transform 0.1s ease;
+        }
+        .btn-hover:hover {
+          background: #f0fdf4 !important;
+          border-color: #006a4e !important;
+        }
+      `}</style>
+
+      {/* =====================================================================
+          ১. টপ-লেফট ক্যাপসুল (ট্রেন নাম ও নম্বর)
       ===================================================================== */}
       <div
         style={{
@@ -984,9 +1161,10 @@ export default function TrainJourney3D({
       >
         <button
           onClick={onClose}
+          className="btn-press"
           style={{
-            width: '40px',
-            height: '40px',
+            width: '42px',
+            height: '42px',
             borderRadius: '50%',
             background: '#ffffff',
             border: 'none',
@@ -995,19 +1173,21 @@ export default function TrainJourney3D({
             justifyContent: 'center',
             boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
             cursor: 'pointer',
-            color: '#be185d'
+            color: '#006a4e',
+            transition: 'all 0.2s ease'
           }}
           title="ফিরে যান"
         >
-          <ArrowLeft size={22} strokeWidth={2.5} />
+          <IconArrowLeft />
         </button>
 
         <div
           style={{
             background: '#ffffff',
             borderRadius: '24px',
-            padding: '6px 16px',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.22)'
+            padding: '7px 18px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
+            border: '1px solid rgba(0, 106, 78, 0.15)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1017,18 +1197,19 @@ export default function TrainJourney3D({
             <span
               style={{
                 fontSize: '11px',
-                fontWeight: '800',
+                fontWeight: '900',
                 padding: '2px 8px',
                 borderRadius: '12px',
-                background: '#fce7f3',
-                color: '#be185d'
+                background: '#e6f4ea',
+                color: '#006a4e',
+                border: '1px solid rgba(0, 106, 78, 0.25)'
               }}
             >
               {toBangla(train?.id || train?.number || '৭০৭')}
             </span>
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>
-            {originStation?.name?.split('(')[0]} - {destStation?.name?.split('(')[0]}
+            {originStation?.name?.split('(')[0]} ➔ {destStation?.name?.split('(')[0]}
           </div>
         </div>
       </div>
@@ -1039,7 +1220,7 @@ export default function TrainJourney3D({
       <div
         style={{
           position: 'absolute',
-          top: '140px',
+          top: '130px',
           right: '16px',
           zIndex: 100,
           display: 'flex',
@@ -1051,24 +1232,26 @@ export default function TrainJourney3D({
         {/* সাউন্ড টগল বাটন */}
         <button
           onClick={toggleSound}
+          className="btn-press"
           style={{
             width: '46px',
             height: '46px',
             background: '#ffffff',
-            color: isMuted ? '#64748b' : '#be185d',
-            border: 'none',
-            borderRadius: '12px',
+            color: isMuted ? '#64748b' : '#006a4e',
+            border: isMuted ? '1px solid #e2e8f0' : '1.5px solid #006a4e',
+            borderRadius: '14px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
             cursor: 'pointer',
-            padding: '4px'
+            padding: '4px',
+            transition: 'all 0.2s ease'
           }}
           title={isMuted ? 'শব্দ চালু' : 'শব্দ বন্ধ'}
         >
-          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          {isMuted ? <IconVolumeMute /> : <IconVolumeOn />}
           <span style={{ fontSize: '9px', fontWeight: '800', marginTop: '2px' }}>
             {isMuted ? 'শব্দ বন্ধ' : 'শব্দ চালু'}
           </span>
@@ -1077,48 +1260,52 @@ export default function TrainJourney3D({
         {/* শুরুর ভিউ (রিসেট ক্যামেরা) বাটন */}
         <button
           onClick={resetView}
+          className="btn-press"
           style={{
             width: '46px',
             height: '46px',
             background: '#ffffff',
             color: '#0f172a',
-            border: 'none',
-            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '14px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
             cursor: 'pointer',
-            padding: '4px'
+            padding: '4px',
+            transition: 'all 0.2s ease'
           }}
           title="শুরুর ভিউ"
         >
-          <RotateCcw size={18} />
+          <IconRotateCcw />
           <span style={{ fontSize: '9px', fontWeight: '800', marginTop: '2px' }}>শুরুর ভিউ</span>
         </button>
 
         {/* মানচিত্র / স্যাটেলাইট সুইচ বাটন */}
         <button
           onClick={() => setCurrentStyle(currentStyle === 'satellite' ? 'streets' : 'satellite')}
+          className="btn-press"
           style={{
             width: '46px',
             height: '46px',
             background: '#ffffff',
             color: '#0f172a',
-            border: 'none',
-            borderRadius: '12px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '14px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
             cursor: 'pointer',
-            padding: '4px'
+            padding: '4px',
+            transition: 'all 0.2s ease'
           }}
           title="মানচিত্র"
         >
-          <Layers size={18} />
+          <IconLayers />
           <span style={{ fontSize: '9px', fontWeight: '800', marginTop: '2px' }}>
             {MAP_STYLES[currentStyle].name}
           </span>
@@ -1127,20 +1314,22 @@ export default function TrainJourney3D({
         {/* ২ডি / ৩ডি বাটন */}
         <button
           onClick={toggle2DMode}
+          className="btn-press"
           style={{
             width: '46px',
             height: '46px',
-            background: '#ffffff',
-            color: '#0f172a',
-            border: 'none',
-            borderRadius: '12px',
+            background: is2DMode ? '#006a4e' : '#ffffff',
+            color: is2DMode ? '#ffffff' : '#006a4e',
+            border: '1.5px solid #006a4e',
+            borderRadius: '14px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '13px',
             fontWeight: '900',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            cursor: 'pointer'
+            boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
           }}
           title="2D / 3D মোড"
         >
@@ -1149,7 +1338,7 @@ export default function TrainJourney3D({
       </div>
 
       {/* =====================================================================
-          ৩. সেন্টার ফ্লোটিং বাটন: '⊕ ট্রেনের সাথে চলুন'
+          ৩. সেন্টার ফ্লোটিং বাটন: '⊕ ট্রেনের সাথে চলুন' (Glowing Pulse)
       ===================================================================== */}
       <div
         style={{
@@ -1163,24 +1352,24 @@ export default function TrainJourney3D({
       >
         <button
           onClick={toggleFollow}
+          className="btn-press"
           style={{
-            background: '#be185d',
+            background: 'linear-gradient(135deg, #006a4e 0%, #047857 100%)',
             color: '#ffffff',
-            border: 'none',
-            borderRadius: '28px',
-            padding: '10px 22px',
+            border: '1.5px solid rgba(255, 255, 255, 0.4)',
+            borderRadius: '30px',
+            padding: '11px 24px',
             fontSize: '14px',
             fontWeight: '800',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            boxShadow: '0 6px 18px rgba(190, 24, 93, 0.45)',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            opacity: isFollowing ? 0.92 : 1
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            animation: isFollowing ? 'pulseEmeraldFollow 2.2s infinite ease-in-out' : 'none'
           }}
         >
-          <Crosshair size={18} strokeWidth={2.5} />
+          <IconCrosshair />
           <span>{isFollowing ? 'ট্রেন অনুসরণ চলছে' : 'ট্রেনের সাথে চলুন'}</span>
         </button>
       </div>
@@ -1201,10 +1390,11 @@ export default function TrainJourney3D({
           right: '12px',
           maxWidth: '540px',
           margin: '0 auto',
-          background: '#ffffff',
+          background: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(10px)',
           borderRadius: '24px',
           padding: '16px 18px',
-          boxShadow: '0 12px 30px rgba(0,0,0,0.28)',
+          boxShadow: '0 16px 36px rgba(0,0,0,0.28), 0 0 0 1px rgba(0, 106, 78, 0.1)',
           zIndex: 100,
           color: '#0f172a'
         }}
@@ -1222,7 +1412,7 @@ export default function TrainJourney3D({
             <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
               {isAtStation ? (
                 <>
-                  <span style={{ fontWeight: '900', color: '#be185d' }}>
+                  <span style={{ fontWeight: '900', color: '#006a4e' }}>
                     {prevStation?.name?.split('(')[0] || 'স্টেশন'}
                   </span>{' '}
                   <span style={{ color: '#059669', fontWeight: '700', fontSize: '14px' }}>
@@ -1235,7 +1425,7 @@ export default function TrainJourney3D({
                   <span style={{ fontWeight: '900', color: '#0f172a' }}>
                     {nextStation?.name?.split('(')[0] || 'ময়মনসিংহ'}
                   </span>{' '}
-                  <span style={{ color: '#64748b', fontWeight: '700', fontSize: '13px' }}>
+                  <span style={{ color: '#006a4e', fontWeight: '800', fontSize: '13px' }}>
                     ({toBangla(Math.round(dynamicDistToNext))} কি)
                   </span>
                 </>
@@ -1254,7 +1444,7 @@ export default function TrainJourney3D({
             >
               <span
                 style={{
-                  color: isAtStation ? '#059669' : (activeState?.delay > 5 ? '#dc2626' : '#15803d')
+                  color: isAtStation ? '#059669' : (activeState?.delay > 5 ? '#dc2626' : '#006a4e')
                 }}
               >
                 {isAtStation
@@ -1264,14 +1454,15 @@ export default function TrainJourney3D({
                     : 'সঠিক সময়ে (অন টাইম)')}
               </span>
               <span style={{ color: '#cbd5e1' }}>•</span>
-              <span style={{ color: '#15803d', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ color: '#006a4e', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span
                   style={{
-                    width: '6px',
-                    height: '6px',
+                    width: '7px',
+                    height: '7px',
                     borderRadius: '50%',
-                    background: '#16a34a',
-                    display: 'inline-block'
+                    background: '#059669',
+                    display: 'inline-block',
+                    animation: 'liveGlow 1.8s infinite ease-in-out'
                   }}
                 ></span>
                 লাইভ
@@ -1281,21 +1472,22 @@ export default function TrainJourney3D({
             </div>
           </div>
 
-          {/* স্পিড ব্যাজ */}
+          {/* স্পিড ব্যাজ (ওয়েবসাইট ব্র্যান্ড ডিজাইন) */}
           <div
             style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
+              background: '#f0fdf4',
+              border: '1.5px solid #006a4e',
               borderRadius: '16px',
               padding: '6px 14px',
               textAlign: 'center',
-              minWidth: '58px'
+              minWidth: '60px',
+              boxShadow: '0 2px 8px rgba(0, 106, 78, 0.12)'
             }}
           >
-            <div style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', lineHeight: 1.1 }}>
+            <div style={{ fontSize: '20px', fontWeight: '900', color: '#006a4e', lineHeight: 1.1 }}>
               {toBangla(speed)}
             </div>
-            <div style={{ fontSize: '10px', fontWeight: '700', color: '#64748b', marginTop: '1px' }}>
+            <div style={{ fontSize: '10px', fontWeight: '800', color: '#047857', marginTop: '1px' }}>
               কি/ঘ
             </div>
           </div>
@@ -1305,39 +1497,41 @@ export default function TrainJourney3D({
         <div style={{ margin: '14px 0 16px 0', position: 'relative' }}>
           <div
             style={{
-              height: '4px',
+              height: '5px',
               background: '#e2e8f0',
-              borderRadius: '2px',
+              borderRadius: '3px',
               position: 'relative'
             }}
           >
-            {/* কমপ্লিটেড পিঙ্ক লাইন */}
+            {/* কমপ্লিটেড ব্র্যান্ড গ্রিন লাইন */}
             <div
               style={{
                 height: '100%',
                 width: `${progressPercent}%`,
-                background: '#be185d',
-                borderRadius: '2px'
+                background: 'linear-gradient(90deg, #006a4e 0%, #059669 100%)',
+                borderRadius: '3px',
+                transition: 'width 0.4s ease'
               }}
             ></div>
 
-            {/* ট্রেনের আইকন (চলমান পিঙ্ক সার্কেল) */}
+            {/* ট্রেনের আইকন (চলমান গ্রিন সার্কেল ও পালসিং হ্যালো) */}
             <div
               style={{
                 position: 'absolute',
                 top: '50%',
                 left: `${progressPercent}%`,
                 transform: 'translate(-50%, -50%)',
-                width: '26px',
-                height: '26px',
+                width: '28px',
+                height: '28px',
                 borderRadius: '50%',
-                background: '#be185d',
+                background: '#006a4e',
                 color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(190, 24, 93, 0.5)',
-                fontSize: '12px'
+                boxShadow: '0 2px 10px rgba(0, 106, 78, 0.6)',
+                fontSize: '13px',
+                animation: 'haloBeacon 2s infinite ease-out'
               }}
             >
               🚆
@@ -1356,10 +1550,12 @@ export default function TrainJourney3D({
             }}
           >
             <span>{prevStation?.name?.split('(')[0] || 'পূর্ববর্তী'}</span>
-            <span style={{ color: '#be185d', fontWeight: '800' }}>
+            <span style={{ color: '#006a4e', fontWeight: '800' }}>
               {nextStation?.name?.split('(')[0]} {toBangla(Math.round(dynamicDistToNext))} কি
             </span>
-            <span style={{ color: '#be185d' }}>{destStation?.name?.split('(')[0] || 'গন্তব্য'}</span>
+            <span style={{ color: '#006a4e', fontWeight: '800' }}>
+              {destStation?.name?.split('(')[0] || 'গন্তব্য'}
+            </span>
           </div>
         </div>
 
@@ -1367,45 +1563,49 @@ export default function TrainJourney3D({
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
             onClick={onClose}
+            className="btn-press btn-hover"
             style={{
               flex: 1,
               background: '#f8fafc',
-              border: '1px solid #e2e8f0',
+              border: '1.5px solid #006a4e',
               borderRadius: '14px',
               padding: '10px',
               fontSize: '13px',
               fontWeight: '800',
-              color: '#be185d',
+              color: '#006a4e',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }}
           >
-            <FileText size={16} />
+            <IconFileText />
             <span>বিস্তারিত</span>
           </button>
 
           <button
             onClick={() => alert('লাইভ চ্যাট শীঘ্রই চালু হচ্ছে!')}
+            className="btn-press btn-hover"
             style={{
               flex: 1,
               background: '#f8fafc',
-              border: '1px solid #e2e8f0',
+              border: '1.5px solid #006a4e',
               borderRadius: '14px',
               padding: '10px',
               fontSize: '13px',
               fontWeight: '800',
-              color: '#be185d',
+              color: '#006a4e',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }}
           >
-            <MessageCircle size={16} />
+            <IconChat />
             <span>চ্যাট</span>
           </button>
         </div>
