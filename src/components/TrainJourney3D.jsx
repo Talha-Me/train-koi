@@ -144,6 +144,16 @@ const toBangla = (num) => {
   return String(num).replace(/[0-9]/g, (d) => bn[parseInt(d, 10)]);
 };
 
+// ট্রেনের বিলম্ব ফরম্যাটার (ঘণ্টা ও মিনিট নিখুঁতভাবে প্রকাশ)
+function formatDelayBangla(minutes) {
+  if (!minutes || minutes <= 5) return 'সঠিক সময়ে (অন টাইম)';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0 && m > 0) return `${toBangla(h)} ঘণ্টা ${toBangla(m)} মিনিট বিলম্বে`;
+  if (h > 0) return `${toBangla(h)} ঘণ্টা বিলম্বে`;
+  return `${toBangla(m)} মিনিট বিলম্বে`;
+}
+
 // মিটার দূরত্ব গণনা (Haversine)
 function getDistanceMeters(p1, p2) {
   const R = 6371000;
@@ -1670,9 +1680,7 @@ export default function TrainJourney3D({
               >
                 {isAtStation
                   ? 'স্টেশনে যাত্রা বিরতি'
-                  : (activeState?.delay > 5
-                    ? `${toBangla(activeState.delay)} মিনিট বিলম্বে`
-                    : 'সঠিক সময়ে (অন টাইম)')}
+                  : formatDelayBangla(activeState?.delay)}
               </span>
 
               <span style={{ color: '#cbd5e1' }}>•</span>

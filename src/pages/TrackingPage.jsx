@@ -242,9 +242,9 @@ const formatDelay = (minutes, short = false) => {
     if (h > 0) return `+${toBn(h)}ঘ`;
     return `+${toBn(m)}মি`;
   }
-  if (h > 0 && m > 0) return `${toBn(h)} ঘণ্টা ${toBn(m)} মিনিট লেট`;
-  if (h > 0) return `${toBn(h)} ঘণ্টা লেট`;
-  return `${toBn(m)} মিনিট লেট`;
+  if (h > 0 && m > 0) return `${toBn(h)} ঘণ্টা ${toBn(m)} মিনিট বিলম্বে`;
+  if (h > 0) return `${toBn(h)} ঘণ্টা বিলম্বে`;
+  return `${toBn(m)} মিনিট বিলম্বে`;
 };
 
 const formatDelaySimple = (minutes) => formatDelay(minutes, false);
