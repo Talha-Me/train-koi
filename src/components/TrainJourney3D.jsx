@@ -20,7 +20,8 @@ import {
 import railSegmentsData from '../data/railSegments.json';
 
 // =========================================================================
-// ১. ম্যাপ স্টাইলসমূহ (স্যাটেলাইট ও মানচিত্র)
+// ১. ম্যাপ স্টাইলসমূহ (গুগল স্যাটেলাইট ও কার্টো মানচিত্র)
+// গুগল স্যাটেলাইটে বাংলাদেশে জুম ২০ পর্যন্ত ফুল রেজুলেশন রয়েছে, তাই কোনো 'Map data not available' আসে না
 // =========================================================================
 const MAP_STYLES = {
   satellite: {
@@ -28,22 +29,26 @@ const MAP_STYLES = {
     style: {
       version: 8,
       sources: {
-        'esri-imagery': {
+        'google-satellite': {
           type: 'raster',
           tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+            'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+            'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+            'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+            'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
           ],
           tileSize: 256,
-          attribution: 'Powered by Esri • © OpenStreetMap contributors'
+          maxzoom: 20,
+          attribution: 'Google • © OpenStreetMap contributors'
         }
       },
       layers: [
         {
           id: 'satellite-tiles',
           type: 'raster',
-          source: 'esri-imagery',
+          source: 'google-satellite',
           minzoom: 0,
-          maxzoom: 19
+          maxzoom: 22
         }
       ]
     }
@@ -61,6 +66,7 @@ const MAP_STYLES = {
             'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
           ],
           tileSize: 256,
+          maxzoom: 19,
           attribution: '© OpenStreetMap, © CARTO'
         }
       },
@@ -70,7 +76,7 @@ const MAP_STYLES = {
           type: 'raster',
           source: 'carto-voyager',
           minzoom: 0,
-          maxzoom: 19
+          maxzoom: 22
         }
       ]
     }
@@ -622,6 +628,8 @@ export default function TrainJourney3D({
       pitch: is2DMode ? 0 : 60,
       bearing: is2DMode ? 0 : initialTrain.locoAngle,
       maxPitch: 75,
+      maxZoom: 19.8,
+      minZoom: 6,
       antialias: true
     });
 
@@ -1411,7 +1419,7 @@ export default function TrainJourney3D({
             marginTop: '8px'
           }}
         >
-          রেললাইন © OpenStreetMap • Powered by Esri Imagery
+          Google • রেললাইন © OpenStreetMap
         </div>
       </div>
     </div>
