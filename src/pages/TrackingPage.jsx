@@ -520,13 +520,16 @@ const TrackingPage = () => {
             }
           }
 
-          // ৫. ট্রেন কি গতিশীল নাকি স্টেশনে অপেক্ষমাণ?
+          // ৫. ট্রেন কি গতিশীল নাকি স্টেশনে অপেক্ষমাণ? (৫ কিমি/ঘ বা তার বেশি হলেই গতিশীল)
           const isMoving = currentSpeed >= 5;
           if (isMoving) {
             setShareStatusText(`✓ ট্রেন চলছে (${toBn(currentSpeed)} কিমি/ঘণ্টা) - লাইভ সিঙ্ক সচল`);
           } else {
             setShareStatusText(`✓ ট্রেন স্টেশনে অপেক্ষমাণ - প্ল্যাটফর্ম লোকেশন সচল`);
           }
+
+          const finalLat = snappedCoords ? snappedCoords[0] : latitude;
+          const finalLng = snappedCoords ? snappedCoords[1] : longitude;
 
           const locationData = {
             trainId: parseInt(trainId, 10),
