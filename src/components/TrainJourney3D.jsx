@@ -383,10 +383,11 @@ function getPolylinePointAndAngle(points, cumDists, d) {
   }
 
   const center = interpolateAt(clampedD);
-  // ২০ মিটার ট্যানজেন্ট বেসলাইন যাতে মাইক্রো-টার্নে কোনো কাঁপুনি বা জাম্প না হয়
-  const ahead = interpolateAt(Math.min(totalDist, clampedD + 10));
-  const behind = interpolateAt(Math.max(0, clampedD - 10));
-  const dx = ahead[0] - behind[0];
+  // ২৫ মিটার ট্যানজেন্ট বেসলাইন এবং ল্যাটিটিউড ট্রু-স্কেলিং যাতে কোনো কাঁপুনি না হয়
+  const ahead = interpolateAt(Math.min(totalDist, clampedD + 12.5));
+  const behind = interpolateAt(Math.max(0, clampedD - 12.5));
+  const latFactor = Math.cos((center[1] * Math.PI) / 180);
+  const dx = (ahead[0] - behind[0]) * latFactor;
   const dy = ahead[1] - behind[1];
   const angle = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
 
@@ -1228,14 +1229,10 @@ export default function TrainJourney3D({
         const metersPerSec = (curSpeed * 1000) / 3600;
         trainDistRef.current += metersPerSec * dt;
 
-        // লাইভ টার্গেট দূরত্বের সাথে অতি মৃদু সিঙ্ক (যদি কোনো ব্যবধান থাকে, ঝাঁকুনি ছাড়া মিলানো)
-        const distDiff = targetDistRef.current - trainDistRef.current;
-        if (Math.abs(distDiff) > 10 && Math.abs(distDiff) <= 1500) {
-          trainDistRef.current += distDiff * (dt * 0.15);
-        }
-
-        // ট্রেনের রুট শেষ প্রান্তের আগে সুরক্ষিত রাখা
-        if (trainDistRef.current >= totalDist - 30) {
+        // পরবর্তী স্টেশনের প্ল্যাটফর্ম অতিক্রম না করার নিরাপত্তা সীমা
+        if (trainDistRef.current >= endM - 15 && segIdx < segs.length - 2) {
+          trainDistRef.current = endM - 15;
+        } else if (trainDistRef.current >= totalDist - 30) {
           trainDistRef.current = totalDist - 30;
         }
       }
@@ -1245,65 +1242,69 @@ export default function TrainJourney3D({
       const distRemainingKm = Math.round((distRemainingMeters / 1000) * 10) / 10;
 
       if (mapRef.current && mapRef.current.getSource('train-3d-boxes')) {
-        const distMoved = Math.abs(trainDistRef.current - lastRenderDistRef.current);
+        const trainData = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
+        latestTrainDataRef.current = trainData;
 
-        // রেন্ডার থ্রটলিং: অন্তত ০.১৫ মিটার নড়লে GeoJSON ডাটা আপডেট হবে (GPU/Worker বাফার ওভারলোড প্রতিরোধ)
-        if (distMoved >= 0.15 || lastRenderDistRef.current < 0) {
-          lastRenderDistRef.current = trainDistRef.current;
+        // ১. ৩ডি সলিড বগিগুলোর জ্যামিতি ফ্রেম-বাই-ফ্রেম আপডেট
+        mapRef.current.getSource('train-3d-boxes').setData(trainData.geojson);
 
-          const trainData = generate3DTrainFeatures(pts, cumDists, trainDistRef.current);
-          latestTrainDataRef.current = trainData;
+        // ২. হেডলাইট পজিশন আপডেট
+        if (mapRef.current.getSource('train-headlight-src')) {
+          mapRef.current.getSource('train-headlight-src').setData({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: trainData.headPos }
+          });
+        }
 
-          // ১. ৩ডি সলিড বগিগুলোর জ্যামিতি আপডেট
-          mapRef.current.getSource('train-3d-boxes').setData(trainData.geojson);
+        // ৩. শেষ বগি মার্কার পজিশন আপডেট
+        if (tailCoachMarkerRef.current) {
+          tailCoachMarkerRef.current.setLngLat(trainData.tailPos);
+        }
 
-          // ২. হেডলাইট পজিশন আপডেট
-          if (mapRef.current.getSource('train-headlight-src')) {
-            mapRef.current.getSource('train-headlight-src').setData({
-              type: 'Feature',
-              geometry: { type: 'Point', coordinates: trainData.headPos }
-            });
-          }
+        // ৪. পরবর্তী স্টেশন নির্দেশক মার্কার পজিশন ও লেখা আপডেট
+        if (aheadStationMarkerRef.current) {
+          const { interpolateAt } = getPolylinePointAndAngle(pts, cumDists, trainDistRef.current);
+          const aheadPtPos = interpolateAt(trainDistRef.current + 35);
+          aheadStationMarkerRef.current.setLngLat(aheadPtPos);
 
-          // ৩. শেষ বগি মার্কার পজিশন আপডেট
-          if (tailCoachMarkerRef.current) {
-            tailCoachMarkerRef.current.setLngLat(trainData.tailPos);
-          }
-
-          // ৪. পরবর্তী স্টেশন নির্দেশক মার্কার পজিশন ও লেখা আপডেট
-          if (aheadStationMarkerRef.current) {
-            const { interpolateAt } = getPolylinePointAndAngle(pts, cumDists, trainDistRef.current);
-            const aheadPtPos = interpolateAt(trainDistRef.current + 35);
-            aheadStationMarkerRef.current.setLngLat(aheadPtPos);
-
-            const el = aheadStationMarkerRef.current.getElement();
-            if (el) {
-              const span = el.querySelector('.ahead-text');
-              const txt = curIsAtStation
-                ? `${prevStationRef.current?.name?.split('(')[0] || 'স্টেশন'} স্টপেজে অবস্থান করছে`
-                : `${nextStationRef.current?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(Math.round(distRemainingKm))} কি`;
-              if (span && span.textContent !== txt) {
-                span.textContent = txt;
-              }
+          const el = aheadStationMarkerRef.current.getElement();
+          if (el) {
+            const span = el.querySelector('.ahead-text');
+            const txt = curIsAtStation
+              ? `${prevStationRef.current?.name?.split('(')[0] || 'স্টেশন'} স্টপেজে অবস্থান করছে`
+              : `${nextStationRef.current?.name?.split('(')[0] || 'গন্তব্য'} ${toBangla(Math.round(distRemainingKm))} কি`;
+            if (span && span.textContent !== txt) {
+              span.textContent = txt;
             }
           }
         }
 
-        // ৫. ক্যামেরা মসৃণ ফলো (LERP ও jumpTo দিয়ে যেকোনো জিটার বা ফ্ল্যাকচুয়েশন সম্পূর্ণ রোধ)
-        if (isFollowingRef.current && latestTrainDataRef.current) {
-          const trainData = latestTrainDataRef.current;
+        // ৫. ক্যামেরা মসৃণ ফলো (কাঁপাকাঁপি বা জিটার সম্পূর্ণ দূর করতে ডেডব্যান্ড ও LERP)
+        if (isFollowingRef.current) {
           const targetCenter = trainData.midPos;
-          const targetBearing = is2DModeRef.current ? 0 : (trainData.locoAngle - 28);
 
+          // ক্যামেরা সেন্টার স্মুথ LERP
           if (!smoothCamCenterRef.current) {
             smoothCamCenterRef.current = [targetCenter[0], targetCenter[1]];
-            smoothCamBearingRef.current = targetBearing;
           } else {
-            smoothCamCenterRef.current[0] += (targetCenter[0] - smoothCamCenterRef.current[0]) * 0.12;
-            smoothCamCenterRef.current[1] += (targetCenter[1] - smoothCamCenterRef.current[1]) * 0.12;
+            smoothCamCenterRef.current[0] += (targetCenter[0] - smoothCamCenterRef.current[0]) * 0.08;
+            smoothCamCenterRef.current[1] += (targetCenter[1] - smoothCamCenterRef.current[1]) * 0.08;
+          }
 
-            let diffAngle = (targetBearing - smoothCamBearingRef.current + 540) % 360 - 180;
-            smoothCamBearingRef.current = (smoothCamBearingRef.current + diffAngle * 0.08 + 360) % 360;
+          // ক্যামেরা অ্যাঙ্গেল (বিয়ারিং) স্টেবিলাইজার
+          if (is2DModeRef.current) {
+            smoothCamBearingRef.current = 0;
+          } else {
+            const targetBearing = trainData.locoAngle - 28;
+            if (smoothCamBearingRef.current === null) {
+              smoothCamBearingRef.current = targetBearing;
+            } else {
+              let diffAngle = (targetBearing - smoothCamBearingRef.current + 540) % 360 - 180;
+              // ডেডব্যান্ড ১.৫ ডিগ্রি: মাইক্রো-মুভমেন্ট বা ফ্ল্যাকচুয়েশনে ক্যামেরা কাঁপবে না
+              if (Math.abs(diffAngle) > 1.5) {
+                smoothCamBearingRef.current = (smoothCamBearingRef.current + diffAngle * 0.04 + 360) % 360;
+              }
+            }
           }
 
           mapRef.current.jumpTo({
