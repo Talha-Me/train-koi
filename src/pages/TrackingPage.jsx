@@ -247,6 +247,39 @@ const TrackingPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [show3DView, setShow3DView] = useState(false);
   const lastGpsRef = useRef(null);
+  const wakeLockRef = useRef(null);
+  const lastSentTsRef = useRef(0);
+  const [sharedPingsCount, setSharedPingsCount] = useState(0);
+
+  // Screen Wake Lock API - prevents mobile browser from sleeping during live sharing
+  const requestWakeLock = async () => {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      } catch (err) {
+        console.log('WakeLock request error:', err);
+      }
+    }
+  };
+
+  const releaseWakeLock = () => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release().catch(() => {});
+      wakeLockRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isSharing) {
+        requestWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isSharing]);
 
   const train = useMemo(() => trains.find((t) => t.id === parseInt(trainId, 10)), [trainId]);
   const profile = useMemo(() => (train ? trainProfiles[train.id] || null : null), [train]);
@@ -400,11 +433,21 @@ const TrackingPage = () => {
   useEffect(() => {
     let watchId;
     if (isSharing && isTraveler && train && scheduleData.length > 0) {
+      requestWakeLock();
+      setShareStatusText('জিপিএস স্যাটেলাইটের সাথে সংযোগ স্থাপন হচ্ছে...');
+
       watchId = navigator.geolocation.watchPosition(
         (pos) => {
-          const { latitude, longitude, speed } = pos.coords;
+          const { latitude, longitude, speed, accuracy } = pos.coords;
           const currentTs = Date.now();
 
+          // ১. জিপিএস অ্যাকুরেসি ফিল্টার (৭০ মিটারের বেশি ত্রুটিপূর্ণ হলে ফিল্টার)
+          if (accuracy && accuracy > 70) {
+            setShareStatusText(`জিপিএস সিগন্যাল দুর্বল (${Math.round(accuracy)}মি) - সঠিক সিগন্যালের অপেক্ষায়...`);
+            return;
+          }
+
+          // ২. থ্রোটলিং (চলন্ত অবস্থায় কমপক্ষে ৩.৫ সেকেন্ড, স্টেশনে ৮ সেকেন্ড ব্যবধান)
           let currentSpeed = Math.round((speed || 0) * 3.6);
           if ((speed === null || speed === undefined || currentSpeed === 0) && lastGpsRef.current) {
             const elapsedSec = (currentTs - lastGpsRef.current.ts) / 1000;
@@ -416,9 +459,13 @@ const TrackingPage = () => {
               }
             }
           }
-          lastGpsRef.current = { lat: latitude, lng: longitude, ts: currentTs };
 
-          // ২. ট্রেনের শিডিউল টাইম উইন্ডো চেক (সর্বোচ্চ ৩.৫ ঘণ্টা লেট গ্রহণযোগ্য)
+          const minIntervalMs = currentSpeed > 5 ? 3500 : 8000;
+          if (currentTs - lastSentTsRef.current < minIntervalMs) {
+            return; // থ্রোটল রেট-লিমিট সক্রিয়
+          }
+
+          // ৩. ট্রেনের শিডিউল টাইম উইন্ডো চেক (সর্বোচ্চ ৩.৫ ঘণ্টা লেট গ্রহণযোগ্য)
           const MAX_DELAY_TOLERANCE_MIN = 210; // ৩.৫ ঘণ্টা (২১০ মিনিট)
           const now = new Date();
           const currentMin = now.getHours() * 60 + now.getMinutes();
@@ -438,7 +485,8 @@ const TrackingPage = () => {
             return;
           }
 
-          // ৩. নিকটতম স্টেশন ও রেলওয়ে ট্র্যাক দূরত্ব চেক (জিও-ফেন্সিং ফিল্টার)
+          // ৪. রেলওয়ে ট্র্যাক করিডোর চেক (Snap-to-Rail Corridor Anti-Spoofing)
+          const snapResult = snapToRailCorridor(latitude, longitude, railData);
           let minStationDist = Infinity;
           scheduleData.forEach((st) => {
             if (st.coords) {
@@ -447,21 +495,16 @@ const TrackingPage = () => {
             }
           });
 
-          const { point: snappedCoords, distance: trackDistance } = getTrackSnapAndDistance(
-            latitude,
-            longitude,
-            railData
-          );
-
-          const isOnRailTrack = trackDistance <= 0.45 || minStationDist <= 0.6;
+          const isOnRailTrack = snapResult.distanceKm <= 0.45 || minStationDist <= 0.6;
           if (!isOnRailTrack) {
-            setShareStatusText('⚠️ আপনি রেললাইনের বাইরে আছেন (ফেক ডাটা সুরক্ষা সক্রিয়)');
+            setShareStatusText('⚠️ আপনি রেললাইনের বাইরে আছেন (করিডোর সুরক্ষা সক্রিয়)');
             return;
           }
 
-          // ৪. সঠিক সেগমেন্ট নির্ণয়
+          // ৫. সঠিক সেগমেন্ট নির্ণয়
           let bestSegment = 0;
           let minErr = Infinity;
+          let bestRatio = 0;
           for (let i = 0; i < scheduleData.length - 1; i++) {
             const c1 = scheduleData[i].coords;
             const c2 = scheduleData[i + 1].coords;
@@ -472,27 +515,67 @@ const TrackingPage = () => {
               if (err < minErr) {
                 minErr = err;
                 bestSegment = i;
+                bestRatio = seg.projRatio;
               }
             }
           }
 
-          // ৫. ট্রেন কি গতিশীল নাকি স্টেশনে অপেক্ষমাণ? (৫ কিমি/ঘ বা তার বেশি হলেই গতিশীল)
-          const isMoving = currentSpeed >= 5;
-          if (isMoving) {
-            setShareStatusText(`✓ ট্রেন চলছে (${toBn(currentSpeed)} কিমি/ঘণ্টা) - লাইভ সিঙ্ক সচল`);
-          } else {
-            setShareStatusText(`✓ ট্রেন স্টেশনে অপেক্ষমাণ - প্ল্যাটফর্ম লোকেশন সচল`);
+          // ৬. বিপরীত দিক যাচাই (Anti-Opposite Direction Check)
+          const c1 = scheduleData[bestSegment]?.coords || [latitude, longitude];
+          const c2 = scheduleData[bestSegment + 1]?.coords || c1;
+          const routeBearing = calculateBearing(c1[0], c1[1], c2[0], c2[1]);
+
+          let travelBearing = snapResult.bearing;
+          if (lastGpsRef.current) {
+            const distMoved = calculateDistance(lastGpsRef.current.lat, lastGpsRef.current.lng, latitude, longitude);
+            if (distMoved >= 0.03) {
+              travelBearing = calculateBearing(lastGpsRef.current.lat, lastGpsRef.current.lng, latitude, longitude);
+              let diff = Math.abs(travelBearing - routeBearing);
+              if (diff > 180) diff = 360 - diff;
+              if (diff > 115 && currentSpeed > 15) {
+                setShareStatusText('⚠️ ট্রেনের বিপরীত দিকে গতি শনাক্ত হয়েছে (ভুল ট্রেন সুরক্ষা)');
+                return;
+              }
+            }
           }
 
-          const finalLat = snappedCoords ? snappedCoords[0] : latitude;
-          const finalLng = snappedCoords ? snappedCoords[1] : longitude;
+          const alignedBearing = alignBearingToTravelDirection(
+            snapResult.bearing,
+            c1[0], c1[1],
+            c2[0], c2[1]
+          );
+
+          lastGpsRef.current = { lat: latitude, lng: longitude, ts: currentTs };
+          lastSentTsRef.current = currentTs;
+
+          // ৭. স্টেশন লেগ ফ্র্যাকশন
+          const kmStart = scheduleData[bestSegment]?.km || 0;
+          const kmEnd = scheduleData[bestSegment + 1]?.km || kmStart + 30;
+          const curKm = Math.round(kmStart + bestRatio * (kmEnd - kmStart));
+          const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
+
+          const isMoving = currentSpeed >= 5;
+          setSharedPingsCount((prev) => prev + 1);
+
+          if (isMoving) {
+            setShareStatusText(`✓ ট্রেন চলছে (${toBn(currentSpeed)} কিমি/ঘ) • লাইভ সিঙ্ক সচল`);
+          } else {
+            setShareStatusText(`✓ ট্রেন স্টেশনে অবস্থান করছে • প্ল্যাটফর্ম লোকেশন সিঙ্ক`);
+          }
+
+          const finalLat = snapResult.point[0];
+          const finalLng = snapResult.point[1];
 
           const locationData = {
             trainId: parseInt(trainId, 10),
             lat: finalLat,
             lng: finalLng,
             speed: currentSpeed,
-            index: bestSegment
+            bearing: alignedBearing,
+            index: bestSegment,
+            legFraction,
+            accuracy: Math.round(accuracy || 10),
+            source: 'CROWD_VERIFIED'
           };
 
           socket.emit("send_location", locationData);
@@ -505,13 +588,17 @@ const TrackingPage = () => {
         },
         (err) => {
           console.error("GPS Error:", err);
-          setShareStatusText('জিপিএস সিগন্যাল পাওয়া যাচ্ছে না');
+          setShareStatusText('জিপিএস সিগন্যালে সমস্যা হয়েছে (অনুমতি চেক করুন)');
         },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 3000 }
       );
+    } else {
+      releaseWakeLock();
     }
+
     return () => {
       if (watchId) navigator.geolocation.clearWatch(watchId);
+      releaseWakeLock();
     };
   }, [isSharing, isTraveler, trainId, train, scheduleData]);
 
@@ -1466,12 +1553,27 @@ const TrackingPage = () => {
               gap: '12px'
             }}>
               <div>
-                <div style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
-                  {isSharing ? 'আপনার ফোনের লোকেশন শেয়ার হচ্ছে' : 'লোকেশন শেয়ারিং বন্ধ আছে'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {isSharing && (
+                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#16a34a', animation: 'liveBeaconGlow 1.4s infinite ease-in-out' }}></span>
+                  )}
+                  <span style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
+                    {isSharing ? 'আপনার ফোনের লোকেশন লাইভ শেয়ার হচ্ছে' : 'লোকেশন শেয়ারিং বন্ধ আছে'}
+                  </span>
                 </div>
                 <div style={{ fontSize: '14px', color: isSharing ? '#15803d' : '#b45309', marginTop: '3px', fontWeight: '600' }}>
                   {isSharing && shareStatusText ? shareStatusText : 'আপনার অবদানে ট্রেনের হাজারো সহযাত্রী সঠিক লাইভ অবস্থান জানতে পারছেন।'}
                 </div>
+                {isSharing && sharedPingsCount > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '12px', color: '#047857', fontWeight: '700', flexWrap: 'wrap' }}>
+                    <span style={{ background: '#dcfce7', padding: '2px 8px', borderRadius: '6px' }}>
+                      🏆 লাইভ ট্র্যাকার কন্ট্রিবিউটর • {toBn(sharedPingsCount)}টি সিঙ্ক সফল
+                    </span>
+                    <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '6px' }}>
+                      ⚡ ওয়েক-লক অন
+                    </span>
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => setIsSharing(!isSharing)}
