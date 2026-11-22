@@ -12,6 +12,8 @@ import SmoothTrainMarker from './components/SmoothTrainMarker';
 import OppositeTrainMarker from './components/OppositeTrainMarker';
 import TrainPopupCard from './components/TrainPopupCard';
 import LineDiagramView from './components/LineDiagramView';
+import CoachPositionView from './components/CoachPositionView';
+import StationAlarmModal, { alarmAudioPlayer } from './components/StationAlarmModal';
 import {
   calculateDistance,
   calculateBearing,
@@ -717,6 +719,20 @@ const TrackingPage = () => {
   const [selectedTrainPopup, setSelectedTrainPopup] = useState(null);
   const [showOtherTrains, setShowOtherTrains] = useState(true);
 
+  // স্টেশন অ্যালার্ম স্টেট
+  const [stationAlarm, setStationAlarm] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`station_alarm_${trainId}`);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAlarmModalOpen, setIsAlarmModalOpen] = useState(false);
+  const [isAlarmRinging, setIsAlarmRinging] = useState(false);
+  const [snoozeUntil, setSnoozeUntil] = useState(null);
+  const alarmDismissedRef = useRef(false);
+
   // Screen Wake Lock API - prevents mobile browser from sleeping during live sharing
   const requestWakeLock = async () => {
     if ('wakeLock' in navigator) {
@@ -1206,6 +1222,63 @@ const TrackingPage = () => {
       oppositeTrainId: oppositeTrain.id
     };
   }, [train, oppositeTrain, activeState, oppositeState]);
+
+  // স্টেশন অ্যালার্ম দূরত্ব ও রিং মনিটরিং (Inspired by BD Train Tracking StationAlarm)
+  const alarmTargetCoords = useMemo(() => {
+    if (!stationAlarm?.stationName) return null;
+    return getStationCoords(stationAlarm.stationName);
+  }, [stationAlarm?.stationName]);
+
+  const distanceToAlarmStation = useMemo(() => {
+    if (!alarmTargetCoords || !activeState?.lat || !activeState?.lng) return null;
+    return calculateDistance(activeState.lat, activeState.lng, alarmTargetCoords[0], alarmTargetCoords[1]);
+  }, [alarmTargetCoords, activeState?.lat, activeState?.lng]);
+
+  useEffect(() => {
+    if (!stationAlarm || distanceToAlarmStation === null) return;
+    if (alarmDismissedRef.current) return;
+    if (snoozeUntil && Date.now() < snoozeUntil) return;
+
+    if (distanceToAlarmStation <= stationAlarm.leadDistanceKm) {
+      setIsAlarmRinging(true);
+      alarmAudioPlayer.startRinging();
+      if ('vibrate' in navigator) {
+        navigator.vibrate([400, 200, 400, 200, 600]);
+      }
+    }
+  }, [distanceToAlarmStation, stationAlarm, snoozeUntil]);
+
+  const handleSaveAlarm = (newAlarm) => {
+    setStationAlarm(newAlarm);
+    alarmDismissedRef.current = false;
+    setSnoozeUntil(null);
+    try {
+      localStorage.setItem(`station_alarm_${trainId}`, JSON.stringify(newAlarm));
+    } catch (e) {}
+  };
+
+  const handleCancelAlarm = () => {
+    setStationAlarm(null);
+    alarmDismissedRef.current = false;
+    setSnoozeUntil(null);
+    alarmAudioPlayer.stopRinging();
+    setIsAlarmRinging(false);
+    try {
+      localStorage.removeItem(`station_alarm_${trainId}`);
+    } catch (e) {}
+  };
+
+  const handleDismissRing = () => {
+    alarmAudioPlayer.stopRinging();
+    setIsAlarmRinging(false);
+    alarmDismissedRef.current = true;
+  };
+
+  const handleSnoozeRing = () => {
+    alarmAudioPlayer.stopRinging();
+    setIsAlarmRinging(false);
+    setSnoozeUntil(Date.now() + 5 * 60 * 1000);
+  };
 
   const stats = useMemo(() => {
     if (!train || scheduleData.length === 0 || !activeState.isRunning) return null;
@@ -2247,7 +2320,83 @@ const TrackingPage = () => {
         </div>
 
         {/* =========================================================================
-            ৩. দুটি মূল সেকশন ট্যাব: স্টেশনের তালিকা ও লেট হিস্ট্রি
+            স্টেশন গন্তব্য অ্যালার্ম বার (Station Wake-up Alarm Inspired by BD Train Tracking)
+        ========================================================================= */}
+        <div style={{
+          background: stationAlarm ? 'linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%)' : '#ffffff',
+          border: stationAlarm ? '1.5px solid #10b981' : '1px solid #e2e8f0',
+          borderRadius: '16px',
+          padding: '14px 18px',
+          marginBottom: '18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          boxShadow: stationAlarm ? '0 4px 14px rgba(16, 185, 129, 0.12)' : '0 2px 6px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              background: stationAlarm ? '#d1fae5' : '#f1f5f9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              flexShrink: 0
+            }}>
+              ⏰
+            </div>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
+                {stationAlarm ? (
+                  <span>
+                    অ্যালার্ম সক্রিয়: <span style={{ color: '#006a4e' }}>{stationAlarm.stationName}</span> স্টেশনের {toBn(stationAlarm.leadDistanceKm)} কিমি পূর্বে বাজবে
+                  </span>
+                ) : (
+                  'গন্তব্য স্টেশন ওয়েক-আপ অ্যালার্ম'
+                )}
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                {stationAlarm ? (
+                  distanceToAlarmStation !== null ? (
+                    <span>📍 স্টেশন দূরত্ব: প্রায় <b>{toBn(Math.round(distanceToAlarmStation))} কিমি</b> অবশিষ্ট</span>
+                  ) : 'ট্রেন পজিশন ট্র্যাকিং সচল রয়েছে'
+                ) : (
+                  'ঘুমালেও গন্তব্য স্টেশন আসার পূর্বে শব্দ ও ভাইব্রেশনে সতর্কবার্তা পেতে অ্যালার্ম চালু করুন'
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setIsAlarmModalOpen(true)}
+              style={{
+                background: stationAlarm ? '#006a4e' : '#f1f5f9',
+                color: stationAlarm ? '#ffffff' : '#334155',
+                border: 'none',
+                padding: '9px 16px',
+                borderRadius: '10px',
+                fontSize: '13px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>⏰</span>
+              <span>{stationAlarm ? 'পরিবর্তন করুন' : 'অ্যালার্ম সেট করুন'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            ৩. মূল সেকশন ট্যাব: স্টেশনের তালিকা, বগি বিন্যাস ও লেট হিস্ট্রি
         ========================================================================= */}
         <div style={{
           background: '#e2e8f0',
@@ -2262,6 +2411,12 @@ const TrackingPage = () => {
             onClick={() => setActiveTab('timeline')}
           >
             স্টেশনের তালিকা
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'coach' ? 'active' : ''}`}
+            onClick={() => setActiveTab('coach')}
+          >
+            বগি বিন্যাস 🚃
           </button>
           <button
             className={`tab-button ${activeTab === 'delay' ? 'active' : ''}`}
@@ -2284,6 +2439,15 @@ const TrackingPage = () => {
               stats={stats}
               crossingInfo={crossingInfo}
             />
+          </div>
+        )}
+
+        {/* =========================================================================
+            ট্যাব ২: বগি বিন্যাস ও প্ল্যাটফর্ম অবস্থান (Coach Position View)
+        ========================================================================= */}
+        {activeTab === 'coach' && (
+          <div style={{ marginBottom: '20px' }}>
+            <CoachPositionView train={train} profile={profile} />
           </div>
         )}
         {/* =========================================================================
@@ -2536,6 +2700,22 @@ const TrackingPage = () => {
           </div>
         </div>
       )}
+      {/* =========================================================================
+          স্টেশন ওয়েক-আপ অ্যালার্ম মোডাল (Station Destination Wake-up Alarm)
+      ========================================================================= */}
+      <StationAlarmModal
+        isOpen={isAlarmModalOpen}
+        onClose={() => setIsAlarmModalOpen(false)}
+        scheduleData={scheduleData}
+        currentAlarm={stationAlarm}
+        onSaveAlarm={handleSaveAlarm}
+        onCancelAlarm={handleCancelAlarm}
+        isRinging={isAlarmRinging}
+        onDismissRing={handleDismissRing}
+        onSnoozeRing={handleSnoozeRing}
+        currentDistanceKm={distanceToAlarmStation}
+      />
+
       {/* =========================================================================
           এক্সপেরিমেন্টাল ৩ডি জার্নি ভিউ (সম্পূর্ণ ফুলস্ক্রিন ও ইন্টারঅ্যাক্টিভ)
       ========================================================================= */}

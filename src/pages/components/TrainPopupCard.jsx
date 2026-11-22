@@ -31,7 +31,7 @@ const TrainPopupCard = ({
     : 'সময়সূচী অনুযায়ী সচল';
 
   const handleTrackClick = () => {
-    navigate(`/tracking/${train.id}`);
+    navigate(`/track/${train.id}`);
   };
 
   return (

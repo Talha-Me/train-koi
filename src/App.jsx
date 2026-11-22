@@ -94,6 +94,7 @@ function AppContent() {
           
           {/* Tracking Routes */}
           <Route path="/track/:trainId" element={<TrackingPage />} />
+          <Route path="/tracking/:trainId" element={<TrackingPage />} />
           <Route path="/live-trains" element={<LiveTrainsPage />} />
           
           {/* Schedule Routes */}
