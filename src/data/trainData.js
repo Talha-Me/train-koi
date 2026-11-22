@@ -2275,7 +2275,7 @@ export const trains = [
     name: "পর্যটক এক্সপ্রেস (Parjotak Express)",
     from: "Dhaka",
     to: "Cox's Bazar",
-    offDay: "সুইবার",
+    offDay: "রবিবার",
     stations: [
       { name: "ঢাকা কমলাপুর (Dhaka Kamalapur)", arrival: "START", departure: "06:15 am", km: 0 },
       { name: "ঢাকা বিমানবন্দর (Dhaka Airport)", arrival: "06:38 am", departure: "06:43 am", km: 21 },
