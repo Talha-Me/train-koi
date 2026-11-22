@@ -1326,20 +1326,48 @@ const TrackingPage = () => {
     let closestLandmark = null;
     let minLandmarkDist = Infinity;
 
-    const intermediates = intermediateStationsMap[segIdx] || [];
-    intermediates.forEach((im) => {
-      const d = calculateDistance(activeState.lat, activeState.lng, im.lat, im.lng);
-      if (d < minLandmarkDist) {
-        minLandmarkDist = d;
-        closestLandmark = { nameBn: im.nameBn, dist: d.toFixed(1) };
-      }
-    });
-
-    if (!closestLandmark || minLandmarkDist > 15) {
+    // ১. প্রথমে পরবর্তী স্টেশনের দূরত্ব যাচাই (যদি পরবর্তী স্টেশনের সন্নিকটে ২ কিমির মধ্যে থাকে)
+    if (dNext !== null && dNext <= 2.0) {
       closestLandmark = {
-        nameBn: currentSt.name.split('(')[0].trim(),
-        dist: calculateDistance(activeState.lat, activeState.lng, currentSt.coords?.[0], currentSt.coords?.[1]).toFixed(1)
+        nameBn: nextSt.name.split('(')[0].trim(),
+        dist: Number(dNext).toFixed(1),
+        isArriving: dNext <= 0.6
       };
+    } else {
+      // ২. বর্তমান সেগমেন্টের মধ্যবর্তী ইন্টারমিডিয়েট স্টেশনগুলো পরীক্ষা
+      const intermediates = intermediateStationsMap[segIdx] || [];
+      intermediates.forEach((im) => {
+        const d = calculateDistance(activeState.lat, activeState.lng, im.lat, im.lng);
+        if (d < minLandmarkDist) {
+          minLandmarkDist = d;
+          closestLandmark = { nameBn: im.nameBn, dist: d.toFixed(1), isArriving: d <= 0.6 };
+        }
+      });
+
+      // ৩. যদি ইন্টারমিডিয়েট স্টেশনের দূরত্ব ১০ কিমির বেশি হয়, সারা দেশের নিখুঁত স্টেশন ডেটাবেজ থেকে নিকটতম স্টেশন বের করা
+      if (!closestLandmark || minLandmarkDist > 10) {
+        for (const s of Object.values(allStationsData)) {
+          if (!s.lat || !s.lng) continue;
+          const d = calculateDistance(activeState.lat, activeState.lng, s.lat, s.lng);
+          if (d < minLandmarkDist) {
+            minLandmarkDist = d;
+            closestLandmark = {
+              nameBn: s.nameBn || s.nameEn,
+              dist: d.toFixed(1),
+              isArriving: d <= 0.6
+            };
+          }
+        }
+      }
+
+      // ৪. নিরাপদ ব্যাকআপ
+      if (!closestLandmark) {
+        closestLandmark = {
+          nameBn: currentSt.name.split('(')[0].trim(),
+          dist: calculateDistance(activeState.lat, activeState.lng, currentSt.coords?.[0], currentSt.coords?.[1]).toFixed(1),
+          isArriving: false
+        };
+      }
     }
 
     return {
@@ -2114,7 +2142,11 @@ const TrackingPage = () => {
               }}>
                 <div style={{ color: '#006a4e' }}><LocationPinIcon /></div>
                 <span>
-                  বর্তমান অবস্থান: <b>{stats.closestLandmark.nameBn}</b> স্টেশনের কাছাকাছি ({toBn(stats.closestLandmark.dist)} কিমি দূরে)
+                  {stats.closestLandmark.isArriving ? (
+                    <>বর্তমান অবস্থান: <b>{stats.closestLandmark.nameBn}</b> স্টেশনে প্রবেশ করছে / প্ল্যাটফর্মের সন্নিকটে ({toBn(stats.closestLandmark.dist)} কিমি)</>
+                  ) : (
+                    <>বর্তমান অবস্থান: <b>{stats.closestLandmark.nameBn}</b> স্টেশনের কাছাকাছি ({toBn(stats.closestLandmark.dist)} কিমি দূরে)</>
+                  )}
                 </span>
               </div>
             )}
