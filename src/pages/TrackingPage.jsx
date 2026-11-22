@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Tooltip, useMap, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Tooltip, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { io } from 'socket.io-client';
 import { trains } from '../data/trainData';
@@ -221,14 +221,131 @@ const formatMinutesToBanglaTime = (totalMinutes) => {
   return `${toBn(h.toString().padStart(2, '0'))}:${toBn(m.toString().padStart(2, '0'))}`;
 };
 
-const RecenterMap = ({ center }) => {
+const MapCameraController = ({ center, isRunning, scheduleData, onZoomChange }) => {
   const map = useMap();
-  useEffect(() => {
-    if (center && !isNaN(center[0]) && !isNaN(center[1])) {
-      map.setView(center, map.getZoom());
+  const [autoFollow, setAutoFollow] = useState(true);
+  const isProgrammaticMoveRef = useRef(false);
+
+  useMapEvents({
+    dragstart: () => {
+      setAutoFollow(false);
+    },
+    zoomstart: () => {
+      if (!isProgrammaticMoveRef.current) {
+        setAutoFollow(false);
+      }
+    },
+    zoomend: () => {
+      if (onZoomChange) {
+        onZoomChange(map.getZoom());
+      }
     }
-  }, [center, map]);
-  return null;
+  });
+
+  useEffect(() => {
+    if (autoFollow && center && !isNaN(center[0]) && !isNaN(center[1])) {
+      isProgrammaticMoveRef.current = true;
+      map.panTo(center, { animate: true, duration: 0.6 });
+      setTimeout(() => {
+        isProgrammaticMoveRef.current = false;
+      }, 700);
+    }
+  }, [center, autoFollow, map]);
+
+  const handleRecenter = (e) => {
+    e.stopPropagation();
+    if (center && !isNaN(center[0]) && !isNaN(center[1])) {
+      isProgrammaticMoveRef.current = true;
+      map.flyTo(center, Math.max(map.getZoom(), 12), { duration: 0.8 });
+      setAutoFollow(true);
+      setTimeout(() => {
+        isProgrammaticMoveRef.current = false;
+      }, 900);
+    }
+  };
+
+  const handleFitRoute = (e) => {
+    e.stopPropagation();
+    const validCoords = scheduleData.filter((s) => s.coords).map((s) => s.coords);
+    if (validCoords.length > 0) {
+      isProgrammaticMoveRef.current = true;
+      const bounds = L.latLngBounds(validCoords);
+      map.fitBounds(bounds, { padding: [40, 40] });
+      setAutoFollow(false);
+      setTimeout(() => {
+        isProgrammaticMoveRef.current = false;
+      }, 900);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: '24px',
+        right: '16px',
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        alignItems: 'flex-end',
+        pointerEvents: 'auto'
+      }}
+    >
+      {/* রিকেন্দ্রীকরণ বা ট্রেনে ফোকাস বাটন */}
+      {!autoFollow && isRunning && (
+        <button
+          type="button"
+          onClick={handleRecenter}
+          style={{
+            background: '#ffffff',
+            color: '#006a4e',
+            border: '2px solid #006a4e',
+            borderRadius: '24px',
+            padding: '8px 14px',
+            fontSize: '12.5px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(0, 106, 78, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+          title="ট্রেনের বর্তমান অবস্থানে ফিরে যান"
+        >
+          <span style={{ fontSize: '15px' }}>📍</span>
+          <span>ট্রেনে ফোকাস</span>
+        </button>
+      )}
+
+      {/* পুরো রুট এক নজরে দেখার বাটন */}
+      <button
+        type="button"
+        onClick={handleFitRoute}
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          color: '#334155',
+          border: '1.5px solid #cbd5e1',
+          borderRadius: '24px',
+          padding: '6px 12px',
+          fontSize: '12px',
+          fontWeight: '700',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '5px',
+          backdropFilter: 'blur(4px)',
+          transition: 'all 0.2s ease'
+        }}
+        title="পুরো ট্রেনের রুট এক নজরে দেখুন"
+      >
+        <span style={{ fontSize: '13px' }}>🗺️</span>
+        <span>পুরো রুট</span>
+      </button>
+    </div>
+  );
 };
 
 // =========================================================================
@@ -250,6 +367,8 @@ const TrackingPage = () => {
   const wakeLockRef = useRef(null);
   const lastSentTsRef = useRef(0);
   const [sharedPingsCount, setSharedPingsCount] = useState(0);
+  const [mapZoom, setMapZoom] = useState(10);
+  const prevSpeedRef = useRef(null);
 
   // Screen Wake Lock API - prevents mobile browser from sleeping during live sharing
   const requestWakeLock = async () => {
@@ -460,6 +579,14 @@ const TrackingPage = () => {
             }
           }
 
+          // লো-পাস এক্সপোনেনশিয়াল মুভিং অ্যাভারেজ (EMA) ফিল্টার (GPS জাম্প ও সিগন্যাল ফ্লিক ফ্লপ রোধ)
+          if (currentSpeed < 3) {
+            currentSpeed = 0;
+          } else if (prevSpeedRef.current !== null && prevSpeedRef.current > 0) {
+            currentSpeed = Math.round(prevSpeedRef.current * 0.35 + currentSpeed * 0.65);
+          }
+          prevSpeedRef.current = currentSpeed;
+
           const minIntervalMs = currentSpeed > 5 ? 3500 : 8000;
           if (currentTs - lastSentTsRef.current < minIntervalMs) {
             return; // থ্রোটল রেট-লিমিট সক্রিয়
@@ -594,11 +721,13 @@ const TrackingPage = () => {
       );
     } else {
       releaseWakeLock();
+      prevSpeedRef.current = null;
     }
 
     return () => {
       if (watchId) navigator.geolocation.clearWatch(watchId);
       releaseWakeLock();
+      prevSpeedRef.current = null;
     };
   }, [isSharing, isTraveler, trainId, train, scheduleData]);
 
@@ -1155,13 +1284,19 @@ const TrackingPage = () => {
                 style={() => ({ color: '#006a4e', weight: 3, opacity: 0.85 })}
               />
             )}
-            <RecenterMap center={[activeState.lat, activeState.lng]} />
+            <MapCameraController
+              center={[activeState.lat, activeState.lng]}
+              isRunning={activeState.isRunning}
+              scheduleData={scheduleData}
+              onZoomChange={setMapZoom}
+            />
 
             {/* স্টপেজ স্টেশন মার্কার */}
             {scheduleData.map((st, i) => {
               if (!st.coords) return null;
               const isPassed = activeState.isRunning ? i < activeState.segmentIndex : false;
               const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
+              const showTooltip = isNext || mapZoom >= 10;
 
               return (
                 <Marker
@@ -1173,7 +1308,7 @@ const TrackingPage = () => {
                     iconAnchor: [6, 6]
                   })}
                 >
-                  <Tooltip permanent={isNext} direction="top" className="station-tooltip" offset={[0, -10]}>
+                  <Tooltip permanent={showTooltip} direction="top" className="station-tooltip" offset={[0, -10]}>
                     {st.name.split('(')[0]}
                   </Tooltip>
                 </Marker>
