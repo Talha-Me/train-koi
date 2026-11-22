@@ -584,7 +584,9 @@ function calculateTrainCorridorState({ train, scheduleData, liveData, currentTim
     const diffInMin = Math.max(0, (currentTime - lastUpdateTs) / (1000 * 60));
 
     let mode = 'LIVE';
-    let baseSpeed = liveData.speed || 50;
+    // ট্রেনের গতি নির্ধারণ (০ হলে যেন জাভাস্ক্রিপ্টের '||' অপরেটর ফলব্যাক ৫০ না বানিয়ে দেয়!)
+    const hasRawSpeed = liveData.speed !== undefined && liveData.speed !== null && !isNaN(liveData.speed);
+    let baseSpeed = hasRawSpeed ? Math.max(0, Math.round(Number(liveData.speed))) : 50;
     let currentSpeed = baseSpeed;
 
     if (diffInMin <= 10) {
@@ -668,7 +670,20 @@ function calculateTrainCorridorState({ train, scheduleData, liveData, currentTim
     const nextStCoords = scheduleData[bestSeg + 1]?.coords;
     const aerialDist = nextStCoords ? calculateDistance(sLat, sLng, nextStCoords[0], nextStCoords[1]) : 0;
     const distToNext = kmEnd > kmStart ? Math.max(0, Number(((1 - bestRatio) * (kmEnd - kmStart)).toFixed(1))) : Number(aerialDist.toFixed(1));
-    const isAtStation = (distToNext < 0.6 || aerialDist < 0.6) && currentSpeed < 15;
+
+    // বাস্তবসম্মত স্টেশন এন্ট্রি ও ডেসিলারেশন ফিজিক্স (Deceleration Physics)
+    if (distToNext <= 0.25 || aerialDist <= 0.25) {
+      // প্ল্যাটফর্মের একদম বাফার বা স্টপে গতি ০ থেকে সর্বোচ্চ ৮ কিমি
+      currentSpeed = currentSpeed > 0 ? Math.min(currentSpeed, 8) : 0;
+    } else if (distToNext <= 0.8 || aerialDist <= 0.8) {
+      // ৮০০ মিটারের মধ্যে ইয়ার্ড সিগন্যালে গতি সর্বোচ্চ ১৫ কিমি
+      currentSpeed = Math.min(currentSpeed, 15);
+    } else if (distToNext <= 1.8 || aerialDist <= 1.8) {
+      // আউটার পয়েন্টে গতি সর্বোচ্চ ২৫-৩০ কিমি
+      currentSpeed = Math.min(currentSpeed, 28);
+    }
+
+    const isAtStation = (distToNext < 0.3 || aerialDist < 0.3) && currentSpeed <= 10;
 
     return {
       lat: sLat,
