@@ -94,8 +94,12 @@ const StationAlarmModal = ({
   onSnoozeRing,
   currentDistanceKm = null
 }) => {
+  const defaultStation = scheduleData.length > 0 
+    ? (scheduleData[scheduleData.length - 1]?.name || scheduleData[scheduleData.length - 1]?.station || '')
+    : '';
+
   const [selectedStation, setSelectedStation] = useState(
-    currentAlarm?.stationName || scheduleData[scheduleData.length - 1]?.station || ''
+    currentAlarm?.stationName || defaultStation
   );
   const [leadDistanceKm, setLeadDistanceKm] = useState(currentAlarm?.leadDistanceKm || 10);
   const [wakeLockActive, setWakeLockActive] = useState(false);
@@ -104,7 +108,8 @@ const StationAlarmModal = ({
   // অটো-সিলেক্ট যদি কোনো অ্যালার্ম সক্রিয় না থাকে
   useEffect(() => {
     if (!currentAlarm && scheduleData.length > 0 && !selectedStation) {
-      setSelectedStation(scheduleData[scheduleData.length - 1].station);
+      const last = scheduleData[scheduleData.length - 1];
+      setSelectedStation(last.name || last.station || '');
     }
   }, [scheduleData, currentAlarm]);
 
@@ -141,9 +146,20 @@ const StationAlarmModal = ({
   const handleSave = () => {
     if (!selectedStation) return;
     alarmAudioPlayer.init(); // ইউজার ইন্টারেকশনে অডিও কনটেক্সট সক্রিয় করা
+
+    // ব্যাকগ্রাউন্ড নোটিফিকেশন পারমিশন
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      try {
+        Notification.requestPermission();
+      } catch (e) {}
+    }
+
+    const matchedStop = scheduleData.find(s => (s.name || s.station) === selectedStation);
+
     onSaveAlarm({
       stationName: selectedStation,
       leadDistanceKm: Number(leadDistanceKm),
+      coords: matchedStop?.coords || null,
       createdAt: Date.now()
     });
     onClose();
@@ -342,11 +358,16 @@ const StationAlarmModal = ({
                 background: '#f8fafc'
               }}
             >
-              {scheduleData.map((stop, idx) => (
-                <option key={idx} value={stop.station}>
-                  {idx === scheduleData.length - 1 ? `🏁 ${stop.station} (শেষ গন্তব্য)` : stop.station}
-                </option>
-              ))}
+              {scheduleData.map((stop, idx) => {
+                const stName = stop.name || stop.station || '';
+                const cleanName = stName.split('(')[0].trim();
+                const isFinal = idx === scheduleData.length - 1;
+                return (
+                  <option key={idx} value={stName}>
+                    {isFinal ? `🏁 ${cleanName} (সর্বশেষ গন্তব্য)` : `${toBn(idx + 1)}. ${cleanName}`}
+                  </option>
+                );
+              })}
             </select>
           </div>
 

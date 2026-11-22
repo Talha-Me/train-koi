@@ -1230,9 +1230,11 @@ const TrackingPage = () => {
 
   // স্টেশন অ্যালার্ম দূরত্ব ও রিং মনিটরিং (Inspired by BD Train Tracking StationAlarm)
   const alarmTargetCoords = useMemo(() => {
-    if (!stationAlarm?.stationName) return null;
+    if (!stationAlarm) return null;
+    if (stationAlarm.coords && Array.isArray(stationAlarm.coords)) return stationAlarm.coords;
+    if (!stationAlarm.stationName) return null;
     return getStationCoords(stationAlarm.stationName);
-  }, [stationAlarm?.stationName]);
+  }, [stationAlarm]);
 
   const distanceToAlarmStation = useMemo(() => {
     if (!alarmTargetCoords || !activeState?.lat || !activeState?.lng) return null;
@@ -1249,6 +1251,14 @@ const TrackingPage = () => {
       alarmAudioPlayer.startRinging();
       if ('vibrate' in navigator) {
         navigator.vibrate([400, 200, 400, 200, 600]);
+      }
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification('⏰ স্টেশন অ্যালার্ম!', {
+            body: `আপনি গন্তব্য স্টেশন ${stationAlarm.stationName}-এর সন্নিকটে এসে পড়েছেন! (দূরত্ব: প্রায় ${Math.round(distanceToAlarmStation)} কিমি)`,
+            icon: '/favicon.png'
+          });
+        } catch (e) {}
       }
     }
   }, [distanceToAlarmStation, stationAlarm, snoozeUntil]);
