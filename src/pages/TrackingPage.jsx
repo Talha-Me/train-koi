@@ -1193,12 +1193,17 @@ const TrackingPage = () => {
     });
   }, [oppositeTrain, oppositeScheduleData, oppositeLiveData, currentTime, railData]);
 
-  // ট্রেনের ক্রসিং স্টেশন ও দূরত্ব গণনা
+  // ট্রেনের ক্রসিং স্টেশন ও দূরত্ব গণনা (শুধুমাত্র যখন বিপরীত ট্রেনটি ৫ কিমি এর মধ্যে আসবে)
   const crossingInfo = useMemo(() => {
     if (!train || !oppositeTrain || !activeState?.isRunning || !oppositeState?.isRunning) {
       return null;
     }
     const distKm = calculateDistance(activeState.lat, activeState.lng, oppositeState.lat, oppositeState.lng);
+
+    // অপ্রয়োজনীয় অ্যালার্ট বন্ধ রাখতে শুধুমাত্র ৫ কিমি বা তার কম দূরত্বে ক্রসিং অ্যালার্ট সক্রিয় হবে
+    if (distKm > 5) {
+      return null;
+    }
 
     // দুই ট্রেনের মধ্যবর্তী ভৌগোলিক কেন্দ্রবিন্দু
     const midLat = (activeState.lat + oppositeState.lat) / 2;
@@ -1216,7 +1221,7 @@ const TrackingPage = () => {
     }
 
     return {
-      distKm: Math.round(distKm),
+      distKm: Math.max(1, Math.round(distKm)),
       stationNameBn: closestStation ? closestStation.nameBn : 'নিকটবর্তী স্টেশন',
       oppositeTrainName: oppositeTrain.name.split('(')[0].trim(),
       oppositeTrainId: oppositeTrain.id
