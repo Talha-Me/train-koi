@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react'; 
 import ReactGA from 'react-ga4';
 
@@ -125,6 +125,9 @@ function AppContent() {
           <Route path="/metro/fare" element={<MetroFare />} />
           <Route path="/metro/map" element={<MetroMap />} />
           <Route path="/metro/rules" element={<MetroRules />} />
+
+          {/* ফলব্যাক ক্যাচ-অল রাউট (Google AdSense 404 প্রতিরোধে সেফ রিডাইরেক্ট) */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       

@@ -66,11 +66,6 @@ const IconFileText = () => (
   </svg>
 );
 
-const IconChat = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-  </svg>
-);
 import railSegmentsData from '../data/railSegments.json';
 
 // =========================================================================
@@ -1913,54 +1908,31 @@ export default function TrainJourney3D({
           </div>
         </div>
 
-        {/* বটম অ্যাকশন বাটনসমূহ (বিস্তারিত ও চ্যাট) */}
+        {/* বটম অ্যাকশন বাটন */}
         <div style={{ display: 'flex', gap: '10px' }}>
           <button
             onClick={onClose}
             className="btn-press btn-hover"
             style={{
               flex: 1,
-              background: '#f8fafc',
-              border: '1.5px solid #006a4e',
+              background: '#006a4e',
+              border: 'none',
               borderRadius: '14px',
-              padding: '10px',
-              fontSize: '13px',
+              padding: '12px',
+              fontSize: '14px',
               fontWeight: '800',
-              color: '#006a4e',
+              color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '6px',
+              gap: '8px',
               cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(0, 106, 78, 0.25)',
               transition: 'all 0.2s ease'
             }}
           >
             <IconFileText />
-            <span>বিস্তারিত</span>
-          </button>
-
-          <button
-            onClick={() => alert('লাইভ চ্যাট শীঘ্রই চালু হচ্ছে!')}
-            className="btn-press btn-hover"
-            style={{
-              flex: 1,
-              background: '#f8fafc',
-              border: '1.5px solid #006a4e',
-              borderRadius: '14px',
-              padding: '10px',
-              fontSize: '13px',
-              fontWeight: '800',
-              color: '#006a4e',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <IconChat />
-            <span>চ্যাট</span>
+            <span>বিস্তারিত লাইভ রুট ও স্টপেজ দেখুন</span>
           </button>
         </div>
 
