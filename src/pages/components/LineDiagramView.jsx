@@ -66,7 +66,8 @@ const LineDiagramView = ({
   scheduleData = [],
   activeState = {},
   intermediateStationsMap = {},
-  stats = {}
+  stats = {},
+  crossingInfo = null
 }) => {
   const [filterMode, setFilterMode] = useState('stoppages'); // 'stoppages' | 'all'
   const [expandedSegments, setExpandedSegments] = useState({});
@@ -124,6 +125,24 @@ const LineDiagramView = ({
             নির্ধারিত যাত্রাবিরতি {toBn(scheduleData.length)}টি
             {totalIntermediatesCount > 0 && ` • মাঝের ক্রসিং স্টেশন ${toBn(totalIntermediatesCount)}টি`}
           </div>
+          {crossingInfo && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              marginTop: '6px',
+              background: '#fff7ed',
+              color: '#c2410c',
+              border: '1px solid #fdba74',
+              padding: '3px 9px',
+              borderRadius: '8px',
+              fontSize: '11.5px',
+              fontWeight: '700'
+            }}>
+              <span>🔄</span>
+              <span>সম্ভাব্য ক্রসিং: <strong>{crossingInfo.stationNameBn}</strong> ({crossingInfo.oppositeTrainName} {toBn(crossingInfo.oppositeTrainId)})</span>
+            </div>
+          )}
         </div>
 
         {/* ফিল্টার পিল ও স্ক্রোল টু ট্রেন অ্যাকশন বাটন */}

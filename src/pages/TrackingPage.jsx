@@ -9,6 +9,8 @@ import { trainProfiles } from '../data/trainProfiles';
 import allStationsData from '../data/allStations.json';
 import railData from '../data/railway.json';
 import SmoothTrainMarker from './components/SmoothTrainMarker';
+import OppositeTrainMarker from './components/OppositeTrainMarker';
+import TrainPopupCard from './components/TrainPopupCard';
 import LineDiagramView from './components/LineDiagramView';
 import {
   calculateDistance,
@@ -221,7 +223,16 @@ const formatMinutesToBanglaTime = (totalMinutes) => {
   return `${toBn(h.toString().padStart(2, '0'))}:${toBn(m.toString().padStart(2, '0'))}`;
 };
 
-const MapCameraController = ({ center, isRunning, scheduleData, onZoomChange }) => {
+const MapCameraController = ({
+  center,
+  isRunning,
+  scheduleData,
+  onZoomChange,
+  showOtherTrains,
+  onToggleOtherTrains,
+  oppositeCoords,
+  oppositeTrain
+}) => {
   const map = useMap();
   const [autoFollow, setAutoFollow] = useState(true);
   const isProgrammaticMoveRef = useRef(false);
@@ -319,6 +330,42 @@ const MapCameraController = ({ center, isRunning, scheduleData, onZoomChange }) 
         </button>
       )}
 
+      {/* বিপরীত ট্রেনে ফোকাস বাটন */}
+      {oppositeTrain && oppositeCoords && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            isProgrammaticMoveRef.current = true;
+            map.flyTo(oppositeCoords, Math.max(map.getZoom(), 12), { duration: 0.8 });
+            setAutoFollow(false);
+            setTimeout(() => {
+              isProgrammaticMoveRef.current = false;
+            }, 900);
+          }}
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            color: '#ea580c',
+            border: '1.5px solid #fdba74',
+            borderRadius: '24px',
+            padding: '6px 12px',
+            fontSize: '12px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(234, 88, 12, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            backdropFilter: 'blur(4px)',
+            transition: 'all 0.2s ease'
+          }}
+          title={`বিপরীত ট্রেন ${oppositeTrain.name.split('(')[0]} (${toBn(oppositeTrain.id)}) এ ফোকাস করুন`}
+        >
+          <span style={{ fontSize: '13px' }}>🔄</span>
+          <span>বিপরীত ট্রেন ({toBn(oppositeTrain.id)})</span>
+        </button>
+      )}
+
       {/* পুরো রুট এক নজরে দেখার বাটন */}
       <button
         type="button"
@@ -344,9 +391,305 @@ const MapCameraController = ({ center, isRunning, scheduleData, onZoomChange }) 
         <span style={{ fontSize: '13px' }}>🗺️</span>
         <span>পুরো রুট</span>
       </button>
+
+      {/* অন্যান্য সচল ট্রেন টগল বাটন */}
+      {onToggleOtherTrains && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleOtherTrains();
+          }}
+          style={{
+            background: showOtherTrains ? '#f0fdf4' : 'rgba(255, 255, 255, 0.95)',
+            color: showOtherTrains ? '#166534' : '#64748b',
+            border: `1.5px solid ${showOtherTrains ? '#86efac' : '#cbd5e1'}`,
+            borderRadius: '24px',
+            padding: '5px 11px',
+            fontSize: '11.5px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            backdropFilter: 'blur(4px)',
+            transition: 'all 0.2s ease'
+          }}
+          title="ম্যাপে অন্যান্য চলমান ট্রেন দেখানো চালু বা বন্ধ করুন"
+        >
+          <span style={{ fontSize: '12px' }}>🚆</span>
+          <span>অন্যান্য ট্রেন: {showOtherTrains ? 'অন' : 'অফ'}</span>
+        </button>
+      )}
     </div>
   );
 };
+
+/**
+ * calculateTrainCorridorState
+ * Pure function to calculate current position, speed, bearing, and segment
+ * for any train (main train or opposite pair train) along the railway corridor.
+ */
+function calculateTrainCorridorState({ train, scheduleData, liveData, currentTime, railData }) {
+  if (!train || scheduleData.length === 0) {
+    return {
+      lat: 23.81,
+      lng: 90.41,
+      speed: 0,
+      mode: 'OFFLINE',
+      isRunning: false,
+      segmentIndex: 0,
+      delay: 0,
+      currentKm: 0,
+      totalKm: 1,
+      progressPct: 0
+    };
+  }
+
+  const nowObj = new Date(currentTime);
+  const currentMinWithSec = nowObj.getHours() * 60 + nowObj.getMinutes() + nowObj.getSeconds() / 60;
+  const startMin = scheduleData[0].effectiveMin;
+  const endMin = scheduleData[scheduleData.length - 1].effectiveMin;
+  const isCrossDay = endMin < startMin;
+  const totalKm = scheduleData[scheduleData.length - 1].km || 450;
+
+  const daysInBangla = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+  const todayName = daysInBangla[nowObj.getDay()];
+  const yesterdayDate = new Date(currentTime);
+  yesterdayDate.setDate(nowObj.getDate() - 1);
+  const yesterdayName = daysInBangla[yesterdayDate.getDay()];
+  const isTodayOff = train.offDay.includes(todayName);
+  const startedYesterday = isCrossDay && !train.offDay.includes(yesterdayName);
+
+  const getScheduledState = () => {
+    const MAX_DELAY_TOLERANCE_MIN = 210; // ৩.৫ ঘণ্টা (২১০ মিনিট)
+    let inSchedule = false;
+    if (isCrossDay) {
+      inSchedule =
+        (currentMinWithSec >= startMin - 60 && !isTodayOff) ||
+        (currentMinWithSec <= endMin + MAX_DELAY_TOLERANCE_MIN && startedYesterday);
+    } else {
+      inSchedule =
+        currentMinWithSec >= startMin - 60 &&
+        currentMinWithSec <= endMin + MAX_DELAY_TOLERANCE_MIN &&
+        !isTodayOff;
+    }
+
+    if (!inSchedule) {
+      const firstCoords = scheduleData[0].coords || [23.7316, 90.4267];
+      return {
+        lat: firstCoords[0],
+        lng: firstCoords[1],
+        speed: 0,
+        mode: 'OFFLINE',
+        isRunning: false,
+        isTodayOff,
+        segmentIndex: 0,
+        delay: 0,
+        currentKm: 0,
+        totalKm,
+        progressPct: 0,
+        isAtStation: true
+      };
+    }
+
+    let segIdx = 0;
+    let ratio = 0;
+    let isAtStation = false;
+
+    for (let i = 0; i < scheduleData.length - 1; i++) {
+      const s1 = scheduleData[i];
+      const s2 = scheduleData[i + 1];
+      let tDep = s1.depMin !== null ? s1.depMin : s1.effectiveMin;
+      let tArr = s2.arrMin !== null ? s2.arrMin : s2.effectiveMin;
+
+      let evalNow = currentMinWithSec;
+      if (isCrossDay) {
+        if (evalNow < 500) evalNow += 1440;
+        if (tDep < 500) tDep += 1440;
+        if (tArr < 500) tArr += 1440;
+      }
+
+      if (evalNow >= tDep && evalNow <= tArr) {
+        segIdx = i;
+        const diff = tArr - tDep;
+        ratio = diff > 0 ? (evalNow - tDep) / diff : 0;
+        isAtStation = false;
+        break;
+      } else if (evalNow < tDep && i === 0) {
+        segIdx = 0;
+        ratio = 0;
+        isAtStation = true;
+        break;
+      } else if (i > 0) {
+        const prevArr = s1.arrMin !== null ? s1.arrMin : s1.effectiveMin;
+        let evalPrevArr = prevArr;
+        if (isCrossDay && evalPrevArr < 500) evalPrevArr += 1440;
+        if (evalNow >= evalPrevArr && evalNow < tDep) {
+          segIdx = i;
+          ratio = 0;
+          isAtStation = true;
+          break;
+        }
+      }
+    }
+
+    const c1 = scheduleData[segIdx]?.coords || [23.7316, 90.4267];
+    const c2 = scheduleData[segIdx + 1]?.coords || c1;
+    const interpLat = c1[0] + ratio * (c2[0] - c1[0]);
+    const interpLng = c1[1] + ratio * (c2[1] - c1[1]);
+    const snapResult = snapToRailCorridor(interpLat, interpLng, railData);
+    const alignedBearing = alignBearingToTravelDirection(
+      snapResult.bearing,
+      c1[0], c1[1],
+      c2[0], c2[1]
+    );
+
+    const kmStart = scheduleData[segIdx]?.km || 0;
+    const kmEnd = scheduleData[segIdx + 1]?.km || kmStart + 30;
+    const curKm = Math.round(kmStart + ratio * (kmEnd - kmStart));
+    const progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
+    const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
+    const distToNext = Math.max(0, Number(((1 - ratio) * (kmEnd - kmStart)).toFixed(1)));
+
+    return {
+      lat: snapResult.point[0],
+      lng: snapResult.point[1],
+      bearing: alignedBearing,
+      speed: isAtStation ? 0 : 52,
+      mode: 'SCHEDULED',
+      isRunning: true,
+      segmentIndex: segIdx,
+      segmentRatio: ratio,
+      legFraction,
+      delay: 0,
+      currentKm: curKm,
+      totalKm,
+      progressPct: progPct,
+      isAtStation,
+      distToNextKm: distToNext,
+      lastSeen: null
+    };
+  };
+
+  const rawLat = Number(liveData?.lat || liveData?.lastLocation?.lat);
+  const rawLng = Number(liveData?.lng || liveData?.lastLocation?.lng);
+  const updateTime = liveData?.updatedAt || liveData?.lastLocation?.updatedAt;
+
+  if (liveData && liveData.source !== 'SCHEDULED' && liveData.mode !== 'SCHEDULED' && !isNaN(rawLat) && !isNaN(rawLng) && rawLat !== 0 && rawLng !== 0) {
+    const lastUpdateTs = updateTime ? new Date(updateTime).getTime() : currentTime;
+    const diffInMin = Math.max(0, (currentTime - lastUpdateTs) / (1000 * 60));
+
+    let mode = 'LIVE';
+    let baseSpeed = liveData.speed || 50;
+    let currentSpeed = baseSpeed;
+
+    if (diffInMin <= 10) {
+      mode = 'LIVE';
+    } else if (diffInMin <= 120) {
+      mode = 'PREDICTED';
+      if (diffInMin > 30) {
+        const reductionProgress = Math.min(1, (diffInMin - 30) / 60);
+        currentSpeed = Math.max(15, baseSpeed - (baseSpeed - 15) * reductionProgress);
+      }
+    } else {
+      return getScheduledState();
+    }
+
+    const delay = Math.min(210, liveData.delay || 0);
+
+    let bestSeg = 0;
+    let minErr = Infinity;
+    let bestRatio = 0;
+
+    for (let i = 0; i < scheduleData.length - 1; i++) {
+      const c1 = scheduleData[i].coords;
+      const c2 = scheduleData[i + 1].coords;
+      if (c1 && c2) {
+        const seg = distToSegment([rawLat, rawLng], c1, c2);
+        const penalty = seg.projRatio <= 0 || seg.projRatio >= 1 ? 3 : 0;
+        const err = seg.crossDist + penalty;
+        if (err < minErr) {
+          minErr = err;
+          bestSeg = i;
+          bestRatio = seg.projRatio;
+        }
+      }
+    }
+
+    let sLat, sLng;
+    const kmStart = scheduleData[bestSeg]?.km || 0;
+    const kmEnd = scheduleData[bestSeg + 1]?.km || kmStart + 30;
+    let curKm = Math.round(kmStart + bestRatio * (kmEnd - kmStart));
+    let progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
+
+    if (diffInMin > 1 && currentSpeed > 0) {
+      const advancedKm = (currentSpeed / 60) * diffInMin;
+      const targetKm = Math.min(totalKm, curKm + advancedKm);
+
+      for (let i = 0; i < scheduleData.length - 1; i++) {
+        const s1Km = scheduleData[i]?.km || 0;
+        const s2Km = scheduleData[i + 1]?.km || (s1Km + 30);
+        if (targetKm >= s1Km && targetKm <= s2Km) {
+          bestSeg = i;
+          bestRatio = s2Km > s1Km ? (targetKm - s1Km) / (s2Km - s1Km) : 0;
+          break;
+        }
+      }
+
+      const c1 = scheduleData[bestSeg]?.coords || [rawLat, rawLng];
+      const c2 = scheduleData[bestSeg + 1]?.coords || c1;
+      const interpLat = c1[0] + bestRatio * (c2[0] - c1[0]);
+      const interpLng = c1[1] + bestRatio * (c2[1] - c1[1]);
+      const snapRes = snapToRailCorridor(interpLat, interpLng, railData);
+      sLat = snapRes.point[0];
+      sLng = snapRes.point[1];
+      curKm = Math.round(targetKm);
+      progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
+    } else {
+      const snapRes = snapToRailCorridor(rawLat, rawLng, railData);
+      sLat = snapRes.point[0];
+      sLng = snapRes.point[1];
+    }
+
+    const c1 = scheduleData[bestSeg]?.coords || [sLat, sLng];
+    const c2 = scheduleData[bestSeg + 1]?.coords || c1;
+    const snapRes = snapToRailCorridor(sLat, sLng, railData);
+    const alignedBearing = alignBearingToTravelDirection(
+      snapRes.bearing,
+      c1[0], c1[1],
+      c2[0], c2[1]
+    );
+    const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
+
+    const nextStCoords = scheduleData[bestSeg + 1]?.coords;
+    const aerialDist = nextStCoords ? calculateDistance(sLat, sLng, nextStCoords[0], nextStCoords[1]) : 0;
+    const distToNext = kmEnd > kmStart ? Math.max(0, Number(((1 - bestRatio) * (kmEnd - kmStart)).toFixed(1))) : Number(aerialDist.toFixed(1));
+    const isAtStation = (distToNext < 0.6 || aerialDist < 0.6) && currentSpeed < 15;
+
+    return {
+      lat: sLat,
+      lng: sLng,
+      bearing: alignedBearing,
+      speed: currentSpeed,
+      mode,
+      lastSeen: Math.floor(diffInMin),
+      isRunning: true,
+      segmentIndex: bestSeg,
+      segmentRatio: bestRatio,
+      legFraction,
+      delay,
+      currentKm: curKm,
+      totalKm,
+      progressPct: progPct,
+      isAtStation,
+      distToNextKm: distToNext
+    };
+  }
+
+  return getScheduledState();
+}
 
 // =========================================================================
 // ৩. মূল ট্র্যাকিং পেজ কম্পোনেন্ট
@@ -369,6 +712,10 @@ const TrackingPage = () => {
   const [sharedPingsCount, setSharedPingsCount] = useState(0);
   const [mapZoom, setMapZoom] = useState(10);
   const prevSpeedRef = useRef(null);
+  const [oppositeLiveData, setOppositeLiveData] = useState(null);
+  const [allActiveTrains, setAllActiveTrains] = useState([]);
+  const [selectedTrainPopup, setSelectedTrainPopup] = useState(null);
+  const [showOtherTrains, setShowOtherTrains] = useState(true);
 
   // Screen Wake Lock API - prevents mobile browser from sleeping during live sharing
   const requestWakeLock = async () => {
@@ -402,6 +749,17 @@ const TrackingPage = () => {
 
   const train = useMemo(() => trains.find((t) => t.id === parseInt(trainId, 10)), [trainId]);
   const profile = useMemo(() => (train ? trainProfiles[train.id] || null : null), [train]);
+
+  // বিপরীত জোড়া ট্রেন স্বয়ংক্রিয়ভাবে শনাক্তকরণ (যেমন: ৭০১ এর বিপরীত ৭০২)
+  const oppositeTrain = useMemo(() => {
+    if (!train) return null;
+    const baseName = train.name.split('(')[0].trim();
+    return (
+      trains.find((t) => t.id !== train.id && t.name.split('(')[0].trim() === baseName) ||
+      trains.find((t) => t.id !== train.id && t.from === train.to && t.to === train.from) ||
+      null
+    );
+  }, [train]);
 
   useEffect(() => {
     if (train) {
@@ -441,14 +799,62 @@ const TrackingPage = () => {
     }
   };
 
+  const fetchOppositeStatus = async () => {
+    if (!oppositeTrain) return;
+    try {
+      const res = await fetch(`${API_URL}/train-location/${oppositeTrain.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) setOppositeLiveData(data);
+      }
+    } catch (err) {
+      // silent fallback
+    }
+  };
+
+  const fetchAllActiveTrains = async () => {
+    try {
+      const res = await fetch(`${API_URL}/live-trains`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.data)) {
+          setAllActiveTrains(data.data);
+        } else if (data && Array.isArray(data.trains)) {
+          setAllActiveTrains(data.trains);
+        }
+      }
+    } catch (err) {
+      // silent fallback
+    }
+  };
+
   useEffect(() => {
     fetchLiveStatus();
-    const syncInterval = setInterval(fetchLiveStatus, 20000);
+    fetchOppositeStatus();
+    fetchAllActiveTrains();
+
+    const syncInterval = setInterval(() => {
+      fetchLiveStatus();
+      fetchOppositeStatus();
+      fetchAllActiveTrains();
+    }, 20000);
 
     const handleReceiveLocation = (data) => {
       if (Number(data.trainId) === Number(trainId)) {
         setLiveData(data);
       }
+      if (oppositeTrain && Number(data.trainId) === Number(oppositeTrain.id)) {
+        setOppositeLiveData(data);
+      }
+      setAllActiveTrains((prev) => {
+        const idx = prev.findIndex((item) => Number(item.trainId) === Number(data.trainId));
+        if (idx !== -1) {
+          const updated = [...prev];
+          updated[idx] = { ...updated[idx], ...data };
+          return updated;
+        }
+        return [...prev, data];
+      });
     };
 
     socket.on("receive_location", handleReceiveLocation);
@@ -457,7 +863,7 @@ const TrackingPage = () => {
       clearInterval(syncInterval);
       socket.off("receive_location", handleReceiveLocation);
     };
-  }, [trainId]);
+  }, [trainId, oppositeTrain]);
 
   const scheduleData = useMemo(() => {
     if (!train) return [];
@@ -477,6 +883,25 @@ const TrackingPage = () => {
       };
     });
   }, [train]);
+
+  const oppositeScheduleData = useMemo(() => {
+    if (!oppositeTrain) return [];
+    return oppositeTrain.stations.map((st, i) => {
+      const arrMin = parseToMinutes(st.arrival);
+      const depMin = parseToMinutes(st.departure);
+      const effectiveMin = arrMin !== null ? arrMin : depMin;
+      const coords = getStationCoords(st.name);
+      return {
+        ...st,
+        idx: i,
+        arrMin,
+        depMin,
+        effectiveMin,
+        coords,
+        km: st.km !== undefined ? st.km : 0
+      };
+    });
+  }, [oppositeTrain]);
 
   const intermediateStationsMap = useMemo(() => {
     if (!train || scheduleData.length < 2) return {};
@@ -732,265 +1157,55 @@ const TrackingPage = () => {
   }, [isSharing, isTraveler, trainId, train, scheduleData]);
 
   const activeState = useMemo(() => {
-    if (!train || scheduleData.length === 0) {
-      return {
-        lat: 23.81,
-        lng: 90.41,
-        speed: 0,
-        mode: 'OFFLINE',
-        isRunning: false,
-        segmentIndex: 0,
-        delay: 0,
-        currentKm: 0,
-        totalKm: 1,
-        progressPct: 0
-      };
+    return calculateTrainCorridorState({
+      train,
+      scheduleData,
+      liveData,
+      currentTime,
+      railData
+    });
+  }, [train, scheduleData, liveData, currentTime, railData]);
+
+  const oppositeState = useMemo(() => {
+    if (!oppositeTrain || oppositeScheduleData.length === 0) return null;
+    return calculateTrainCorridorState({
+      train: oppositeTrain,
+      scheduleData: oppositeScheduleData,
+      liveData: oppositeLiveData,
+      currentTime,
+      railData
+    });
+  }, [oppositeTrain, oppositeScheduleData, oppositeLiveData, currentTime, railData]);
+
+  // ট্রেনের ক্রসিং স্টেশন ও দূরত্ব গণনা
+  const crossingInfo = useMemo(() => {
+    if (!train || !oppositeTrain || !activeState?.isRunning || !oppositeState?.isRunning) {
+      return null;
+    }
+    const distKm = calculateDistance(activeState.lat, activeState.lng, oppositeState.lat, oppositeState.lng);
+
+    // দুই ট্রেনের মধ্যবর্তী ভৌগোলিক কেন্দ্রবিন্দু
+    const midLat = (activeState.lat + oppositeState.lat) / 2;
+    const midLng = (activeState.lng + oppositeState.lng) / 2;
+
+    let closestStation = null;
+    let minD = Infinity;
+
+    for (const s of Object.values(allStationsData)) {
+      const d = calculateDistance(midLat, midLng, s.lat, s.lng);
+      if (d < minD) {
+        minD = d;
+        closestStation = s;
+      }
     }
 
-    const nowObj = new Date(currentTime);
-    const currentMinWithSec = nowObj.getHours() * 60 + nowObj.getMinutes() + nowObj.getSeconds() / 60;
-    const startMin = scheduleData[0].effectiveMin;
-    const endMin = scheduleData[scheduleData.length - 1].effectiveMin;
-    const isCrossDay = endMin < startMin;
-    const totalKm = scheduleData[scheduleData.length - 1].km || 450;
-
-    const daysInBangla = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
-    const todayName = daysInBangla[nowObj.getDay()];
-    const yesterdayDate = new Date(currentTime);
-    yesterdayDate.setDate(nowObj.getDate() - 1);
-    const yesterdayName = daysInBangla[yesterdayDate.getDay()];
-    const isTodayOff = train.offDay.includes(todayName);
-    const startedYesterday = isCrossDay && !train.offDay.includes(yesterdayName);
-
-    const getScheduledState = () => {
-      const MAX_DELAY_TOLERANCE_MIN = 210; // ৩.৫ ঘণ্টা (২১০ মিনিট)
-      let inSchedule = false;
-      if (isCrossDay) {
-        inSchedule =
-          (currentMinWithSec >= startMin - 60 && !isTodayOff) ||
-          (currentMinWithSec <= endMin + MAX_DELAY_TOLERANCE_MIN && startedYesterday);
-      } else {
-        inSchedule =
-          currentMinWithSec >= startMin - 60 &&
-          currentMinWithSec <= endMin + MAX_DELAY_TOLERANCE_MIN &&
-          !isTodayOff;
-      }
-
-      if (!inSchedule) {
-        const firstCoords = scheduleData[0].coords || [23.7316, 90.4267];
-        return {
-          lat: firstCoords[0],
-          lng: firstCoords[1],
-          speed: 0,
-          mode: 'OFFLINE',
-          isRunning: false,
-          isTodayOff,
-          segmentIndex: 0,
-          delay: 0,
-          currentKm: 0,
-          totalKm,
-          progressPct: 0,
-          isAtStation: true
-        };
-      }
-
-      let segIdx = 0;
-      let ratio = 0;
-      let isAtStation = false;
-
-      for (let i = 0; i < scheduleData.length - 1; i++) {
-        const s1 = scheduleData[i];
-        const s2 = scheduleData[i + 1];
-        let tDep = s1.depMin !== null ? s1.depMin : s1.effectiveMin;
-        let tArr = s2.arrMin !== null ? s2.arrMin : s2.effectiveMin;
-
-        let evalNow = currentMinWithSec;
-        if (isCrossDay) {
-          if (evalNow < 500) evalNow += 1440;
-          if (tDep < 500) tDep += 1440;
-          if (tArr < 500) tArr += 1440;
-        }
-
-        if (evalNow >= tDep && evalNow <= tArr) {
-          segIdx = i;
-          const diff = tArr - tDep;
-          ratio = diff > 0 ? (evalNow - tDep) / diff : 0;
-          isAtStation = false;
-          break;
-        } else if (evalNow < tDep && i === 0) {
-          segIdx = 0;
-          ratio = 0;
-          isAtStation = true;
-          break;
-        } else if (i > 0) {
-          const prevArr = s1.arrMin !== null ? s1.arrMin : s1.effectiveMin;
-          let evalPrevArr = prevArr;
-          if (isCrossDay && evalPrevArr < 500) evalPrevArr += 1440;
-          if (evalNow >= evalPrevArr && evalNow < tDep) {
-            segIdx = i;
-            ratio = 0;
-            isAtStation = true;
-            break;
-          }
-        }
-      }
-
-      const c1 = scheduleData[segIdx]?.coords || [23.7316, 90.4267];
-      const c2 = scheduleData[segIdx + 1]?.coords || c1;
-      const interpLat = c1[0] + ratio * (c2[0] - c1[0]);
-      const interpLng = c1[1] + ratio * (c2[1] - c1[1]);
-      const snapResult = snapToRailCorridor(interpLat, interpLng, railData);
-      const alignedBearing = alignBearingToTravelDirection(
-        snapResult.bearing,
-        c1[0], c1[1],
-        c2[0], c2[1]
-      );
-
-      const kmStart = scheduleData[segIdx]?.km || 0;
-      const kmEnd = scheduleData[segIdx + 1]?.km || kmStart + 30;
-      const curKm = Math.round(kmStart + ratio * (kmEnd - kmStart));
-      const progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
-      const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
-      const distToNext = Math.max(0, Number(((1 - ratio) * (kmEnd - kmStart)).toFixed(1)));
-
-      return {
-        lat: snapResult.point[0],
-        lng: snapResult.point[1],
-        bearing: alignedBearing,
-        speed: isAtStation ? 0 : 52,
-        mode: 'SCHEDULED',
-        isRunning: true,
-        segmentIndex: segIdx,
-        segmentRatio: ratio,
-        legFraction,
-        delay: 0,
-        currentKm: curKm,
-        totalKm,
-        progressPct: progPct,
-        isAtStation,
-        distToNextKm: distToNext,
-        lastSeen: null
-      };
+    return {
+      distKm: Math.round(distKm),
+      stationNameBn: closestStation ? closestStation.nameBn : 'নিকটবর্তী স্টেশন',
+      oppositeTrainName: oppositeTrain.name.split('(')[0].trim(),
+      oppositeTrainId: oppositeTrain.id
     };
-
-    const rawLat = Number(liveData?.lat || liveData?.lastLocation?.lat);
-    const rawLng = Number(liveData?.lng || liveData?.lastLocation?.lng);
-    const updateTime = liveData?.updatedAt || liveData?.lastLocation?.updatedAt;
-
-    if (liveData && liveData.source !== 'SCHEDULED' && liveData.mode !== 'SCHEDULED' && !isNaN(rawLat) && !isNaN(rawLng) && rawLat !== 0 && rawLng !== 0) {
-      const lastUpdateTs = updateTime ? new Date(updateTime).getTime() : currentTime;
-      const diffInMin = Math.max(0, (currentTime - lastUpdateTs) / (1000 * 60));
-
-      let mode = 'LIVE';
-      let baseSpeed = liveData.speed || 50;
-      let currentSpeed = baseSpeed;
-
-      if (diffInMin <= 10) {
-        mode = 'LIVE';
-      } else if (diffInMin <= 120) {
-        mode = 'PREDICTED';
-        if (diffInMin > 30) {
-          const reductionProgress = Math.min(1, (diffInMin - 30) / 60);
-          currentSpeed = Math.max(15, baseSpeed - (baseSpeed - 15) * reductionProgress);
-        }
-      } else {
-        return getScheduledState();
-      }
-
-      const delay = Math.min(210, liveData.delay || 0);
-
-      let bestSeg = 0;
-      let minErr = Infinity;
-      let bestRatio = 0;
-
-      for (let i = 0; i < scheduleData.length - 1; i++) {
-        const c1 = scheduleData[i].coords;
-        const c2 = scheduleData[i + 1].coords;
-        if (c1 && c2) {
-          const seg = distToSegment([rawLat, rawLng], c1, c2);
-          const penalty = seg.projRatio <= 0 || seg.projRatio >= 1 ? 3 : 0;
-          const err = seg.crossDist + penalty;
-          if (err < minErr) {
-            minErr = err;
-            bestSeg = i;
-            bestRatio = seg.projRatio;
-          }
-        }
-      }
-
-      let sLat, sLng;
-      const kmStart = scheduleData[bestSeg]?.km || 0;
-      const kmEnd = scheduleData[bestSeg + 1]?.km || kmStart + 30;
-      let curKm = Math.round(kmStart + bestRatio * (kmEnd - kmStart));
-      let progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
-
-      // প্রেডিকশন মোডে গত সময় (diffInMin) অনুযায়ী ট্রেনকে রুটের সামনের দিকে অনুমান করে বাস্তবসম্মতভাবে এগিয়ে নেওয়া
-      if (diffInMin > 1 && currentSpeed > 0) {
-        const advancedKm = (currentSpeed / 60) * diffInMin;
-        const targetKm = Math.min(totalKm, curKm + advancedKm);
-
-        for (let i = 0; i < scheduleData.length - 1; i++) {
-          const s1Km = scheduleData[i]?.km || 0;
-          const s2Km = scheduleData[i + 1]?.km || (s1Km + 30);
-          if (targetKm >= s1Km && targetKm <= s2Km) {
-            bestSeg = i;
-            bestRatio = s2Km > s1Km ? (targetKm - s1Km) / (s2Km - s1Km) : 0;
-            break;
-          }
-        }
-
-        const c1 = scheduleData[bestSeg]?.coords || [rawLat, rawLng];
-        const c2 = scheduleData[bestSeg + 1]?.coords || c1;
-        const interpLat = c1[0] + bestRatio * (c2[0] - c1[0]);
-        const interpLng = c1[1] + bestRatio * (c2[1] - c1[1]);
-        const snapRes = snapToRailCorridor(interpLat, interpLng, railData);
-        sLat = snapRes.point[0];
-        sLng = snapRes.point[1];
-        curKm = Math.round(targetKm);
-        progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
-      } else {
-        const snapRes = snapToRailCorridor(rawLat, rawLng, railData);
-        sLat = snapRes.point[0];
-        sLng = snapRes.point[1];
-      }
-
-      const c1 = scheduleData[bestSeg]?.coords || [sLat, sLng];
-      const c2 = scheduleData[bestSeg + 1]?.coords || c1;
-      const snapRes = snapToRailCorridor(sLat, sLng, railData);
-      const alignedBearing = alignBearingToTravelDirection(
-        snapRes.bearing,
-        c1[0], c1[1],
-        c2[0], c2[1]
-      );
-      const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
-
-      const nextStCoords = scheduleData[bestSeg + 1]?.coords;
-      const aerialDist = nextStCoords ? calculateDistance(sLat, sLng, nextStCoords[0], nextStCoords[1]) : 0;
-      const distToNext = kmEnd > kmStart ? Math.max(0, Number(((1 - bestRatio) * (kmEnd - kmStart)).toFixed(1))) : Number(aerialDist.toFixed(1));
-      const isAtStation = (distToNext < 0.6 || aerialDist < 0.6) && currentSpeed < 15;
-
-      return {
-        lat: sLat,
-        lng: sLng,
-        bearing: alignedBearing,
-        speed: currentSpeed,
-        mode,
-        lastSeen: Math.floor(diffInMin),
-        isRunning: true,
-        segmentIndex: bestSeg,
-        segmentRatio: bestRatio,
-        legFraction,
-        delay,
-        currentKm: curKm,
-        totalKm,
-        progressPct: progPct,
-        isAtStation,
-        distToNextKm: distToNext
-      };
-    }
-
-    return getScheduledState();
-  }, [train, scheduleData, liveData, currentTime]);
+  }, [train, oppositeTrain, activeState, oppositeState]);
 
   const stats = useMemo(() => {
     if (!train || scheduleData.length === 0 || !activeState.isRunning) return null;
@@ -1289,6 +1504,10 @@ const TrackingPage = () => {
               isRunning={activeState.isRunning}
               scheduleData={scheduleData}
               onZoomChange={setMapZoom}
+              showOtherTrains={showOtherTrains}
+              onToggleOtherTrains={() => setShowOtherTrains(prev => !prev)}
+              oppositeCoords={oppositeState && oppositeState.isRunning ? [oppositeState.lat, oppositeState.lng] : null}
+              oppositeTrain={oppositeTrain}
             />
 
             {/* স্টপেজ স্টেশন মার্কার */}
@@ -1326,8 +1545,151 @@ const TrackingPage = () => {
                 trainName={train?.name || 'ট্রেন'}
               />
             )}
+
+            {/* বিপরীত ট্রেনের লাইভ মার্কার (একই করিডোরে বিপরীত দিক থেকে আসা ট্রেন) */}
+            {oppositeTrain && oppositeState && oppositeState.isRunning && (
+              <OppositeTrainMarker
+                targetLat={oppositeState.lat}
+                targetLng={oppositeState.lng}
+                bearing={oppositeState.bearing || 0}
+                speed={oppositeState.speed || 0}
+                trainId={oppositeTrain.id}
+                trainName={oppositeTrain.name.split('(')[0].trim()}
+                mode={oppositeState.mode}
+                isOppositePair={true}
+                onClick={() => {
+                  const dist = calculateDistance(activeState.lat, activeState.lng, oppositeState.lat, oppositeState.lng);
+                  setSelectedTrainPopup({
+                    train: oppositeTrain,
+                    state: oppositeState,
+                    distanceKm: dist,
+                    isOpposite: true
+                  });
+                }}
+              />
+            )}
+
+            {/* নেটওয়ার্কের অন্যান্য সচল ট্রেন মার্কার (টগল অন থাকলে) */}
+            {showOtherTrains && allActiveTrains.map((at) => {
+              const tId = Number(at.trainId);
+              if (tId === Number(trainId) || (oppositeTrain && tId === Number(oppositeTrain.id))) return null;
+              if (!at.lat || !at.lng || isNaN(at.lat) || isNaN(at.lng)) return null;
+              const matchedTrain = trains.find(t => t.id === tId);
+              if (!matchedTrain) return null;
+
+              return (
+                <OppositeTrainMarker
+                  key={tId}
+                  targetLat={Number(at.lat)}
+                  targetLng={Number(at.lng)}
+                  bearing={Number(at.bearing) || 0}
+                  speed={Number(at.speed) || 0}
+                  trainId={tId}
+                  trainName={matchedTrain.name.split('(')[0].trim()}
+                  mode={at.mode || 'LIVE'}
+                  isOppositePair={false}
+                  onClick={() => {
+                    const dist = calculateDistance(activeState.lat, activeState.lng, Number(at.lat), Number(at.lng));
+                    setSelectedTrainPopup({
+                      train: matchedTrain,
+                      state: at,
+                      distanceKm: dist,
+                      isOpposite: false
+                    });
+                  }}
+                />
+              );
+            })}
           </MapContainer>
+
+          {/* সিলেক্ট করা ট্রেনের পপআপ কার্ড (BD Train Tracking showTrainPopup স্টাইলে) */}
+          {selectedTrainPopup && (
+            <TrainPopupCard
+              train={selectedTrainPopup.train}
+              trainState={selectedTrainPopup.state}
+              distanceFromUserTrainKm={selectedTrainPopup.distanceKm}
+              isOpposite={selectedTrainPopup.isOpposite}
+              onClose={() => setSelectedTrainPopup(null)}
+            />
+          )}
         </div>
+
+        {/* =========================================================================
+            ক্রসিং অ্যালার্ট ব্যানার (বিপরীত ট্রেনের সাথে সম্ভাব্য ক্রসিং স্টেশন)
+        ========================================================================= */}
+        {crossingInfo && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fff7ed, #ffedd5)',
+            border: '1.5px solid #fdba74',
+            borderRadius: '16px',
+            padding: '14px 18px',
+            marginBottom: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: '0 4px 16px rgba(234, 88, 12, 0.12)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '50%',
+                background: '#ea580c',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px',
+                flexShrink: 0,
+                boxShadow: '0 4px 10px rgba(234, 88, 12, 0.35)'
+              }}>
+                🔄
+              </div>
+              <div>
+                <div style={{ fontSize: '14.5px', fontWeight: '900', color: '#9a3412', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>সম্ভাব্য ট্রেন ক্রসিং:</span>
+                  <span style={{ background: '#ea580c', color: '#ffffff', padding: '1px 8px', borderRadius: '6px', fontSize: '13px' }}>
+                    {crossingInfo.stationNameBn} স্টেশন
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', color: '#c2410c', marginTop: '3px', fontWeight: '600' }}>
+                  বিপরীত অভিমুখের ট্রেন <strong>{crossingInfo.oppositeTrainName} ({toBn(crossingInfo.oppositeTrainId)})</strong> আপনার ট্রেন থেকে প্রায় <strong>{toBn(crossingInfo.distKm)} কিমি</strong> দূরে আছে।
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const dist = calculateDistance(activeState.lat, activeState.lng, oppositeState.lat, oppositeState.lng);
+                setSelectedTrainPopup({
+                  train: oppositeTrain,
+                  state: oppositeState,
+                  distanceKm: dist,
+                  isOpposite: true
+                });
+              }}
+              style={{
+                background: '#ea580c',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '8px 16px',
+                fontSize: '13px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(234, 88, 12, 0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <span>ম্যাপে দেখুন</span>
+              <span>🔍</span>
+            </button>
+          </div>
+        )}
 
         {/* =========================================================================
             ২. বর্তমান অবস্থান ও পরবর্তী স্টেশন কার্ড (ম্যাপের ঠিক নিচে)
@@ -1847,6 +2209,7 @@ const TrackingPage = () => {
               activeState={activeState}
               intermediateStationsMap={intermediateStationsMap}
               stats={stats}
+              crossingInfo={crossingInfo}
             />
           </div>
         )}
