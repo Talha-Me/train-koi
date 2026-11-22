@@ -8,6 +8,16 @@ import { stationCoords } from '../data/stationCoords';
 import { trainProfiles } from '../data/trainProfiles';
 import allStationsData from '../data/allStations.json';
 import railData from '../data/railway.json';
+import SmoothTrainMarker from './components/SmoothTrainMarker';
+import {
+  calculateDistance,
+  calculateBearing,
+  projectPointOnSegment,
+  distToSegment,
+  snapToRailCorridor,
+  alignBearingToTravelDirection,
+  calculateLegFraction
+} from './utils/trainLogic';
 const TrainJourney3D = React.lazy(() => import('../components/TrainJourney3D'));
 
 // প্রোডাকশন ও লোকাল ডায়নামিক URL
@@ -166,71 +176,14 @@ const minutesToTime = (totalMinutes) => {
   return `${toBn(h)}:${toBn(m.toString().padStart(2, '0'))} ${mod}`;
 };
 
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-};
-
-const distToSegment = (p, a, b) => {
-  const dAB = calculateDistance(a[0], a[1], b[0], b[1]);
-  if (dAB === 0) return { crossDist: calculateDistance(p[0], p[1], a[0], a[1]), projRatio: 0 };
-
-  const x = (p[1] - a[1]) * Math.cos(((a[0] + b[0]) / 2 * Math.PI) / 180);
-  const y = p[0] - a[0];
-  const dx = (b[1] - a[1]) * Math.cos(((a[0] + b[0]) / 2 * Math.PI) / 180);
-  const dy = b[0] - a[0];
-
-  let t = (x * dx + y * dy) / (dx * dx + dy * dy);
-  t = Math.max(0, Math.min(1, t));
-
-  const projLat = a[0] + t * (b[0] - a[0]);
-  const projLng = a[1] + t * (b[1] - a[1]);
-
-  return {
-    crossDist: calculateDistance(p[0], p[1], projLat, projLng),
-    projRatio: t
-  };
-};
-
+// হাই-পারফরম্যান্স স্পেশাল গ্রিড স্ন্যাপ-টু-রেল মেথড
 const getTrackSnapAndDistance = (lat, lng, geojson) => {
-  if (!geojson || !geojson.features) return { point: [lat, lng], distance: 0 };
-  let minDistance = Infinity;
-  let snapped = [lat, lng];
-  geojson.features.forEach((feature) => {
-    if (feature.geometry?.type === 'LineString') {
-      feature.geometry.coordinates.forEach((coord) => {
-        const d = calculateDistance(lat, lng, coord[1], coord[0]);
-        if (d < minDistance) {
-          minDistance = d;
-          snapped = [coord[1], coord[0]];
-        }
-      });
-    } else if (feature.geometry?.type === 'MultiLineString') {
-      feature.geometry.coordinates.forEach((line) => {
-        line.forEach((coord) => {
-          const d = calculateDistance(lat, lng, coord[1], coord[0]);
-          if (d < minDistance) {
-            minDistance = d;
-            snapped = [coord[1], coord[0]];
-          }
-        });
-      });
-    }
-  });
-  return { point: snapped, distance: minDistance };
+  const result = snapToRailCorridor(lat, lng, geojson || railData);
+  return { point: result.point, distance: result.distanceKm, bearing: result.bearing };
 };
 
 const getSnappedPoint = (lat, lng, geojson) => {
-  return getTrackSnapAndDistance(lat, lng, geojson).point;
+  return snapToRailCorridor(lat, lng, geojson || railData).point;
 };
 
 const formatDelay = (minutes, short = false) => {
@@ -669,21 +622,29 @@ const TrackingPage = () => {
       const c2 = scheduleData[segIdx + 1]?.coords || c1;
       const interpLat = c1[0] + ratio * (c2[0] - c1[0]);
       const interpLng = c1[1] + ratio * (c2[1] - c1[1]);
-      const [sLat, sLng] = getSnappedPoint(interpLat, interpLng, railData);
+      const snapResult = snapToRailCorridor(interpLat, interpLng, railData);
+      const alignedBearing = alignBearingToTravelDirection(
+        snapResult.bearing,
+        c1[0], c1[1],
+        c2[0], c2[1]
+      );
 
       const kmStart = scheduleData[segIdx]?.km || 0;
       const kmEnd = scheduleData[segIdx + 1]?.km || kmStart + 30;
       const curKm = Math.round(kmStart + ratio * (kmEnd - kmStart));
       const progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
+      const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
 
       return {
-        lat: sLat,
-        lng: sLng,
+        lat: snapResult.point[0],
+        lng: snapResult.point[1],
+        bearing: alignedBearing,
         speed: isAtStation ? 0 : 52,
         mode: 'SCHEDULED',
         isRunning: true,
         segmentIndex: segIdx,
         segmentRatio: ratio,
+        legFraction,
         delay: 0,
         currentKm: curKm,
         totalKm,
@@ -763,16 +724,26 @@ const TrackingPage = () => {
         const c2 = scheduleData[bestSeg + 1]?.coords || c1;
         const interpLat = c1[0] + bestRatio * (c2[0] - c1[0]);
         const interpLng = c1[1] + bestRatio * (c2[1] - c1[1]);
-        const [snappedLat, snappedLng] = getSnappedPoint(interpLat, interpLng, railData);
-        sLat = snappedLat;
-        sLng = snappedLng;
+        const snapRes = snapToRailCorridor(interpLat, interpLng, railData);
+        sLat = snapRes.point[0];
+        sLng = snapRes.point[1];
         curKm = Math.round(targetKm);
         progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
       } else {
-        const [snappedLat, snappedLng] = getSnappedPoint(rawLat, rawLng, railData);
-        sLat = snappedLat;
-        sLng = snappedLng;
+        const snapRes = snapToRailCorridor(rawLat, rawLng, railData);
+        sLat = snapRes.point[0];
+        sLng = snapRes.point[1];
       }
+
+      const c1 = scheduleData[bestSeg]?.coords || [sLat, sLng];
+      const c2 = scheduleData[bestSeg + 1]?.coords || c1;
+      const snapRes = snapToRailCorridor(sLat, sLng, railData);
+      const alignedBearing = alignBearingToTravelDirection(
+        snapRes.bearing,
+        c1[0], c1[1],
+        c2[0], c2[1]
+      );
+      const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
 
       const nextStCoords = scheduleData[bestSeg + 1]?.coords;
       const distToNext = nextStCoords ? calculateDistance(sLat, sLng, nextStCoords[0], nextStCoords[1]) : 0;
@@ -781,12 +752,14 @@ const TrackingPage = () => {
       return {
         lat: sLat,
         lng: sLng,
+        bearing: alignedBearing,
         speed: currentSpeed,
         mode,
         lastSeen: Math.floor(diffInMin),
         isRunning: true,
         segmentIndex: bestSeg,
         segmentRatio: bestRatio,
+        legFraction,
         delay,
         currentKm: curKm,
         totalKm,
@@ -1116,26 +1089,17 @@ const TrackingPage = () => {
               );
             })}
 
-            {/* লাইভ ট্রেন পজিশন মার্কার (মোড ভিত্তিক পালসিং অ্যানিমেশন সহ) */}
-            {activeState.isRunning && (() => {
-              const markerBg = activeState.mode === 'LIVE' ? '#10b981' : (activeState.mode === 'PREDICTED' ? '#f59e0b' : '#0284c7');
-              const pulseBg = activeState.mode === 'LIVE' ? 'rgba(16, 185, 129, 0.45)' : (activeState.mode === 'PREDICTED' ? 'rgba(245, 158, 11, 0.45)' : 'rgba(2, 132, 199, 0.45)');
-              return (
-                <Marker
-                  position={[activeState.lat, activeState.lng]}
-                  icon={L.divIcon({
-                    html: `
-                      <div style="position: relative; width: 24px; height: 24px;">
-                        <div style="position: absolute; inset: -10px; border-radius: 50%; background: ${pulseBg}; animation: livePulse 2s infinite ease-out;"></div>
-                        <div style="width: 24px; height: 24px; background: ${markerBg}; border: 3.5px solid #ffffff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.35);"></div>
-                      </div>
-                    `,
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                  })}
-                />
-              );
-            })()}
+            {/* লাইভ ট্রেন পজিশন মার্কার (৬০fps স্মুথ ইন্টারপোলেশন, দিক ও ট্র্যাক অরিয়েন্টেশন সহ) */}
+            {activeState.isRunning && (
+              <SmoothTrainMarker
+                targetLat={activeState.lat}
+                targetLng={activeState.lng}
+                bearing={activeState.bearing || 0}
+                speed={activeState.speed || 0}
+                mode={activeState.mode}
+                trainName={train?.name || 'ট্রেন'}
+              />
+            )}
           </MapContainer>
         </div>
 
@@ -1403,6 +1367,34 @@ const TrackingPage = () => {
                 <span>
                   বর্তমান অবস্থান: <b>{stats.closestLandmark.nameBn}</b> স্টেশনের কাছাকাছি ({toBn(stats.closestLandmark.dist)} কিমি দূরে)
                 </span>
+              </div>
+            )}
+
+            {/* স্টপ-টু-স্টপ ইন্টারমিডিয়েট লেগ প্রগ্রেস বার (BD Train Tracking Inspired) */}
+            {stats?.currentStName && stats?.nextStName && stats.currentStName !== stats.nextStName && (
+              <div style={{
+                margin: '0 0 16px',
+                padding: '14px 16px',
+                background: '#f8fafc',
+                borderRadius: '14px',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>
+                  <span style={{ color: '#006a4e' }}>🚉 {stats.currentStName}</span>
+                  <span style={{ color: '#006a4e', fontWeight: '800', background: '#dcfce7', padding: '3px 10px', borderRadius: '10px' }}>
+                    {toBn(Math.round((activeState.legFraction || 0) * 100))}% ধাপ অতিক্রম
+                  </span>
+                  <span style={{ color: '#0284c7' }}>🚉 {stats.nextStName}</span>
+                </div>
+                <div style={{ position: 'relative', width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{
+                    width: `${Math.min(100, Math.max(0, Math.round((activeState.legFraction || 0) * 100)))}%`,
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #0284c7, #006a4e)',
+                    borderRadius: '4px',
+                    transition: 'width 0.4s ease-out'
+                  }}></div>
+                </div>
               </div>
             )}
 
