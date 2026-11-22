@@ -722,6 +722,7 @@ const TrackingPage = () => {
       const curKm = Math.round(kmStart + ratio * (kmEnd - kmStart));
       const progPct = Math.min(100, Math.max(0, Math.round((curKm / totalKm) * 100)));
       const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
+      const distToNext = Math.max(0, Number(((1 - ratio) * (kmEnd - kmStart)).toFixed(1)));
 
       return {
         lat: snapResult.point[0],
@@ -738,6 +739,7 @@ const TrackingPage = () => {
         totalKm,
         progressPct: progPct,
         isAtStation,
+        distToNextKm: distToNext,
         lastSeen: null
       };
     };
@@ -834,8 +836,9 @@ const TrackingPage = () => {
       const legFraction = calculateLegFraction(curKm, kmStart, kmEnd);
 
       const nextStCoords = scheduleData[bestSeg + 1]?.coords;
-      const distToNext = nextStCoords ? calculateDistance(sLat, sLng, nextStCoords[0], nextStCoords[1]) : 0;
-      const isAtStation = distToNext < 0.8 && currentSpeed < 15;
+      const aerialDist = nextStCoords ? calculateDistance(sLat, sLng, nextStCoords[0], nextStCoords[1]) : 0;
+      const distToNext = kmEnd > kmStart ? Math.max(0, Number(((1 - bestRatio) * (kmEnd - kmStart)).toFixed(1))) : Number(aerialDist.toFixed(1));
+      const isAtStation = (distToNext < 0.6 || aerialDist < 0.6) && currentSpeed < 15;
 
       return {
         lat: sLat,
@@ -870,13 +873,13 @@ const TrackingPage = () => {
 
     const dNext = activeState.distToNextKm !== undefined
       ? activeState.distToNextKm
-      : (nextSt.coords
-          ? calculateDistance(activeState.lat, activeState.lng, nextSt.coords[0], nextSt.coords[1])
-          : 0);
+      : (nextSt.km !== undefined && activeState.currentKm !== undefined
+          ? Math.max(0, Number((nextSt.km - activeState.currentKm).toFixed(1)))
+          : (nextSt.coords ? calculateDistance(activeState.lat, activeState.lng, nextSt.coords[0], nextSt.coords[1]) : 0));
 
-    const dDest = lastSt.coords
-      ? calculateDistance(activeState.lat, activeState.lng, lastSt.coords[0], lastSt.coords[1])
-      : 0;
+    const dDest = lastSt.km !== undefined && activeState.currentKm !== undefined
+      ? Math.max(0, Number((lastSt.km - activeState.currentKm).toFixed(1)))
+      : (lastSt.coords ? calculateDistance(activeState.lat, activeState.lng, lastSt.coords[0], lastSt.coords[1]) : 0);
 
     const nextArrivalMin = nextSt.arrMin !== null ? nextSt.arrMin : nextSt.depMin;
     const etaNext = nextArrivalMin !== null
