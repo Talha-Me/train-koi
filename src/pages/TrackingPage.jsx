@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Tooltip, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Tooltip, Polyline, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { io } from 'socket.io-client';
 import { trains } from '../data/trainData';
@@ -1493,12 +1493,58 @@ const TrackingPage = () => {
             style={{ height: '100%', width: '100%' }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {/* ১. সম্পূর্ণ বাংলাদেশ রেল নেটওয়ার্ক: ডুয়েল-লেয়ার ট্রু-রেলওয়ে স্টাইলিং (সাদা কেসিং + স্টিল ট্র্যাক) */}
             {railData && railData.features && (
-              <GeoJSON
-                data={railData}
-                style={() => ({ color: '#006a4e', weight: 3, opacity: 0.85 })}
-              />
+              <>
+                <GeoJSON
+                  data={railData}
+                  style={() => ({
+                    color: '#ffffff',
+                    weight: 5.5,
+                    opacity: 0.92,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                  })}
+                />
+                <GeoJSON
+                  data={railData}
+                  style={() => ({
+                    color: '#475569',
+                    weight: 2.8,
+                    opacity: 0.85,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                  })}
+                />
+              </>
             )}
+
+            {/* ২. ট্রেনের নির্দিষ্ট রুট হাইলাইট করিডোর (বিডি ট্রেন ট্র্যাকিং স্টাইলের ডুয়েল-লেয়ার এমেরাল্ড করিডোর) */}
+            {scheduleData.length > 1 && (
+              <>
+                <Polyline
+                  positions={scheduleData.filter((s) => s.coords).map((s) => s.coords)}
+                  pathOptions={{
+                    color: '#ffffff',
+                    weight: 8,
+                    opacity: 0.95,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                  }}
+                />
+                <Polyline
+                  positions={scheduleData.filter((s) => s.coords).map((s) => s.coords)}
+                  pathOptions={{
+                    color: '#006a4e',
+                    weight: 4.5,
+                    opacity: 1,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                  }}
+                />
+              </>
+            )}
+
             <MapCameraController
               center={[activeState.lat, activeState.lng]}
               isRunning={activeState.isRunning}
@@ -1510,24 +1556,51 @@ const TrackingPage = () => {
               oppositeTrain={oppositeTrain}
             />
 
-            {/* স্টপেজ স্টেশন মার্কার */}
+            {/* ৩. স্টপেজ স্টেশন মার্কার (বিডি ট্রেন ট্র্যাকিং আর্কিটেকচার অনুযায়ী আসন্ন স্টেশন টার্গেট রিং সহ) */}
             {scheduleData.map((st, i) => {
               if (!st.coords) return null;
               const isPassed = activeState.isRunning ? i < activeState.segmentIndex : false;
               const isNext = activeState.isRunning ? i === activeState.segmentIndex + 1 : false;
               const showTooltip = isNext || mapZoom >= 10;
 
+              let markerHtml;
+              let iconSize = [12, 12];
+              let iconAnchor = [6, 6];
+
+              if (isNext) {
+                markerHtml = `
+                  <div style="position: relative; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;">
+                    <div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(220, 38, 38, 0.35); animation: liveRadarPing 1.6s infinite ease-out;"></div>
+                    <div style="width: 16px; height: 16px; background: #dc2626; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 10px rgba(220, 38, 38, 0.7); display: flex; align-items: center; justify-content: center;">
+                      <div style="width: 4px; height: 4px; background: #ffffff; border-radius: 50%;"></div>
+                    </div>
+                  </div>
+                `;
+                iconSize = [18, 18];
+                iconAnchor = [9, 9];
+              } else if (isPassed) {
+                markerHtml = `<div style="width: 10px; height: 10px; background: #94a3b8; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.25);"></div>`;
+                iconSize = [10, 10];
+                iconAnchor = [5, 5];
+              } else {
+                markerHtml = `<div style="width: 13px; height: 13px; background: #006a4e; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`;
+                iconSize = [13, 13];
+                iconAnchor = [6.5, 6.5];
+              }
+
               return (
                 <Marker
                   key={i}
                   position={st.coords}
                   icon={L.divIcon({
-                    html: `<div style="width: 12px; height: 12px; background: ${isPassed ? '#94a3b8' : (isNext ? '#dc2626' : '#006a4e')}; border: 2.5px solid #ffffff; border-radius: 50%; box-shadow: 0 0 6px rgba(0,0,0,0.3);"></div>`,
-                    iconSize: [12, 12],
-                    iconAnchor: [6, 6]
+                    html: markerHtml,
+                    iconSize,
+                    iconAnchor,
+                    className: 'station-div-marker'
                   })}
+                  zIndexOffset={isNext ? 500 : 200}
                 >
-                  <Tooltip permanent={showTooltip} direction="top" className="station-tooltip" offset={[0, -10]}>
+                  <Tooltip permanent={showTooltip} direction="top" className="station-tooltip" offset={[0, isNext ? -12 : -8]}>
                     {st.name.split('(')[0]}
                   </Tooltip>
                 </Marker>

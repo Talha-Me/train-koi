@@ -33,28 +33,32 @@ const SmoothTrainMarker = ({
   const customIcon = L.divIcon({
     className: 'trainkoi-smooth-train-icon',
     html: `
-      <div class="train-koi-marker" style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
+      <div class="train-koi-marker" style="position: relative; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;">
+        <!-- Pulsing Live Radar Ping -->
         <div class="train-radar-ping" style="position: absolute; inset: -6px; border-radius: 50%; background: ${radarColor}; animation: liveRadarPing 1.8s infinite ease-out;"></div>
-        <div class="train-marker-rotate" style="transform: rotate(${bearing}deg); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-          <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: ${badgeBg}; border: 2.5px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center;">
+        <!-- Heading Rotation Container -->
+        <div class="train-marker-rotate" style="transform: rotate(${bearing}deg); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: ${badgeBg}; border: 3px solid #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.38); display: flex; align-items: center; justify-content: center;">
             <!-- Directional forward nose -->
-            <div style="position: absolute; top: -7px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 7px solid ${arrowColor}; filter: drop-shadow(0 -1px 2px rgba(0,0,0,0.25));"></div>
-            <!-- Locomotive Icon -->
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="4" y="3" width="16" height="16" rx="2"></rect>
-              <path d="M4 11h16"></path>
-              <path d="M12 3v8"></path>
-              <path d="m8 19-2 3"></path>
-              <path d="m16 19 2 3"></path>
-              <circle cx="8" cy="15" r="1.2" fill="#ffffff"></circle>
-              <circle cx="16" cy="15" r="1.2" fill="#ffffff"></circle>
+            <div style="position: absolute; top: -8px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 8px solid ${arrowColor}; filter: drop-shadow(0 -1px 3px rgba(0,0,0,0.35));"></div>
+            <!-- Authentic BD Locomotive SVG (Aero Cab, Windshield, Twin Headlights & Pilot) -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <!-- Locomotive Cab Body -->
+              <path d="M7.5 3h9a3 3 0 0 1 3 3v8.5a2.5 2.5 0 0 1-2.5 2.5H7a2.5 2.5 0 0 1-2.5-2.5V6a3 3 0 0 1 3-3z" fill="rgba(255,255,255,0.2)"/>
+              <!-- Front Windshield Glass -->
+              <path d="M7 6.5h10v4H7z" fill="rgba(255,255,255,0.45)"/>
+              <!-- Twin High-Beam Headlights -->
+              <circle cx="8.3" cy="13.8" r="1.2" fill="#ffffff"/>
+              <circle cx="15.7" cy="13.8" r="1.2" fill="#ffffff"/>
+              <!-- Track Pilot / Cowcatcher -->
+              <path d="M8 17l-1.8 3.5M16 17l1.8 3.5M6.8 20.5h10.4"/>
             </svg>
           </div>
         </div>
       </div>
     `,
-    iconSize: [42, 42],
-    iconAnchor: [21, 21]
+    iconSize: [46, 46],
+    iconAnchor: [23, 23]
   });
 
   // 60 FPS Smooth Interpolation Loop
