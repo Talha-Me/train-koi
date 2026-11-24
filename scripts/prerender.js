@@ -144,16 +144,29 @@ function createPageHtml({ template, title, description, canonicalUrl, ogType = '
 }
 
 function writeHtmlFile(subPath, content) {
-  // 1. Directory with index.html (e.g. dist/privacy/index.html)
-  const targetDir = path.resolve(distDir, subPath);
-  fs.mkdirSync(targetDir, { recursive: true });
-  fs.writeFileSync(path.resolve(targetDir, 'index.html'), content, 'utf-8');
+  // Guard against Linux filesystem NAME_MAX (255 bytes) for any path segment
+  const segments = subPath.split('/');
+  for (const seg of segments) {
+    if (Buffer.byteLength(seg, 'utf8') > 240) {
+      console.warn(`⚠️ Skipping static pre-render for overly long path segment (>240 bytes): ${seg.substring(0, 40)}...`);
+      return;
+    }
+  }
 
-  // 2. Direct clean .html file (e.g. dist/privacy.html for Vercel cleanUrls)
-  const directHtmlPath = path.resolve(distDir, `${subPath}.html`);
-  const parentDir = path.dirname(directHtmlPath);
-  fs.mkdirSync(parentDir, { recursive: true });
-  fs.writeFileSync(directHtmlPath, content, 'utf-8');
+  try {
+    // 1. Directory with index.html (e.g. dist/privacy/index.html)
+    const targetDir = path.resolve(distDir, subPath);
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.writeFileSync(path.resolve(targetDir, 'index.html'), content, 'utf-8');
+
+    // 2. Direct clean .html file (e.g. dist/privacy.html for Vercel cleanUrls)
+    const directHtmlPath = path.resolve(distDir, `${subPath}.html`);
+    const parentDir = path.dirname(directHtmlPath);
+    fs.mkdirSync(parentDir, { recursive: true });
+    fs.writeFileSync(directHtmlPath, content, 'utf-8');
+  } catch (err) {
+    console.warn(`⚠️ Could not pre-render ${subPath}: ${err.message}`);
+  }
 }
 
 async function main() {
