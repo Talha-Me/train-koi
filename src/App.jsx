@@ -112,6 +112,7 @@ function AppContent() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin-upload" element={<ContentUpload />} />
           <Route path="/news/:slug" element={<NewsDetail />} />
+          <Route path="/rail-news/:slug" element={<NewsDetail />} />
 
           {/* পলিসি পেজসমূহ */}
           <Route path="/privacy" element={<PrivacyPolicy />} />
