@@ -1631,30 +1631,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* ================= অফিশিয়াল বিজ্ঞাপন প্লেসহোল্ডার ফ্রেম (TrainKothai এর মতো) ================= */}
-      <div className="hp-ad-container" style={{ margin: '16px auto 0', padding: '0 20px', textAlign: 'center' }}>
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          padding: '12px 16px',
-          border: '1px dashed #cbd5e1',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-        }}>
-          <span style={{ fontSize: '9.5px', textTransform: 'uppercase', color: '#94a3b8', fontWeight: '800', letterSpacing: '0.6px', display: 'block', marginBottom: '6px' }}>
-            বিজ্ঞাপন • ADVERTISEMENT
-          </span>
-          <div style={{ minHeight: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ins 
-              className="adsbygoogle"
-              style={{ display: 'block', width: '100%', minHeight: '50px' }}
-              data-ad-client="ca-pub-6208607760621896"
-              data-ad-slot="default"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            />
-          </div>
-        </div>
-      </div>
 
       {/* Main Content Responsive Wrapper */}
       <div className="hp-main-wrapper">

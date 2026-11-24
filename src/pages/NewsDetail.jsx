@@ -10,7 +10,7 @@ import { newsData as staticNews } from '../data/newsData';
 /* =====================================================================
    ADSENSE SETTINGS
    1) index.html এর <head> এ AdSense script একবার বসান:
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6208607760621896" crossorigin="anonymous"></script>
    2) নিচে নিজের publisher id ও ad unit slot id বসান।
    ফাঁকা থাকলে কোনো বিজ্ঞাপন দেখাবে না (সেফ)।
    ===================================================================== */

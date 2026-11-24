@@ -144,9 +144,16 @@ function createPageHtml({ template, title, description, canonicalUrl, ogType = '
 }
 
 function writeHtmlFile(subPath, content) {
+  // 1. Directory with index.html (e.g. dist/privacy/index.html)
   const targetDir = path.resolve(distDir, subPath);
   fs.mkdirSync(targetDir, { recursive: true });
   fs.writeFileSync(path.resolve(targetDir, 'index.html'), content, 'utf-8');
+
+  // 2. Direct clean .html file (e.g. dist/privacy.html for Vercel cleanUrls)
+  const directHtmlPath = path.resolve(distDir, `${subPath}.html`);
+  const parentDir = path.dirname(directHtmlPath);
+  fs.mkdirSync(parentDir, { recursive: true });
+  fs.writeFileSync(directHtmlPath, content, 'utf-8');
 }
 
 async function main() {
@@ -518,6 +525,85 @@ async function main() {
     bodyHtml: disclaimerBody
   });
   writeHtmlFile('disclaimer', disclaimerHtml);
+
+  // 5b. TRAVEL LAWS
+  console.log('📄 Pre-rendering /travel-laws...');
+  const travelLawsBody = `
+    ${sharedNav}
+    <main style="max-width: 920px; margin: 30px auto; padding: 0 16px; color: #1f2937; line-height: 1.8;">
+      <div style="background: #ffffff; padding: 36px 32px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e5e7eb;">
+        <h1 style="font-size: 28px; color: #006a4e; margin: 0 0 10px; font-weight: 800;">রেল ভ্রমণ আইন ও বিধিমালা ২০২৬</h1>
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 26px;">বাংলাদেশ রেলওয়েতে নিরাপদ ভ্রমণ ও যাত্রীর আইনি অধিকার সম্পর্কিত পূর্ণাঙ্গ নির্দেশিকা</p>
+
+        <section style="margin-bottom: 26px;">
+          <h2 style="font-size: 20px; color: #006a4e; font-weight: 700; margin-bottom: 12px;">১. টিকিট, ভাড়া ও যাত্রীর বৈধ অধিকার</h2>
+          <p>বাংলাদেশ রেলওয়েতে ভ্রমণের সময় যাত্রীর কাছে বৈধ টিকিট বা প্রযোজ্য ভ্রমণ অনুমতিপত্র থাকা আবশ্যক। বিনা টিকিটে বা অনিয়মিতভাবে ভ্রমণ করলে প্রচলিত রেলওয়ে আইন অনুযায়ী ভাড়া ও সমপরিমাণ জরিমানা আদায় করা হতে পারে।</p>
+          <ul style="padding-left: 20px;">
+            <li>ভ্রমণের পূর্বে টিকিটের তারিখ, ট্রেন ও আসন নম্বর যাচাই করুন</li>
+            <li>অনলাইন টিকিটের ক্ষেত্রে জাতীয় পরিচয়পত্র বা জন্মনিবন্ধন সাথে রাখুন</li>
+            <li>টিকিট যার, ভ্রমণ তার—অন্যের জাতীয় পরিচয়পত্র দিয়ে টিকিট কাটা নিষিদ্ধ</li>
+          </ul>
+        </section>
+
+        <section style="margin-bottom: 26px;">
+          <h2 style="font-size: 20px; color: #006a4e; font-weight: 700; margin-bottom: 12px;">২. রেলওয়ে নিরাপত্তা ও যাত্রী আচরণ</h2>
+          <p>চলন্ত ট্রেনের দরজায় ঝুলন্ত অবস্থায় ভ্রমণ করা, ট্রেনের ছাদে ওঠা বা চলন্ত অবস্থায় ট্রেন থেকে লাফ দেওয়া মারাত্মক দণ্ডনীয় অপরাধ। রেললাইনের ওপর হাঁটা বা অবৈধ লেভেল ক্রসিং পারাপার এড়িয়ে চলুন।</p>
+        </section>
+
+        <section style="margin-bottom: 26px;">
+          <h2 style="font-size: 20px; color: #006a4e; font-weight: 700; margin-bottom: 12px;">৩. লাগেজ, মালামাল ও পার্সেল বহনের নিয়ম</h2>
+          <p>যাত্রীরা তাদের নির্দিষ্ট শ্রেণির জন্য বিনামূল্যে অনুমোদিত ওজনের ব্যক্তিগত লাগেজ বহন করতে পারেন (সাধারণত ২০ থেকে ৪০ কেজি)। অতিরিক্ত বাণিজ্যিক পণ্য বা মোটরসাইকেল পার্সেল বুকিংয়ের মাধ্যমে নির্ধারিত ফি দিয়ে বুক করতে হবে। দাহ্য বা বিপজ্জনক পদার্থ বহন সম্পূর্ণ নিষিদ্ধ।</p>
+        </section>
+      </div>
+    </main>
+    ${sharedFooter}
+  `;
+
+  const travelLawsHtml = createPageHtml({
+    template: baseTemplate,
+    title: 'রেল ভ্রমণ আইন ও বিধিমালা ২০২৬ | TrainKoi',
+    description: 'বাংলাদেশ রেলওয়ের অফিসিয়াল ভ্রমণ আইন, টিকিট বিধি, লাগেজ নীতিমালা ও জরিমানা সম্পর্কিত তথ্যাবলী।',
+    canonicalUrl: 'https://www.trainkoi.com/travel-laws',
+    bodyHtml: travelLawsBody
+  });
+  writeHtmlFile('travel-laws', travelLawsHtml);
+
+  // 5c. FAQ
+  console.log('📄 Pre-rendering /faq...');
+  const faqBody = `
+    ${sharedNav}
+    <main style="max-width: 920px; margin: 30px auto; padding: 0 16px; color: #1f2937; line-height: 1.8;">
+      <div style="background: #ffffff; padding: 36px 32px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e5e7eb;">
+        <h1 style="font-size: 28px; color: #006a4e; margin: 0 0 10px; font-weight: 800;">সাধারণ জিজ্ঞাসা ও সাহায্য (FAQ)</h1>
+        <p style="color: #6b7280; font-size: 14px; margin: 0 0 26px;">ট্রেনকই ট্র্যাকিং, ট্রেনের সময়সূচী ও রেল ভ্রমণ সম্পর্কিত সচরাচর জিজ্ঞাসিত প্রশ্ন ও উত্তর</p>
+
+        <section style="margin-bottom: 24px;">
+          <h2 style="font-size: 19px; color: #006a4e; font-weight: 700; margin-bottom: 8px;">প্রশ্ন: TrainKoi লাইভ ট্র্যাকিং কীভাবে কাজ করে?</h2>
+          <p>উত্তর: ট্রেনে ভ্রমণরত সহযাত্রীদের শেয়ার করা লাইভ লোকেশন, জিপিএস কো-অর্ডিনেট এবং ট্রেনের নির্দিষ্ট শিডিউলের সমন্বয়ে সিস্টেমটি ট্রেনের সঠিক অবস্থান ও গতি হিসাব করে প্রদর্শন করে।</p>
+        </section>
+
+        <section style="margin-bottom: 24px;">
+          <h2 style="font-size: 19px; color: #006a4e; font-weight: 700; margin-bottom: 8px;">প্রশ্ন: গন্তব্য স্টেশন ওয়েক-আপ অ্যালার্ম কীভাবে কাজ করে?</h2>
+          <p>উত্তর: আপনি ঘুমিয়ে গেলেও গন্তব্য স্টেশন আসার পূর্বে শব্দ ও ভাইব্রেশনের মাধ্যমে আপনাকে সতর্ক করার জন্য TrainKoi-তে স্মার্ট অ্যালার্ম সুবিধা রয়েছে। আপনার কাঙ্ক্ষিত স্টেশন নির্বাচন করে অ্যালার্ম চালু রাখলে ট্রেন গন্তব্যের কাছাকাছি আসামাত্র অ্যালার্ম বেজে উঠবে।</p>
+        </section>
+
+        <section style="margin-bottom: 24px;">
+          <h2 style="font-size: 19px; color: #006a4e; font-weight: 700; margin-bottom: 8px;">প্রশ্ন: ট্রেনের টিকিট বাতিল বা রিফান্ড কীভাবে পাব?</h2>
+          <p>উত্তর: বর্তমানে বাংলাদেশ রেলওয়ের অফিসিয়াল পোর্টাল (eticket.railway.gov.bd) অথবা রেল সেবা অ্যাপের 'Purchase History' থেকে সরাসরি অনলাইনে টিকিট বাতিল করে টাকা ফেরত পাওয়া যায়। বিস্তারিত জানতে আমাদের ব্লগের রিফান্ড নির্দেশিকা দেখুন।</p>
+        </section>
+      </div>
+    </main>
+    ${sharedFooter}
+  `;
+
+  const faqHtml = createPageHtml({
+    template: baseTemplate,
+    title: 'সাধারণ জিজ্ঞাসা ও সাহায্য (FAQ) | TrainKoi',
+    description: 'ট্রেনকই প্ল্যাটফর্ম ব্যবহার, লাইভ ট্রেন ট্র্যাকিং, সময়সূচী ও জরুরি অনুসন্ধান সম্পর্কিত প্রশ্নোত্তর।',
+    canonicalUrl: 'https://www.trainkoi.com/faq',
+    bodyHtml: faqBody
+  });
+  writeHtmlFile('faq', faqHtml);
 
   // 6. FETCH BLOGS & PRE-RENDER EACH BLOG
   console.log('📚 Fetching Blogs from Render API and local files...');
